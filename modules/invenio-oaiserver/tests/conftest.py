@@ -279,7 +279,7 @@ def records(app):
     record_data=[
         {
             "path":["1557819692844"],
-            "publish_date":"2023-01-01",
+            "publish_date":"2100-01-01",
             "publish_status":0,
             "json":{
                 "_source":{
@@ -296,7 +296,7 @@ def records(app):
             },
         },
         {
-          "publish_date":"2022-08-09",
+          "publish_date":"2000-08-09",
           "publish_status":0,
           "json":{
               "_source":{
@@ -312,7 +312,7 @@ def records(app):
         },
         {
             "path":["1557819692844"],
-            "publish_date":"2022-08-09",
+            "publish_date":"2000-08-09",
             "publish_status":0,
             "json":{
               "_source":{
@@ -328,11 +328,10 @@ def records(app):
             "_oai":{"sets":[]},
             "system_identifier_doi":"DOI",
             "item_type_id":"1"
-
         },
         {
             "path":["1557819692844"],
-            "publish_date":"2022-08-09",
+            "publish_date":"2000-08-09",
             "publish_status":0,
             "json":{
               "_source":{
