@@ -130,7 +130,7 @@ def regex_replace(s, pattern, replace):
 
     Returns:
         _type_: _description_
-    """    
+    """
     return re.sub(pattern, replace, s)
 
 
@@ -155,7 +155,7 @@ def index():
               type: string
           - name: tab
             in: query
-            description: Specify tab name to initial open(todo or all or wait)  
+            description: Specify tab name to initial open(todo or all or wait)
             schema:
               type: string
         responses:
@@ -163,8 +163,8 @@ def index():
             description: render result of weko_workflow/activity_list.html
             content:
                 text/html
-    """    
-    
+    """
+
     if not current_user or not current_user.roles:
         return abort(403)
 
@@ -362,7 +362,7 @@ def new_activity():
             content:
                 text/html
 
-    """    
+    """
     workflow = WorkFlow()
     workflows = workflow.get_workflow_list()
     workflows = workflow.get_workflows_by_roles(workflows)
@@ -400,11 +400,11 @@ def init_activity():
     Args:
 
     Returns:
-        dict: json data validated by ResponseMessageSchema. 
-    
+        dict: json data validated by ResponseMessageSchema.
+
     Raises:
         marshmallow.exceptions.ValidationError: if ResponseMessageSchema is invalid.
-    
+
     ---
     post:
       description: "init activity"
@@ -453,8 +453,8 @@ def init_activity():
     except ValidationError as err:
         res = ResponseMessageSchema().load({'code':-1,'msg':str(err)})
         return jsonify(res.data), 400
-    
-    activity = WorkActivity()    
+
+    activity = WorkActivity()
     try:
         if 'community' in request.args:
             rtn = activity.init_activity(
@@ -464,7 +464,7 @@ def init_activity():
         if rtn is None:
             res = ResponseMessageSchema().load({'code':-1,'msg':'can not make activity_id'})
             return jsonify(res.data), 500
-        
+
         url = url_for('weko_workflow.display_activity',
                       activity_id=rtn.activity_id)
         if 'community' in request.args and request.args.get('community') != 'undefined':
@@ -483,7 +483,7 @@ def init_activity():
         current_app.logger.error("Unexpected error: {}".format(ex))
         db.session.rollback()
         res = ResponseMessageSchema().load({'code':-1,'msg':"Unexpected error: {}".format(ex)})
-        return jsonify(res.data),500 
+        return jsonify(res.data),500
 
     res = ResponseMessageSchema().load({'code':0,'msg':'success','data':{'redirect': url}})
 
@@ -624,7 +624,69 @@ def display_guest_activity(file_name=""):
                  methods=['GET', 'POST'])
 @login_required
 def display_activity(activity_id="0"):
-    """Display activity."""
+    """各アクティビティのビューをレンダリングする
+
+    各アクティビティの画面表示に必要な情報を取得し、
+    レンダリングする。
+
+    Args:
+        activity_id (str, optional): 対象のアクティビティID.パスパラメータから取得. Defaults to '0'.
+
+    Returns:
+        str: render result of weko_workflow/activity_detail.html
+
+    ---
+    get:
+        description: "render template"
+        security:
+            - login_required: []
+        parameters:
+            - in: path
+                name: activity_id
+                description: 対象のアクティビティID
+                schema:
+                    type: string
+            - in: query
+                name: community
+                description: community id
+                schema:
+                    type: string
+        responses:
+            200:
+                description: "render_template"
+                content:
+                    text/html
+            404:
+                description: "Exception"
+                content:
+                    text/html
+
+    post:
+        description: "render template"
+        security:
+            - login_required: []
+        parameters:
+            - in: path
+              name: activity_id
+              description: 対象のアクティビティID
+              schema:
+                type: string
+            - in: query
+                name: community
+                description: community id
+                schema:
+                    type: string
+        responses:
+            200:
+                description: "render_template"
+                content:
+                    text/html
+            404:
+                description: "Exception"
+                content:
+                    text/html
+
+    """
     activity = WorkActivity()
     if "?" in activity_id:
         activity_id = activity_id.split("?")[0]
@@ -1650,9 +1712,47 @@ def cancel_action(activity_id='0', action_id=0):
 @login_required_customize
 @check_authority
 def withdraw_confirm(activity_id='0', action_id='0'):
-    """Check weko user info.
+    """ユーザー情報を確認し、リダイレクト先のURLを返す。
 
-    :return:
+    Args:
+        activity_id (str, optional): 対象アクティビティID.パスパラメータから取得. Defaults to '0'.
+        action_id (int, optional): 現在のアクションID.パスパラメータから取得. Defaults to 0.
+    Returns:
+        dict: ユーザー情報の確認結果とリダイレクト先URLのjson data.
+    ---
+
+    post:
+        description: "withdraw confirm"
+        security:
+            - login_required_customize: []
+            - check_authority: []
+        requestBody:
+            required: true
+            content:
+                application/json:
+                    schema:
+                        object
+                    example: {"passwd": "DELETE"}
+        parameters:
+            - in: path
+              name: activity_id
+              description: 対象のアクティビティID
+              schema:
+                type: string
+            - in: path
+              name: action_id
+              description: 現在のアクションID
+              schema:
+                type: int
+        responses:
+            200:
+                description: "success"
+                content:
+                    application/json:
+                        schema:
+                            object
+                        example:
+                            {"code": 0, "msg": "success", "data": {"redirect":"/workflow/activity/detail/1"}}
     """
     try:
         post_json = request.get_json()
@@ -1795,8 +1895,59 @@ def get_feedback_maillist(activity_id='0'):
 @blueprint.route('/activity/lock/<string:activity_id>', methods=['POST'])
 @login_required
 def lock_activity(activity_id=0):
-    """Lock activity."""
+    """アクティビティの操作者を確認し、操作可能者以外の場合ロックする
+
+    ワークフローに関するアクティビティの操作が、操作可能者以外により
+    行われないようセッション管理し、ロックする
+
+    Args:
+        activity_id (str, optional): 対象アクティビティID.パスパラメータから取得. Defaults to '0'.
+    Returns:
+        dict: アクティビティの状態を示すjson data.
+    ---
+
+    post:
+        description: "lock activity"
+        security:
+            - login_required: []
+        requestBody:
+            required: true
+            content:
+                application/json:
+                    schema:
+                        object
+                    example:
+                        {'locked_value': '1-1661748792565'}
+        parameters:
+            - in: path
+              name: activity_id
+              description: 対象のアクティビティID
+              schema:
+                type: string
+        responses:
+            200:
+                description: "success"
+                content:
+                    application/json:
+                        schema:
+                            object
+                        example:
+                            {"code": 200, "msg": "Success", "err": "",
+                            "locked_value": "1-1661748792565", "locked_by_email": "example@example.org",
+                            "locked_by_username": ""}
+    """
     def is_approval_user(activity_id):
+        """カレントユーザーが特定のアクションの操作者かどうか判定するメソッド。
+
+        Args:
+            activity_id (str): 対象アクティビティID.
+        Returns:
+            bool:
+                True: カレントユーザーが特定のactivity_idで実行中のアクションの操作者である場合
+                False: 実行中のアクションがない場合
+                       アクション操作者が設定されていない場合
+                       カレントユーザーがアクション操作者でない場合
+        """
         workflow_activity_action = ActivityAction.query.filter_by(
             activity_id=activity_id,
             action_status=ActionStatusPolicy.ACTION_DOING
