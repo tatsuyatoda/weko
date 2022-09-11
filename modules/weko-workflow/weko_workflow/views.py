@@ -1717,6 +1717,7 @@ def withdraw_confirm(activity_id='0', action_id='0'):
     Args:
         activity_id (str, optional): 対象アクティビティID.パスパラメータから取得. Defaults to '0'.
         action_id (int, optional): 現在のアクションID.パスパラメータから取得. Defaults to 0.
+                                   現仕様の初期値にはstring型の0が設定されている.
     Returns:
         dict: ユーザー情報の確認結果とリダイレクト先URLのjson data.
     ---
