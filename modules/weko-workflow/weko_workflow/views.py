@@ -1927,9 +1927,9 @@ def check_approval(activity_id='0'):
         description: "check approval"
         security:
             - login_required: []
-    responses: 
-        200:
-            description: "success"
+        responses: 
+            200:
+                description: "success"
                 content:
                     application/json:
                         schema:
@@ -1982,7 +1982,7 @@ def save_activity():
         description: "save activity"
         security:
             - login_required_customize: []
-        request_Body:
+        requestBody:
             required: true
             content:
                 application/json:
