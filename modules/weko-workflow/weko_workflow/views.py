@@ -1769,8 +1769,6 @@ def get_feedback_maillist(activity_id='0'):
     Returns:
         dict: 設定されているフィードバックメール送信先を示すjson data
 
-    Raises:
-        ValueError: if Argument is null or incorrect type.
     ---
     get:
         description: "get feedback maillist"
@@ -1782,15 +1780,8 @@ def get_feedback_maillist(activity_id='0'):
                 content:
                     application/json:
                         schema:
-                            GetFeedbackMailListSchema
+                            Object
                         example: {"code":1,"msg":_('Success'),"data":mail_list}
-            500:
-                description: "arguments error"
-                content:
-                    application/json:
-                        schema:
-                            ResponseMessageSchema
-                        example: {"code": -1, "msg": "arguments error"}
     """
     try:
         work_activity = WorkActivity()
@@ -1881,21 +1872,18 @@ def unlock_activity(activity_id="0"):
     Returns:
         dict: ロック解除が出来たかを示すjson data
 
-    Raises:
-        ValueError: if Argument is null or incorrect type.
-        marshmallow.exceptions.ValidationError: if ResponseMessageSchema is invalid.
     ---
     post:
         description: "unlock activity"
         security:
             - login_required: []
-        request_Body:
+        requestBody:
             required: true
             content:
                 text/plain:
                     schema:
-                        LockedValueSchema
-                    example: {"locked_value":"1-1661748792565"}
+                        Object
+                    example: '{"locked_value":"1-1661748792565"}'
         parameters:
             - in: path
               name: activity_id
@@ -1908,22 +1896,8 @@ def unlock_activity(activity_id="0"):
                 content:
                     application/json:
                         schema:
-                            ResponseMessageSchema
+                            Object
                         example: {"code":200,"msg":"Unlock success"}
-            400:
-                description: "validation error"
-                content:
-                    application/json:
-                        schema:
-                            ResponseMessageSchema
-                        example: {"code": -1,"msg":"validation error"}
-            500:
-                description: "arg error"
-                content:
-                    application/json:
-                        schema:
-                            ResponseMessageSchema
-                        example: {"code": -1, "msg": "arguments error"}
     """
     cache_key = 'workflow_locked_activity_{}'.format(activity_id)
     data = json.loads(request.data.decode("utf-8"))
@@ -1947,9 +1921,7 @@ def check_approval(activity_id='0'):
 
     Returns:
         dict: 承認の確認が必要かの判定結果を示すjson data
-
-    Raises:
-        ValueError: if Argument is null or incorrect type.
+        
     ---
     get:
         description: "check approval"
@@ -1961,15 +1933,8 @@ def check_approval(activity_id='0'):
                 content:
                     application/json:
                         schema:
-                            CheckApprovalSchema        
+                            Object        
                         example: {"check_handle": -1, "check_continue": -1, "error": 1 }
-        500:
-                description: "arguments error"
-                content:
-                    application/json:
-                        schema:
-                            ResponseMessageSchema
-                        example: {"code": -1, "msg": "arguments error"}
     """
     response = {
         'check_handle': -1,
@@ -2022,7 +1987,7 @@ def save_activity():
             content:
                 application/json:
                     schema:
-                        SaveActivitySchema   
+                        Object  
                     example: {"activity_id": "A-20220830-00001", "title": "title", "shared_user_id": -1} 
         responses:
             200:
@@ -2030,15 +1995,8 @@ def save_activity():
                 content:
                     application/json:
                         schema:
-                            SaveActivityResponseSchema
+                            Object
                         example: {"success": True, "msg": ""}
-            400:
-                description: "arguments error"
-                content:
-                    application/json:
-                        schema:
-                            ResponseMessageSchema
-                        example: {"code": -1,"msg":"arguments error"}
     """
     response = {
         "success": True,
