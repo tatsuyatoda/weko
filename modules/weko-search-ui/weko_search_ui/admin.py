@@ -543,6 +543,7 @@ class ItemImportView(BaseView):
     @expose("/export_import", methods=["POST"])
     def download_import(self):
         """インポート結果をファイルに出力し、ダウンロードするためのResponseオブジェクトを返す。
+
         Args:
             self
         Returns:
@@ -577,7 +578,7 @@ class ItemImportView(BaseView):
                                 string
                             example:
                                 "No,Start Date,End Date,Item Id,Action,Work Flow Status
-                                1,2022-09-12 23:04:07,2022-09-12 23:04:16,,End,Done"
+                                 1,2022-09-12 23:04:07,2022-09-12 23:04:16,,End,Done"
 
         """
         data = request.get_json()
