@@ -416,7 +416,40 @@ class ItemImportView(BaseView):
 
     @expose("/import", methods=["POST"])
     def import_items(self) -> jsonify:
-        """Import item into System."""
+        """アイテムの一括登録の前処理、タスク操作を行う。
+
+        Args:
+            self
+        Returns:
+            dict: json data
+        ---
+
+        post:
+            description: "import items"
+            security:
+                - description: "WEKO_ADMIN_ACCESS_TABLE setting"
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            object
+                        example: {"data_path": "/tmp/weko_import_20220819045602",
+                                  "list_record": [{<record_data>}]}
+
+            responses:
+                200:
+                    description: "success"
+                    content:
+                        application/json:
+                            schema:
+                                object
+                            example:
+                                {"status": "success",
+                                 "data": {"tasks": [{"task_id": "e59d7702-2a71-490f-ae8f-e317fc9aa13f", "item_id": None}],
+                                          "import_start_time": "2022-08-24T08:00:09"}}
+        """
+
         data = request.get_json() or {}
         data_path = data.get("data_path")
         user_id = current_user.get_id() if current_user else 1
@@ -509,7 +542,44 @@ class ItemImportView(BaseView):
 
     @expose("/export_import", methods=["POST"])
     def download_import(self):
-        """Download import result."""
+        """インポート結果をファイルに出力し、ダウンロードするためのResponseオブジェクトを返す。
+        Args:
+            self
+        Returns:
+            object: ファイルをダウンロードするためのResponse
+        ---
+
+        post:
+            description: "download import result file"
+            security:
+                - description: "WEKO_ADMIN_ACCESS_TABLE setting"
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            object
+                        example: {"list_result": [{
+                                    "No":1,
+                                    "Start Date":"2022-09-12 23:04:07",
+                                    "End Date":"2022-09-12 23:04:16",
+                                    "Item Id":"",
+                                    "Action":"End",
+                                    "Work Flow Status":"Done"
+                                }]}
+
+            responses:
+                200:
+                    description: "success"
+                    content:
+                        text/<file_format> charset=utf-8:
+                            schema:
+                                string
+                            example:
+                                "No,Start Date,End Date,Item Id,Action,Work Flow Status
+                                1,2022-09-12 23:04:07,2022-09-12 23:04:16,,End,Done"
+
+        """
         data = request.get_json()
         now = str(datetime.date(datetime.now()))
 
