@@ -427,7 +427,9 @@ class ItemImportView(BaseView):
         post:
             description: "import items"
             security:
-                - description: "WEKO_ADMIN_ACCESS_TABLE setting"
+                - description:
+                    "weko_admin ext.py のメソッドrole_has_accessで、current_app.configの
+                     設定値WEKO_ADMIN_ACCESS_TABLEに応じたアクセス制限を行う。"
             requestBody:
                 required: false
                 content:
@@ -435,7 +437,26 @@ class ItemImportView(BaseView):
                         schema:
                             object
                         example: {"data_path": "/tmp/weko_import_20220819045602",
-                                  "list_record": [{<record_data>}]}
+                                  "list_record":
+                                    [{{$schema: <weko_url>/items/jsonschema/15,
+                                        edit_mode: "Keep",
+                                        errors: null,
+                                        feedback_mail: ["example@example.org"],
+                                        file_path: ["file00000001/filename.pdf", ""],
+                                        filenames: [{filename: "filename.pdf",
+                                                        id: ".metadata.item_1617605131499[0].filename"},…],
+                                        id: null,
+                                        identifier_key: "item_1617186819068",
+                                        is_change_identifier: false,
+                                        item_title:
+                                            "ja_conference paperITEM00000001(public_open_access_open_access_simple)",
+                                        item_type_id: 15,
+                                        item_type_name: "デフォルトアイテムタイプ（フル）",
+                                        metadata:
+                                            {feedback_mail_list: [{author_id: "", email: "example@example.org"}],…},
+                                        pos_index: ["IndexName"],
+                                        publish_status: "public",
+                                        status: "new"}]}
 
             responses:
                 200:
@@ -446,8 +467,9 @@ class ItemImportView(BaseView):
                                 object
                             example:
                                 {"status": "success",
-                                 "data": {"tasks": [{"task_id": "e59d7702-2a71-490f-ae8f-e317fc9aa13f", "item_id": None}],
-                                          "import_start_time": "2022-08-24T08:00:09"}}
+                                 "data":
+                                    {"tasks": [{"task_id": "e59d7702-2a71-490f-ae8f-e317fc9aa13f", "item_id": None}],
+                                     "import_start_time": "2022-08-24T08:00:09"}}
         """
 
         data = request.get_json() or {}
@@ -547,13 +569,15 @@ class ItemImportView(BaseView):
         Args:
             self
         Returns:
-            object: ファイルをダウンロードするためのResponse
+            object: インポート結果をまとめたファイル形式の文字列をボディに持つResponse
         ---
 
         post:
-            description: "download import result file"
+            description: "get file contents summarizing result of import items"
             security:
-                - description: "WEKO_ADMIN_ACCESS_TABLE setting"
+                - description:
+                    "weko_admin ext.py のメソッドrole_has_accessで、current_app.configの
+                     設定値WEKO_ADMIN_ACCESS_TABLEに応じたアクセス制限を行う。"
             requestBody:
                 required: false
                 content:
