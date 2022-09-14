@@ -261,12 +261,13 @@ def index():
 @blueprint.route('/iframe/success', methods=['GET'])
 def iframe_success():
     """アイテム登録ビューをレンダリングする
+
     セッションに保存されているデータから画面表示に必要な情報を取得し、
     レンダリングする。
-    
+
     Returns:
         str: アイテム登録ビュー
-    
+
     ---
     get:
         description: "render template"
@@ -1079,7 +1080,7 @@ def next_action(activity_id='0', action_id=0):
 
     Returns:
         dict: 成否判定のコードとメッセージを含むjson data
-    
+
     ---
     post:
         description: "next action"
@@ -1526,9 +1527,9 @@ def previous_action(activity_id='0', action_id=0, req=0):
 
     Returns:
         dict: 成否判定のコードとメッセージを含むjson data
-    
+
     ---
-    
+
     post:
         description: "previous_action"
         security:
@@ -1727,7 +1728,7 @@ def cancel_action(activity_id='0', action_id=0):
         dict: 成否判定のコードとメッセージ、リダイレクト先のURLを含むjson data
 
     ---
-    
+
     post:
         description: "cancel action"
         security:
@@ -1879,7 +1880,7 @@ def withdraw_confirm(activity_id='0', action_id='0'):
             - login_required_customize: []
             - check_authority: []
         requestBody:
-            required: true
+            required: false
             content:
                 application/json:
                     schema:
@@ -2063,7 +2064,7 @@ def lock_activity(activity_id=0):
         security:
             - login_required: []
         requestBody:
-            required: true
+            required: false
             content:
                 application/json:
                     schema:

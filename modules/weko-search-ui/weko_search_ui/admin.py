@@ -416,7 +416,62 @@ class ItemImportView(BaseView):
 
     @expose("/import", methods=["POST"])
     def import_items(self) -> jsonify:
-        """Import item into System."""
+        """アイテムの一括登録の前処理、タスク操作を行う。
+
+        Args:
+            self
+        Returns:
+            dict: json data
+        ---
+
+        post:
+            description: "import items"
+            security:
+                - description:
+                    "weko_admin ext.py のメソッドrole_has_accessで、current_app.configの
+                     設定値WEKO_ADMIN_ACCESS_TABLEに応じたアクセス制限を行う。"
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            object
+                        example: {"data_path": "/tmp/weko_import_20220819045602",
+                                  "list_record":
+                                    [{{$schema: <weko_url>/items/jsonschema/15,
+                                        edit_mode: "Keep",
+                                        errors: null,
+                                        feedback_mail: ["example@example.org"],
+                                        file_path: ["file00000001/filename.pdf", ""],
+                                        filenames: [{filename: "filename.pdf",
+                                                        id: ".metadata.item_1617605131499[0].filename"},…],
+                                        id: null,
+                                        identifier_key: "item_1617186819068",
+                                        is_change_identifier: false,
+                                        item_title:
+                                            "ja_conference paperITEM00000001(public_open_access_open_access_simple)",
+                                        item_type_id: 15,
+                                        item_type_name: "デフォルトアイテムタイプ（フル）",
+                                        metadata:
+                                            {feedback_mail_list: [{author_id: "", email: "example@example.org"}],…},
+                                        pos_index: ["IndexName"],
+                                        publish_status: "public",
+                                        status: "new"}]}
+
+            responses:
+                200:
+                    description: "success"
+                    content:
+                        application/json:
+                            schema:
+                                object
+                            example:
+                                {"status": "success",
+                                 "data":
+                                    {"tasks": [{"task_id": "e59d7702-2a71-490f-ae8f-e317fc9aa13f", "item_id": None}],
+                                     "import_start_time": "2022-08-24T08:00:09"}}
+        """
+
         data = request.get_json() or {}
         data_path = data.get("data_path")
         user_id = current_user.get_id() if current_user else 1
@@ -509,7 +564,47 @@ class ItemImportView(BaseView):
 
     @expose("/export_import", methods=["POST"])
     def download_import(self):
-        """Download import result."""
+        """インポート結果をファイルに出力し、ダウンロードするためのResponseオブジェクトを返す。
+
+        Args:
+            self
+        Returns:
+            object: インポート結果をまとめたファイル形式の文字列をボディに持つResponse
+        ---
+
+        post:
+            description: "get file contents summarizing result of import items"
+            security:
+                - description:
+                    "weko_admin ext.py のメソッドrole_has_accessで、current_app.configの
+                     設定値WEKO_ADMIN_ACCESS_TABLEに応じたアクセス制限を行う。"
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            object
+                        example: {"list_result": [{
+                                    "No":1,
+                                    "Start Date":"2022-09-12 23:04:07",
+                                    "End Date":"2022-09-12 23:04:16",
+                                    "Item Id":"",
+                                    "Action":"End",
+                                    "Work Flow Status":"Done"
+                                }]}
+
+            responses:
+                200:
+                    description: "success"
+                    content:
+                        text/<file_format> charset=utf-8:
+                            schema:
+                                string
+                            example:
+                                "No,Start Date,End Date,Item Id,Action,Work Flow Status
+                                 1,2022-09-12 23:04:07,2022-09-12 23:04:16,,End,Done"
+
+        """
         data = request.get_json()
         now = str(datetime.date(datetime.now()))
 
