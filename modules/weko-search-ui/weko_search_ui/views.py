@@ -28,6 +28,7 @@ from flask import Blueprint, current_app, flash, jsonify, render_template, reque
 from flask_babelex import gettext as _
 from flask_login import login_required
 from flask_security import current_user
+from flask_wtf import FlaskForm
 from invenio_db import db
 from invenio_pidstore.models import PIDStatus, PersistentIdentifier
 from invenio_i18n.ext import current_i18n
@@ -84,6 +85,7 @@ blueprint_api = Blueprint(
 def search():
     """Index Search page ui."""
     search_type = request.args.get("search_type", WEKO_SEARCH_TYPE_DICT["FULL_TEXT"])
+    current_app.logger.error("hoge search_type:{}".format(search_type))
     get_args = request.args
     community_id = ""
     ctx = {"community": None}
@@ -184,7 +186,7 @@ def search():
                 thumbnails_org=record_detail_alt.get("files_thumbnail"),
             )
         )
-
+        form = FlaskForm(request.form)
         return render_template(
             "weko_workflow/activity_detail.html",
             action_id=action_id,
@@ -203,6 +205,7 @@ def search():
             item=item,
             page=page,
             pid=pid,
+            form=form,
             record=approval_record,
             render_widgets=render_widgets,
             res_check=res_check,
@@ -395,9 +398,17 @@ def get_path_name_dict(path_str=""):
 def gettitlefacet():
     """Soft getname Facet Search."""
     from weko_admin.utils import get_title_facets
-
-    titles, order = get_title_facets()
-    result = {"status": True, "data": {"titles": titles, "order": order}}
+    titles, order, uiTypes, isOpens, displayNumbers = get_title_facets()
+    result = {
+        "status": True,
+        "data": {
+            "titles": titles,
+            "order": order,
+            "uiTypes": uiTypes,
+            "isOpens": isOpens,
+            "displayNumbers": displayNumbers
+        }
+    }
     return jsonify(result), 200
 
 
@@ -423,3 +434,14 @@ def get_last_item_id():
     except Exception as ex:
         current_app.logger.error(ex)
     return jsonify(data=result), 200
+
+@blueprint.teardown_request
+@blueprint_api.teardown_request
+def dbsession_clean(exception):
+    current_app.logger.debug("weko_search_ui dbsession_clean: {}".format(exception))
+    if exception is None:
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
+    db.session.remove()

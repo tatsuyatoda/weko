@@ -97,8 +97,12 @@ def record_from_pid(pid_value):
 
 @blueprint.app_template_filter()
 def url_to_link(field):
+    pattern = ".*/record/\d+/files/.*"
     if field.startswith("http"):
-        return True
+        if re.match(pattern, field):
+            return False
+        else:
+            return True
     return False
 
 
@@ -145,8 +149,8 @@ def publish(pid, record, template=None, **kwargs):
     db.session.commit()
 
     indexer = WekoIndexer()
-    indexer.update_publish_status(record)
-    indexer.update_publish_status(last_record)
+    indexer.update_es_data(record, update_revision=False, field='publish_status')
+    indexer.update_es_data(last_record, update_revision=False, field='publish_status')
 
     return redirect(url_for('.recid', pid_value=pid.pid_value))
 
@@ -474,10 +478,18 @@ def default_view_method(pid, record, filename=None, template=None, **kwargs):
         record["relation"] = res
     else:
         record["relation"] = {}
-
-    google_scholar_meta = get_google_scholar_meta(record)
-    google_dataset_meta = get_google_detaset_meta(record)
-
+    
+    recstr = etree.tostring(
+        getrecord(
+            identifier=record['_oai'].get('id'),
+            metadataPrefix='jpcoar',
+            verb='getrecord'
+        )
+    )
+    et=etree.fromstring(recstr)
+    google_scholar_meta = get_google_scholar_meta(record,record_tree=et)
+    google_dataset_meta = get_google_detaset_meta(record,record_tree=et)
+    
     current_lang = current_i18n.language \
         if hasattr(current_i18n, 'language') else None
     # get title name
@@ -970,3 +982,13 @@ def get_uri():
         add_signals_info(record, file_obj)
         file_downloaded.send(current_app._get_current_object(), obj=file_obj)
     return jsonify({'status': True})
+
+@blueprint.teardown_request
+def dbsession_clean(exception):
+    current_app.logger.debug("weko_records_ui dbsession_clean: {}".format(exception))
+    if exception is None:
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
+    db.session.remove()
