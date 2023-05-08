@@ -1,10 +1,13 @@
 import json
 import pytest
+import os
 from flask import current_app
-from mock import patch
+from mock import patch, MagicMock
 
 from invenio_accounts.testutils import login_user_via_session
 from invenio_records_rest.config import RECORDS_REST_ENDPOINTS
+from redis.exceptions import RedisError
+from sqlalchemy.exc import SQLAlchemyError
 
 from weko_index_tree.rest import (
     need_record_permission,
@@ -319,3 +322,54 @@ def test_index_tree_action_get_login(client_rest, users, communities, id, status
     res = client_rest.get('/tree?action=browsing&community=comm',
                             content_type='application/json')
     assert res.status_code == 200
+    
+# .tox/c1/bin/pytest --cov=weko_index_tree tests/test_rest.py::test_get_index_root_tree -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko_index_tree/.tox/c1/tmp --full-trace
+@pytest.mark.parametrize('id, status_code', user_tree_action)
+def test_get_index_root_tree(client_rest, users, id, status_code, test_indices):
+    os.environ['INVENIO_WEB_HOST_NAME'] = "test"
+    login_user_via_session(client=client_rest, email=users[id]['email'])
+    res = client_rest.get('/v1.0/tree/index',content_type='application/json')
+    assert res.status_code == 200
+    
+    try:
+        json.loads(res.get_data())
+        assert True
+    except:
+        assert False
+
+# .tox/c1/bin/pytest --cov=weko_index_tree tests/test_rest.py::test_get_index_tree -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko_index_tree/.tox/c1/tmp --full-trace
+@pytest.mark.parametrize('id, status_code', user_tree_action)
+def test_get_index_tree(client_rest, users, id, status_code, test_indices):
+    os.environ['INVENIO_WEB_HOST_NAME'] = "test"
+    login_user_via_session(client=client_rest, email=users[id]['email'])
+    res = client_rest.get('/v1.0/tree/index/11',content_type='application/json')
+    assert res.status_code == 200
+    
+    try:
+        json.loads(res.get_data())
+        assert True
+    except:
+        assert False
+
+# .tox/c1/bin/pytest --cov=weko_index_tree tests/test_rest.py::test_get_index_tree_error -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko_index_tree/.tox/c1/tmp --full-trace
+def test_get_index_tree_error(client_rest, users, communities, test_indices):
+    os.environ['INVENIO_WEB_HOST_NAME'] = "test"
+    res = client_rest.get('/v1.0/tree/index/11',content_type='application/json')
+    headers = {}
+    headers['If-None-Match'] = res.headers['Etag'].strip('"')
+    res = client_rest.get('/v1.0/tree/index/11',content_type='application/json', headers=headers)
+    assert res.status_code == 304
+    
+    res = client_rest.get('/v1.0/tree/index/100',content_type='application/json')
+    assert res.status_code == 400
+    
+    res = client_rest.get('/ver1/tree/index/0',content_type='application/json')
+    assert res.status_code == 400
+    
+    with patch('weko_index_tree.api.Indexes.get_index_tree', MagicMock(side_effect=RedisError())):
+        res = client_rest.get('/v1.0/tree/index/1557819692844',content_type='application/json')
+        assert res.status_code == 500
+        
+    with patch('weko_index_tree.api.Indexes.get_index_tree', MagicMock(side_effect=SQLAlchemyError())):
+        res = client_rest.get('/v1.0/tree/index/1557819692844',content_type='application/json')
+        assert res.status_code == 500
