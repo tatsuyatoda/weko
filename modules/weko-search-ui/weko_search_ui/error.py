@@ -22,62 +22,8 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Index errors."""
-from invenio_rest.errors import RESTException
-
-# from flask_babelex import gettext as _
-
-
-SUCCESS_MSG = 'Index deleted successfully.'
-FAILED_MSG = ''
-
-
-class IndexBaseRESTError(RESTException):
-    """Invalid request body."""
-
-    code = 400
-
-
-class InvalidDataRESTError(RESTException):
-    """Invalid request body."""
-
-    code = 400
-    description = 'Could not load data.'
-
-
-class IndexDeletedRESTError(RESTException):
-    """Invalid request body."""
-
-    code = 204
-    description = 'This index has been deleted.'
-
-
-class IndexNotFoundRESTError(RESTException):
-    """Invalid request body."""
-
-    code = 204
-    description = 'No such index.'
-
-
-class IndexUpdatedRESTError(RESTException):
-    """Index ujpdated rest error."""
-
-    code = 400
-    description = 'Could not update data.'
-
-
-class IndexAddedRESTError(RESTException):
-    """Index added REST error."""
-
-    code = 400
-    description = 'Could not add data.'
-
-
-class IndexMovedRESTError(RESTException):
-    """Index moved rest error."""
-
-    code = 400
-    description = 'Could not move data.'
+"""Search Error"""
+from invenio_rest.errors import RESTException, RESTValidationError
 
 class VersionNotFoundRESTError(RESTException):
     """API Version error."""
@@ -90,3 +36,10 @@ class InternalServerError(RESTException):
     
     code = 500
     description = 'Internal Server Error'
+
+class UnhandledElasticsearchError(RESTException):
+    """Failed to handle exception."""
+
+    code = 500
+    description = 'An internal server error occurred when handling the ' \
+                  'request.'

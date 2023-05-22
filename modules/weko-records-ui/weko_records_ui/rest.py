@@ -21,19 +21,29 @@
 """Blueprint for schema rest."""
 
 from flask import Blueprint, current_app, jsonify, make_response, request
-from invenio_pidstore.errors import PIDInvalidAction
+from werkzeug.http import generate_etag
+from elasticsearch.exceptions import ElasticsearchException
+from invenio_pidstore.errors import PIDInvalidAction, PIDDoesNotExistError
 from invenio_pidstore.models import PersistentIdentifier
 from invenio_records_rest.links import default_links_factory
 from invenio_records_rest.utils import obj_or_import_string
+from invenio_records_rest.views import pass_record
 from invenio_records_rest.views import \
     create_error_handlers as records_rest_error_handlers
+    
 from invenio_rest import ContentNegotiatedMethodView
 from invenio_db import db
 from invenio_rest.views import create_api_errorhandler
+from invenio_stats.views import QueryRecordViewCount, QueryFileStatsCount
 from weko_deposit.api import WekoRecord
 from weko_records.serializers import citeproc_v1
+from sqlalchemy.exc import SQLAlchemyError
 
 from .views import escape_str
+from .permissions import page_permission_factory
+from .errors import VersionNotFoundRESTError, InternalServerError \
+  ,RecordsNotFoundRESTError ,PermissionError ,DateFormatRESTError, FilesNotFoundRESTError
+from .utils import check_etag, check_pretty
 
 
 def create_error_handlers(blueprint):
@@ -110,7 +120,42 @@ def create_blueprint(endpoints):
             view_func=cites,
             methods=['GET'],
         )
-
+        wrr = WekoRecordsResource.as_view(
+            WekoRecordsResource.view_name.format(endpoint),
+            serializers=serializers,
+            # pid_type=options['pid_type'],
+            ctx=ctx,
+            default_media_type=options.get('default_media_type'),
+            )
+        blueprint.add_url_rule(
+            options.pop('item_route'),
+            view_func=wrr,
+            methods=['GET'],
+        )
+        wrs = WekoRecordsStats.as_view(
+            WekoRecordsStats.view_name.format(endpoint),
+            serializers=serializers,
+            # pid_type=options['pid_type'],
+            ctx=ctx,
+            default_media_type=options.get('default_media_type'),
+            )
+        blueprint.add_url_rule(
+            options.pop('records_stats_route'),
+            view_func=wrs,
+            methods=['GET'],
+        )
+        wfs = WekoFilesStats.as_view(
+            WekoFilesStats.view_name.format(endpoint),
+            serializers=serializers,
+            # pid_type=options['pid_type'],
+            ctx=ctx,
+            default_media_type=options.get('default_media_type'),
+            )
+        blueprint.add_url_rule(
+            options.pop('files_stats_route'),
+            view_func=wfs,
+            methods=['GET'],
+        )
     return blueprint
 
 
@@ -147,3 +192,258 @@ class WekoRecordsCitesResource(ContentNegotiatedMethodView):
                 'Citation formatting for record {0} failed.'.format(
                     str(record.id)))
             return make_response(jsonify("Not found"), 404)
+
+
+class WekoRecordsResource(ContentNegotiatedMethodView):
+    """Schema files resource."""
+
+    view_name = '{0}_get_records'
+
+    def __init__(self, serializers, ctx, *args, **kwargs):
+        """Constructor."""
+        super(WekoRecordsResource, self).__init__(
+            serializers,
+            *args,
+            **kwargs
+        )
+        for key, value in ctx.items():
+            setattr(self, key, value)
+            
+    # @require_api_auth()
+    # @require_oauth_scopes(get_index_scope.id)
+    def get(self, **kwargs):
+        """Get records json."""
+        from .config import WEKO_RECORDS_RESOURCE_API_VERSION
+        version = kwargs.get('version')
+        get_index = WEKO_RECORDS_RESOURCE_API_VERSION.get(version)
+        if get_index:
+            return get_index(self,**kwargs)
+        else:
+            raise VersionNotFoundRESTError()
+          
+    def get_v1(self, pid_value, **kwargs):
+        try:
+            # Get Record by pid_value
+            pid = PersistentIdentifier.get('depid', pid_value)
+            record = WekoRecord.get_record(pid.object_uuid)
+
+            # Check Permission
+            page_permission = page_permission_factory(record)
+            if not page_permission.can():
+                raise PermissionError()
+
+            # Check Etag
+            etag = generate_etag(str(record).encode('utf-8'))
+            if check_etag(etag):
+                return make_response("304 Not Modified",304)
+            
+            # Check pretty
+            check_pretty()
+                
+            # Response Header Setting
+            res = make_response(jsonify(record), 200)
+            res.set_etag(etag)
+            
+            return res
+
+        except PIDDoesNotExistError:
+            raise RecordsNotFoundRESTError()
+
+        except SQLAlchemyError:
+            raise InternalServerError()
+          
+        except PermissionError:
+            raise PermissionError()
+          
+        except Exception:
+            raise InternalServerError()
+
+
+class WekoRecordsStats(ContentNegotiatedMethodView):
+    """Schema Records resource."""
+
+    view_name = '{0}_get_records_stats'
+
+    def __init__(self, serializers, ctx, *args, **kwargs):
+        """Constructor."""
+        super(WekoRecordsStats, self).__init__(
+            serializers,
+            *args,
+            **kwargs
+        )
+        for key, value in ctx.items():
+            setattr(self, key, value)
+            
+    # @require_api_auth()
+    # @require_oauth_scopes(get_index_scope.id)
+    def get(self, **kwargs):
+        """Get tree json."""
+        from .config import WEKO_RECORDS_STATS_API_VERSION
+        version = kwargs.get('version')
+        get_index = WEKO_RECORDS_STATS_API_VERSION.get(version)
+        if get_index:
+            return get_index(self,**kwargs)
+        else:
+            raise VersionNotFoundRESTError()
+          
+    def get_v1(self, pid_value, **kwargs):
+        try:
+            import re
+            # Get object_uuid by pid_value
+            pid = PersistentIdentifier.get('depid', pid_value)
+            record = WekoRecord.get_record(pid.object_uuid)
+            
+            # Check Permission
+            page_permission = page_permission_factory(record)
+            if not page_permission.can():
+                raise PermissionError()
+            
+            # Get date param
+            date = request.values.get('date', type=str)
+            
+            # Check date pattern
+            if date:
+                date = re.fullmatch(r'\d{4}-([1-9]|1[0-2])', date)
+                if not date :
+                    raise DateFormatRESTError()
+                date = date.group()
+
+            # Get target class
+            query_record_stats = QueryRecordViewCount()
+            result = query_record_stats.get_data(pid.object_uuid, date)
+            
+            if date:
+                result['period'] = date
+            else:
+                result['period'] = 'total'
+
+            # Check Etag
+            etag = generate_etag(str(record).encode('utf-8'))
+            if check_etag(etag):
+                return make_response("304 Not Modified",304)
+            
+            # Check pretty
+            check_pretty()
+            
+            # Response Header Setting
+            res = make_response(jsonify(result), 200)
+            res.set_etag(etag)
+            
+            return res
+
+        except PIDDoesNotExistError:
+            raise RecordsNotFoundRESTError()
+
+        except SQLAlchemyError:
+            raise InternalServerError()
+
+        except PermissionError:
+            raise PermissionError()
+
+        except DateFormatRESTError:
+            raise DateFormatRESTError()
+
+        except ElasticsearchException:
+            raise InternalServerError()          
+                
+        except Exception:
+            raise InternalServerError()
+
+
+class WekoFilesStats(ContentNegotiatedMethodView):
+    """Schema files resource."""
+
+    view_name = '{0}_get_files_stats'
+
+    def __init__(self, serializers, ctx, *args, **kwargs):
+        """Constructor."""
+        super(WekoFilesStats, self).__init__(
+            serializers,
+            *args,
+            **kwargs
+        )
+        for key, value in ctx.items():
+            setattr(self, key, value)
+            
+    # @require_api_auth()
+    # @require_oauth_scopes(get_index_scope.id)
+    def get(self, **kwargs):
+        """Get tree json."""
+        from .config import WEKO_FILES_STATS_API_VERSION
+        version = kwargs.get('version')
+        get_index = WEKO_FILES_STATS_API_VERSION.get(version)
+        if get_index:
+            return get_index(self,**kwargs)
+        else:
+            raise VersionNotFoundRESTError()
+          
+    def get_v1(self, pid_value, file_key, **kwargs):
+        try:
+            import re
+            print('====file stats====')
+            # Get object_uuid by pid_value
+            pid = PersistentIdentifier.get('depid', pid_value)
+            record = WekoRecord.get_record(pid.object_uuid)
+            
+            # Check File exist
+            files = []
+            for file in record['item_1617605131499']['attribute_value_mlt']:
+                files.append(file['filename'])
+            print(files)
+            if file_key not in files:
+                raise FilesNotFoundRESTError()
+            
+            # Get date param
+            date = request.values.get('date', type=str)
+            
+            # Check date pattern
+            if date:
+                print(date)
+                date = re.fullmatch(r'\d{4}-(0[1-9]|1[0-2])', date)
+                print(date)
+                if not date :
+                    raise DateFormatRESTError()
+                date = date.group()
+            
+            query_record_stats = QueryFileStatsCount()       
+            result = query_record_stats.get_data(pid.object_uuid, file_key, date)
+            print(result)
+            if date:
+                result['period'] = date
+            else:
+                result['period'] = 'total'
+
+            # Check Etag
+            etag = generate_etag(str(record).encode('utf-8'))
+            if check_etag(etag):
+                return make_response("304 Not Modified",304)
+            
+            # Check pretty
+            check_pretty()
+            
+            # Response Header Setting
+            res = make_response(jsonify(result), 200)
+            res.set_etag(etag)
+            
+            return res
+
+        except PIDDoesNotExistError:
+            raise RecordsNotFoundRESTError()
+
+        except SQLAlchemyError:
+            raise InternalServerError()
+
+        except PermissionError:
+            raise PermissionError()
+
+        except DateFormatRESTError:
+            raise DateFormatRESTError()
+
+        except FilesNotFoundRESTError:
+            raise FilesNotFoundRESTError()
+
+        except ElasticsearchException:
+            raise InternalServerError()
+
+        except Exception:
+            raise InternalServerError()
