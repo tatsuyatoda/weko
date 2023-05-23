@@ -46,7 +46,7 @@ from .errors import IndexAddedRESTError, IndexNotFoundRESTError, \
 from .models import Index
 #from .scopes import get_index_scope
 from .utils import check_doi_in_index, check_index_permissions, \
-    is_index_locked, perform_delete_index, save_index_trees_to_redis
+    is_index_locked, perform_delete_index, save_index_trees_to_redis, check_etag, reset_tree
 
 JST = timezone(timedelta(hours=+9), 'JST')
 
@@ -507,7 +507,8 @@ class GetIndex(ContentNegotiatedMethodView):
             
             #Check Etag
             etag = generate_etag(hash_str.encode('utf-8'))
-            check_etag(etag)
+            if check_etag(etag):
+                return make_response("304 Not Modified",304)
             
             #Language setting
             language = request.headers.get('Accept-Language')
@@ -518,9 +519,11 @@ class GetIndex(ContentNegotiatedMethodView):
             
             if pid and pid != 0:
                 tree = self.record_class.get_index_tree(pid)
+                reset_tree(tree=tree)
                 result_tree = tree[0]
             else:
                 tree = self.record_class.get_index_tree(pid=0)
+                reset_tree(tree=tree)
                 result_tree = dict(
                   children = tree,
                   cid = 0,
@@ -547,12 +550,3 @@ class GetIndex(ContentNegotiatedMethodView):
 
         except Exception:
             raise InvalidDataRESTError()
-
-def check_etag(etag):
-    """Check Request Header Etag"""
-  
-    request_Etag = request.headers.get('If-None-Match')
-    if etag and etag == request_Etag:
-        return make_response("304 Not Modified",304)
-    else:
-        return None

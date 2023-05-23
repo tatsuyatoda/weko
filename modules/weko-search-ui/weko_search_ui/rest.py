@@ -60,6 +60,7 @@ from werkzeug.utils import secure_filename
 
 from .error import VersionNotFoundRESTError, InternalServerError, UnhandledElasticsearchError
 from .api import SearchSetting
+from .query import default_search_factory
 
 def create_blueprint(app, endpoints):
     """Create Invenio-Deposit-REST blueprint.
@@ -210,7 +211,6 @@ class IndexSearchResource(ContentNegotiatedMethodView):
         :returns: the search result containing hits and aggregations as
         returned by invenio-search.
         """
-        print("====weko search api====")
         from weko_admin.models import FacetSearchSetting
         from weko_admin.utils import get_facet_search_query
 
@@ -526,6 +526,7 @@ class IndexSearchResourceAPI(ContentNegotiatedMethodView):
             setattr(self, key, value)
 
         self.pid_fetcher = current_pidstore.fetchers[self.pid_fetcher]
+        self.search_factory = default_search_factory
 
     # @require_api_auth()
     # @require_oauth_scopes(get_index_scope.id)
@@ -548,7 +549,6 @@ class IndexSearchResourceAPI(ContentNegotiatedMethodView):
         from weko_admin.utils import get_facet_search_query
         try:
             params = {}
-            
             # Generate Search Query Class
             search_obj = self.search_class()
             search = search_obj.with_preference_param().params(version=True)
@@ -561,20 +561,20 @@ class IndexSearchResourceAPI(ContentNegotiatedMethodView):
                 cursor = cursor.split(",")
                 search._extra.update(dict(search_after=cursor))
                 search._extra.update(dict(size=size))
-            else:
                 
+            else:
                 if not page:
                     page = 1
                 if page * size >= self.max_result_window:
                     raise MaxResultWindowRESTError()
                 search = search[(page - 1) * size : page * size]
-
+            print("==cp1==")
             # Query Generate
             search, qs_kwargs = self.search_factory(self, search)
             
             # Sort Setting
             sort = request.values.get("sort")
-
+            
             sort_query = []
             is_id_sort = False
             if sort:
@@ -617,7 +617,6 @@ class IndexSearchResourceAPI(ContentNegotiatedMethodView):
             
             # Execute search
             search_result = search.execute()
-            
             # Check pretty
             if request.args.get('pretty') == "true":
                 current_app.debug = True

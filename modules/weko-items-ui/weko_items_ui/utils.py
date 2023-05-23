@@ -3358,3 +3358,13 @@ def has_permission_edit_item(record, recid):
     ).first()
     can_edit = True if pid == get_record_without_version(pid) else False
     return can_edit and permission
+
+def check_etag(etag):
+    """Check Request Header Etag"""
+    request_Etag = request.headers.get('If-None-Match')
+    return etag and etag == request_Etag
+
+def check_pretty():
+    """Check Request Header pretty"""
+    if request.args.get('pretty') == "true":
+        current_app.debug = True

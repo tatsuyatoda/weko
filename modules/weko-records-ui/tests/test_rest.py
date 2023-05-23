@@ -98,6 +98,7 @@ def test_WekoRecordsResource(app, records):
         res = client.get('/v1.0/records/1/detail',content_type='application/json')
         assert res.status_code == 200
         try:
+            print(res.get_data())
             json.loads(res.get_data())
             assert True
         except:
@@ -137,6 +138,7 @@ def test_WekoRecordsResource_error(app, records):
             res = client.get('/v1.0/records/1/detail',content_type='application/json')
             assert res.status_code == 500
 
+# .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoRecordsStats -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
 def test_WekoRecordsStats(app, records):
 
     app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
@@ -149,6 +151,7 @@ def test_WekoRecordsStats(app, records):
         except:
             assert False
 
+# .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoRecordsStats_error -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
 def test_WekoRecordsStats_error(app, records):
     
     url = '/v1.0/records/1/stats'
@@ -180,11 +183,12 @@ def test_WekoRecordsStats_error(app, records):
             res = client.get(url,content_type='application/json')
             assert res.status_code == 500
 
+# .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoFilesStats -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
 def test_WekoFilesStats(app, records):
 
     app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
     with app.test_client() as client:
-        res = client.get('/v1.0/records/1/stats',content_type='application/json')
+        res = client.get('/v1.0/records/1/files/helloworld.pdf/stats',content_type='application/json')
         assert res.status_code == 200
         try:
             json.loads(res.get_data())
@@ -192,9 +196,10 @@ def test_WekoFilesStats(app, records):
         except:
             assert False
 
+# .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoFilesStats_error -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
 def test_WekoFilesStats_error(app, records):
       
-    url = '/v1.0/records/1/files/'
+    url = '/v1.0/records/1/files/helloworld.pdf/stats'
     
     app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
     with app.test_client() as client:
@@ -214,6 +219,45 @@ def test_WekoFilesStats_error(app, records):
         
         # res = client.get(url,content_type='application/json')
         # assert res.status_code == 403
+        
+        res = client.get('/v1.0/records/100/detail',content_type='application/json')
+        assert res.status_code == 404
+        
+        with patch('weko_deposit.api.WekoRecord.get_record', MagicMock(side_effect=SQLAlchemyError())):
+            res = client.get(url,content_type='application/json')
+            assert res.status_code == 500
+
+# .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoFilesGet -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
+def test_WekoFilesGet(app, records):
+
+    app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
+    with app.test_client() as client:
+        res = client.get('/v1.0/records/1/files/helloworld.pdf',content_type='application/json')
+        assert res.status_code == 200
+
+# .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoFilesGet_error -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
+def test_WekoFilesGet_error(app, records):
+      
+    url = '/v1.0/records/1/files/helloworld.pdf'
+    
+    app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
+    with app.test_client() as client:
+        res = client.get(url,content_type='application/json')
+        headers = {}
+        headers['If-None-Match'] = res.headers['Etag'].strip('"')
+        res = client.get(url,content_type='application/json', headers=headers)
+        assert res.status_code == 304
+        
+        res = client.get('/ver1/records/1/detail',content_type='application/json')
+        assert res.status_code == 400
+        
+        with patch('weko_index_tree.utils.get_user_roles', 
+                   MagicMock(side_effect=PermissionError())):
+            res = client.get(url,content_type='application/json')
+            assert res.status_code == 403
+        
+        res = client.get('/v1.0/records/100/detail',content_type='application/json')
+        assert res.status_code == 404
         
         res = client.get('/v1.0/records/100/detail',content_type='application/json')
         assert res.status_code == 404
