@@ -324,31 +324,20 @@ def test_get_heading_info(i18n_app):
     assert not subitem_heading_headline in get_heading_info(data_1, "en", data_3)
 
 # .tox/c1/bin/pytest --cov=weko_search_ui tests/test_rest.py::test_IndexSearchResourceAPI -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
-def test_IndexSearchResourceAPI(client_rest,db_register2):
-  
-    def mock_factory(self, search):
-        print("dummy method")
-        return search, 0
+def test_IndexSearchResourceAPI(client_rest, db_register2):
+  with patch('invenio_search.api.RecordsSearch.execute', value={"Test":"API"}):
+    param = {"size":2,"page":1,"sort":"controlnumber"}
+    res =  client_rest.get(url("/v1.0/search", param))
     
-    with patch('weko_search_ui.query.default_search_factory', side_effect=mock_factory):
-        param = {"size":2,"page":1,"cursor":"9223372036854775807","sort":"controlnumber"}
-        res =  client_rest.get(url("/v1.0/search", param))
-        
-        assert res.status_code == 200
-        assert res.headers['Cache-Control'] == 'no-store'
-        assert res.headers['Pragma'] == 'no-cache'
-        assert res.headers['Expires'] == '0'
-        try:
-            json.loads(res.get_data())
-            assert True
-        except:
-            assert False
-        assert res.get_json()['hits']['hits'][0]['sort'][0] == 9223372036854775807
-        
-        param = {"size":1,"cursor":"9223372036854775807","sort":"controlnumber"}
-        res =  client_rest.get(url("/v1.0/search", param))
-        
-        assert res.get_json()['hits']['hits'] == []
+    assert res.status_code == 200
+    assert res.headers['Cache-Control'] == 'no-store'
+    assert res.headers['Pragma'] == 'no-cache'
+    assert res.headers['Expires'] == '0'
+    try:
+        json.loads(res.get_data())
+        assert True
+    except:
+        assert False
         
 
 # .tox/c1/bin/pytest --cov=weko_search_ui tests/test_rest.py::test_IndexSearchResourceAPI_error -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp

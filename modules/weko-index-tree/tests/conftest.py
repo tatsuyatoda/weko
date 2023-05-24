@@ -73,7 +73,6 @@ from invenio_records import InvenioRecords
 from invenio_search import InvenioSearch
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 from simplekv.memory.redisstore import RedisStore
-from invenio_oaiharvester.models import HarvestSettings
 from invenio_stats import InvenioStats
 from invenio_admin import InvenioAdmin
 from invenio_search import RecordsSearch
