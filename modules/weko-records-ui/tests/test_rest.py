@@ -98,7 +98,6 @@ def test_WekoRecordsResource(app, records):
         res = client.get('/v1.0/records/1/detail',content_type='application/json')
         assert res.status_code == 200
         try:
-            print(res.get_data())
             json.loads(res.get_data())
             assert True
         except:
@@ -127,9 +126,6 @@ def test_WekoRecordsResource_error(app, records):
                    MagicMock(side_effect=PermissionError())):
             res = client.get('/v1.0/records/1/detail',content_type='application/json')
             assert res.status_code == 403
-        
-        # res = client.get('/v1.0/records/1/detail',content_type='application/json')
-        # assert res.status_code == 403
         
         res = client.get('/v1.0/records/100/detail',content_type='application/json')
         assert res.status_code == 404
@@ -173,8 +169,8 @@ def test_WekoRecordsStats_error(app, records):
             assert res.status_code == 403
         
         err_query_date = '?date=2023-15'
-        # res = client.get(url,content_type='application/json')
-        # assert res.status_code == 403
+        res = client.get(url,content_type='application/json')
+        assert res.status_code == 404
         
         res = client.get('/v1.0/records/100/stats',content_type='application/json')
         assert res.status_code == 404
@@ -217,9 +213,6 @@ def test_WekoFilesStats_error(app, records):
             res = client.get(url,content_type='application/json')
             assert res.status_code == 403
         
-        # res = client.get(url,content_type='application/json')
-        # assert res.status_code == 403
-        
         res = client.get('/v1.0/records/100/detail',content_type='application/json')
         assert res.status_code == 404
         
@@ -232,13 +225,13 @@ def test_WekoFilesGet(app, records):
 
     app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
     with app.test_client() as client:
-        res = client.get('/v1.0/records/1/files/helloworld.pdf',content_type='application/json')
+        res = client.get('/v1.0/records/1/files/helloworld.pdf?mode=preview',content_type='application/json')
         assert res.status_code == 200
 
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoFilesGet_error -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
 def test_WekoFilesGet_error(app, records):
       
-    url = '/v1.0/records/1/files/helloworld.pdf'
+    url = '/v1.0/records/1/files/helloworld.pdf?mode=preview'
     
     app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
     with app.test_client() as client:
@@ -248,7 +241,10 @@ def test_WekoFilesGet_error(app, records):
         res = client.get(url,content_type='application/json', headers=headers)
         assert res.status_code == 304
         
-        res = client.get('/ver1/records/1/detail',content_type='application/json')
+        res = client.get('/ver1.0/records/1/files/helloworld.pdf?mode=preview',content_type='application/json')
+        assert res.status_code == 400
+
+        res = client.get('/v1.0/records/1/files/helloworld.pdf',content_type='application/json')
         assert res.status_code == 400
         
         with patch('weko_index_tree.utils.get_user_roles', 
@@ -256,10 +252,10 @@ def test_WekoFilesGet_error(app, records):
             res = client.get(url,content_type='application/json')
             assert res.status_code == 403
         
-        res = client.get('/v1.0/records/100/detail',content_type='application/json')
+        res = client.get('/v1.0/records/100/files/helloworld.pdf?mode=preview',content_type='application/json')
         assert res.status_code == 404
         
-        res = client.get('/v1.0/records/100/detail',content_type='application/json')
+        res = client.get('/v1.0/records/1/files/nofile.pdf?mode=preview',content_type='application/json')
         assert res.status_code == 404
         
         with patch('weko_deposit.api.WekoRecord.get_record', MagicMock(side_effect=SQLAlchemyError())):
