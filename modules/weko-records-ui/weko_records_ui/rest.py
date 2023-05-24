@@ -354,6 +354,9 @@ class WekoRecordsStats(ContentNegotiatedMethodView):
 
         except ElasticsearchException:
             raise InternalServerError()          
+
+        except PermissionError:
+            raise PermissionError()
                 
         except Exception:
             raise InternalServerError()
@@ -453,6 +456,9 @@ class WekoFilesStats(ContentNegotiatedMethodView):
         except ElasticsearchException:
             raise InternalServerError()
 
+        except PermissionError:
+            raise PermissionError()
+
         except Exception:
             raise InternalServerError()
           
@@ -537,7 +543,7 @@ class WekoFilesGet(ContentNegotiatedMethodView):
             raise ModeNotFoundRESTError()
 
         except PermissionError:
-            raise ModeNotFoundRESTError()
+            raise PermissionError()
 
         except FilesNotFoundRESTError:
             raise FilesNotFoundRESTError()
