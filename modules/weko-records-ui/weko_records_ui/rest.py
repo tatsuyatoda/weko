@@ -349,6 +349,9 @@ class WekoRecordsStats(ContentNegotiatedMethodView):
         except PIDDoesNotExistError:
             raise RecordsNotFoundRESTError()
 
+        except DateFormatRESTError:
+            raise DateFormatRESTError()
+
         except SQLAlchemyError:
             raise InternalServerError()
 

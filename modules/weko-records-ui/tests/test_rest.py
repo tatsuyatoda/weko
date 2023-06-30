@@ -76,7 +76,7 @@ def test_create_blueprint(app):
 
 
 # WekoRecordsCitesResource
-def test_WekoRecordsCitesResource(app, records):
+def test_WekoRecordsCitesResource(app, records, users):
     data1 = MagicMock()
     data2 = {"1": 1}
     values = {}
@@ -91,7 +91,7 @@ def test_WekoRecordsCitesResource(app, records):
                 assert WekoRecordsCitesResource.get(pid_value, pid_value)
 
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoRecordsResource -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
-def test_WekoRecordsResource(app, records):
+def test_WekoRecordsResource(app, records, users):
 
     app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
     with app.test_client() as client:
@@ -104,7 +104,7 @@ def test_WekoRecordsResource(app, records):
             assert False
 
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoRecordsResource_error -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
-def test_WekoRecordsResource_error(app, records):
+def test_WekoRecordsResource_error(app, records, users):
 
     def dammy_permission():
         return False
@@ -135,7 +135,7 @@ def test_WekoRecordsResource_error(app, records):
             assert res.status_code == 500
 
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoRecordsStats -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
-def test_WekoRecordsStats(app, records):
+def test_WekoRecordsStats(app, records, users):
 
     app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
     with app.test_client() as client:
@@ -148,7 +148,7 @@ def test_WekoRecordsStats(app, records):
             assert False
 
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoRecordsStats_error -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
-def test_WekoRecordsStats_error(app, records):
+def test_WekoRecordsStats_error(app, records, users):
     
     url = '/v1.0/records/1/stats'
     
@@ -169,8 +169,8 @@ def test_WekoRecordsStats_error(app, records):
             assert res.status_code == 403
         
         err_query_date = '?date=2023-15'
-        res = client.get(url,content_type='application/json')
-        assert res.status_code == 404
+        res = client.get(url + err_query_date,content_type='application/json')
+        assert res.status_code == 400
         
         res = client.get('/v1.0/records/100/stats',content_type='application/json')
         assert res.status_code == 404
@@ -180,7 +180,7 @@ def test_WekoRecordsStats_error(app, records):
             assert res.status_code == 500
 
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoFilesStats -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
-def test_WekoFilesStats(app, records):
+def test_WekoFilesStats(app, records, users):
 
     app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
     with app.test_client() as client:
@@ -193,7 +193,7 @@ def test_WekoFilesStats(app, records):
             assert False
 
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoFilesStats_error -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
-def test_WekoFilesStats_error(app, records):
+def test_WekoFilesStats_error(app, records, users):
       
     url = '/v1.0/records/1/files/helloworld.pdf/stats'
     
@@ -221,7 +221,7 @@ def test_WekoFilesStats_error(app, records):
             assert res.status_code == 500
 
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoFilesGet -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
-def test_WekoFilesGet(app, records):
+def test_WekoFilesGet(app, records, users):
 
     app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
     with app.test_client() as client:
@@ -229,7 +229,7 @@ def test_WekoFilesGet(app, records):
         assert res.status_code == 200
 
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoFilesGet_error -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
-def test_WekoFilesGet_error(app, records):
+def test_WekoFilesGet_error(app, records, users):
       
     url = '/v1.0/records/1/files/helloworld.pdf?mode=preview'
     

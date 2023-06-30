@@ -106,7 +106,6 @@ class WekoRanking(ContentNegotiatedMethodView):
     # @need_record_permission('read_permission_factory')
     def get(self, **kwargs):
         """Get ranking json."""
-        from .config import WEKO_RANKING_API_VERSION
         version = kwargs.get('version')
         get_index = WEKO_RANKING_API_VERSION.get(version)
         if get_index:
@@ -137,7 +136,7 @@ class WekoRanking(ContentNegotiatedMethodView):
               
             if not settings.rankings[ranking_type]:
                 raise PermissionError()
-              
+            
             for k in settings.rankings.keys():
                 if k != ranking_type:
                     settings.rankings[k] = False
@@ -145,7 +144,7 @@ class WekoRanking(ContentNegotiatedMethodView):
             item_period = request.values.get('item_period', type=int)
             if item_period:
                 settings.new_item_period = int(item_period)
-            
+
             statistical_period = request.values.get('statistical_period', type=int)
             if statistical_period:
                 settings.statistical_period = int(statistical_period)
@@ -154,7 +153,7 @@ class WekoRanking(ContentNegotiatedMethodView):
             if display_rank:
                 settings.display_rank = int(display_rank)
             result = get_ranking(settings)
-            
+        
             # Check Etag
             etag = generate_etag(str(result).encode('utf-8'))
             if check_etag(etag):
