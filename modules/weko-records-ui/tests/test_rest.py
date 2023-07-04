@@ -1,5 +1,6 @@
 import pytest
 import json
+import copy
 from mock import patch, MagicMock
 from flask import Blueprint
 
@@ -93,7 +94,8 @@ def test_WekoRecordsCitesResource(app, records, users):
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoRecordsResource -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
 def test_WekoRecordsResource(app, records, users):
 
-    app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
+    config = copy.deepcopy(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS'])
+    app.register_blueprint(create_blueprint(config))
     with app.test_client() as client:
         res = client.get('/v1.0/records/1/detail',content_type='application/json')
         assert res.status_code == 200
@@ -111,7 +113,8 @@ def test_WekoRecordsResource_error(app, records, users):
     
     url = '/v1.0/records/1/detail'
     
-    app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
+    config = copy.deepcopy(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS'])
+    app.register_blueprint(create_blueprint(config))
     with app.test_client() as client:
         res = client.get('/v1.0/records/1/detail',content_type='application/json')
         headers = {}
@@ -137,7 +140,8 @@ def test_WekoRecordsResource_error(app, records, users):
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoRecordsStats -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
 def test_WekoRecordsStats(app, records, users):
 
-    app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
+    config = copy.deepcopy(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS'])
+    app.register_blueprint(create_blueprint(config))
     with app.test_client() as client:
         res = client.get('/v1.0/records/1/stats',content_type='application/json')
         assert res.status_code == 200
@@ -152,7 +156,8 @@ def test_WekoRecordsStats_error(app, records, users):
     
     url = '/v1.0/records/1/stats'
     
-    app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
+    config = copy.deepcopy(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS'])
+    app.register_blueprint(create_blueprint(config))
     with app.test_client() as client:
         res = client.get(url,content_type='application/json')
         headers = {}
@@ -182,7 +187,8 @@ def test_WekoRecordsStats_error(app, records, users):
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoFilesStats -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
 def test_WekoFilesStats(app, records, users):
 
-    app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
+    config = copy.deepcopy(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS'])
+    app.register_blueprint(create_blueprint(config))
     with app.test_client() as client:
         res = client.get('/v1.0/records/1/files/helloworld.pdf/stats',content_type='application/json')
         assert res.status_code == 200
@@ -197,7 +203,8 @@ def test_WekoFilesStats_error(app, records, users):
       
     url = '/v1.0/records/1/files/helloworld.pdf/stats'
     
-    app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
+    config = copy.deepcopy(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS'])
+    app.register_blueprint(create_blueprint(config))
     with app.test_client() as client:
         res = client.get(url,content_type='application/json')
         headers = {}
@@ -223,7 +230,8 @@ def test_WekoFilesStats_error(app, records, users):
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_rest.py::test_WekoFilesGet -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-search-ui/.tox/c1/tmp
 def test_WekoFilesGet(app, records, users):
 
-    app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
+    config = copy.deepcopy(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS'])
+    app.register_blueprint(create_blueprint(config))
     with app.test_client() as client:
         res = client.get('/v1.0/records/1/files/helloworld.pdf?mode=preview',content_type='application/json')
         assert res.status_code == 200
@@ -233,7 +241,8 @@ def test_WekoFilesGet_error(app, records, users):
       
     url = '/v1.0/records/1/files/helloworld.pdf?mode=preview'
     
-    app.register_blueprint(create_blueprint(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS']))
+    config = copy.deepcopy(app.config['WEKO_RECORDS_UI_CITES_REST_ENDPOINTS'])
+    app.register_blueprint(create_blueprint(config))
     with app.test_client() as client:
         res = client.get(url,content_type='application/json')
         headers = {}

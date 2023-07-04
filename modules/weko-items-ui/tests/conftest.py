@@ -161,6 +161,8 @@ def base_app(instance_path):
         instance_path=instance_path,
         static_folder=join(instance_path, "static"),
     )
+    os.environ['INVENIO_REDIS_HOST']='redis'
+    os.environ['INVENIO_WEB_HOST_NAME'] = 'weko3.example.org'
     app_.config.update(
         SECRET_KEY="SECRET_KEY",
         TESTING=True,

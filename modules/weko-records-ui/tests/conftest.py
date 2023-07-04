@@ -180,6 +180,8 @@ def base_app(instance_path):
     ] = "/deposits/publish/<{0}:pid_value>".format(_PID)
 
     # os.environ['FPDF_FONT_DIR'] = "/code/modules/weko-records-ui/weko_records_ui/fonts/"
+    os.environ['INVENIO_REDIS_HOST']='redis'
+    os.environ['INVENIO_WEB_HOST_NAME'] = 'weko3.example.org'
     app_.config.update(
         CELERY_ALWAYS_EAGER=True,
         CELERY_CACHE_BACKEND="memory",

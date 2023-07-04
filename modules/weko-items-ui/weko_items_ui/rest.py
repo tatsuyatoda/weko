@@ -129,7 +129,7 @@ class WekoRanking(ContentNegotiatedMethodView):
                 upd_data.rankings = dafault_data['rankings']
                 RankingSettings.update(data=upd_data)
                 settings = RankingSettings.get()
-                
+
             # param check
             if ranking_type not in settings.rankings.keys():
                 raise NoRankingtypeError()
@@ -141,11 +141,11 @@ class WekoRanking(ContentNegotiatedMethodView):
                 if k != ranking_type:
                     settings.rankings[k] = False
             # option param setting
-            item_period = request.values.get('item_period', type=int)
+            item_period = request.values.get('item_period')
             if item_period:
                 settings.new_item_period = int(item_period)
 
-            statistical_period = request.values.get('statistical_period', type=int)
+            statistical_period = request.values.get('statistical_period')
             if statistical_period:
                 settings.statistical_period = int(statistical_period)
                 
