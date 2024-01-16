@@ -4810,6 +4810,7 @@ function validateThumbnails(rootScope, scope, itemSizeCheckFlg, files) {
               this.saveDataJsonCallback(item_save_uri, startLoading);
               this.saveFeedbackMailListCallback(currentActionId);
               this.saveRequestMailListCallback(currentActionId);
+              this.saveItemApplicationCallback(currentActionId);
             } else {
               $("#inputModal").html(error_message);
               $("#allModal").modal("show");
@@ -4957,6 +4958,44 @@ function validateThumbnails(rootScope, scope, itemSizeCheckFlg, files) {
           },
           error: function(data, status) {
             var modalcontent =  "Cannot save Request-Mail list!";
+            $("#inputModal").html(modalcontent);
+            $("#allModal").modal("show");
+            result = false;
+          }
+        });
+        return result;
+      };
+
+      $scope.saveItemApplicationCallback = function(cur_action_id){
+        const activityID = $("#activity_id").text();
+        const actionID = cur_action_id;
+        const display_item_application_btn = $("#display_item_application_checkbox").prop('checked');
+        const terms_without_contents = $("#terms_without_contents").val();
+        const workflow_for_item_application = $("#workflow_for_item_application").val();
+      
+
+        let result = true;
+        if ($.isEmptyObject(workflow_for_item_application)) {
+          return result;
+        }
+        let request_body = {
+          'is_display_item_application_button': display_item_application_btn,
+          'terms_without_contents': terms_without_contents,
+          'workflow_for_item_application': workflow_for_item_application
+        }
+        $.ajax({
+          url: '/workflow/save_item_application' + '/' + activityID + '/' + actionID,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          method: 'POST',
+          async: false,
+          data: JSON.stringify(request_body),
+          dataType: "json",
+          success: function(data, stauts) {
+          },
+          error: function(data, status) {
+            var modalcontent =  "Cannot save usage application without contents";
             $("#inputModal").html(modalcontent);
             $("#allModal").modal("show");
             result = false;

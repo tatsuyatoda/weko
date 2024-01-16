@@ -37,7 +37,7 @@ from weko_admin.models import AdminSettings
 from weko_workflow.schema.marshmallow import ActionSchema, \
     ActivitySchema, GetRequestMailListSchema, ResponseMessageSchema, CancelSchema, PasswdSchema, LockSchema,\
     ResponseLockSchema, LockedValueSchema, GetFeedbackMailListSchema, SaveActivityResponseSchema,\
-    SaveActivitySchema, CheckApprovalSchema,ResponseUnlockSchema, GetRequestMailListSchema
+    SaveActivitySchema, CheckApprovalSchema,ResponseUnlockSchema, GetItemApplicationSchema
 from weko_workflow.schema.utils import get_schema_action, type_null_check
 from marshmallow.exceptions import ValidationError
 
@@ -2388,6 +2388,37 @@ def save_request_maillist(activity_id='0', action_id='0'):
         current_app.logger.exception("Unexpected error occured.")
     return jsonify(code=-1, msg=_('Error'))
 
+@workflow_blueprint.route(
+    '/save_item_application/<string:activity_id>/<int:action_id>',
+    methods=['POST'])
+@login_required
+@check_authority
+def save_item_application(activity_id='0', action_id='0'):
+    
+    try:
+        if request.headers['Content-Type'] != 'application/json':
+            """Check header of request"""
+            return jsonify(code=-1, msg=_('Header Error'))
+
+        request_body = request.get_json(force=True)
+        workflow_for_item_application = request_body.get('workflow_for_item_application', '')
+        terms_without_contents = request_body.get('terms_without_contents', '')
+        is_display_item_application_button = request_body.get('is_display_item_application_button', False)
+        item_application = {
+            "workflow" : workflow_for_item_application,
+            "terms" : terms_without_contents
+        }
+        work_activity = WorkActivity()
+        work_activity.create_or_update_activity_item_application(
+            activity_id=activity_id,
+            item_application=item_application,
+            is_display_item_application_button= is_display_item_application_button
+        )
+        return jsonify(code=0, msg=_('Success'))
+    except Exception:
+        current_app.logger.exception("Unexpected error occured.")
+    return jsonify(code=-1, msg=_('Error'))
+
 
 @workflow_blueprint.route('/get_feedback_maillist/<string:activity_id>',
                  methods=['GET'])
@@ -2528,6 +2559,29 @@ def get_request_maillist(activity_id='0'):
         else:
             res = ResponseMessageSchema().load({'code':0,'msg':'Empty!'})
             return jsonify(res.data), 200
+    except Exception:
+        current_app.logger.exception("Unexpected error:")
+    res = ResponseMessageSchema().load({'code':-1,'msg':_('Error')})
+    return jsonify(res.data), 400
+
+@workflow_blueprint.route('/get_item_application/<string:activity_id>', methods=['GET'])
+@login_required
+def get_item_application(activity_id='0'):
+    check_flg = type_null_check(activity_id, str)
+    if not check_flg:
+        current_app.logger.error("get_request_maillist: argument error")
+        res = ResponseMessageSchema().load({"code":-1, "msg":"arguments error"})
+        return jsonify(res.data), 400
+    try:
+        item_application = WorkActivity().get_item_application(
+            activity_id=activity_id)
+        res = GetItemApplicationSchema().load({
+            'code':1,
+            'msg':_('Success'),
+            'item_application': item_application.item_application,
+            'is_display_item_application': item_application.display_item_application_button
+        })
+        return jsonify(res.data), 200
     except Exception:
         current_app.logger.exception("Unexpected error:")
     res = ResponseMessageSchema().load({'code':-1,'msg':_('Error')})
