@@ -48,7 +48,7 @@ class NoneContentsApproval extends React.Component{
                         <select class="form-control" id="workflow_for_item_application">
                             <option value=""></option>
                             {workflowList.map((workflowName,index) => (
-                            <option>{workflowName.flows_name}</option>
+                            <option value={workflowName.id}>{workflowName.flows_name}</option>
                             ))}
                         </select>
                     </div>
@@ -63,7 +63,7 @@ class NoneContentsApproval extends React.Component{
                         <select class="form-control" id="terms_without_contents">
                             <option value=""></option>
                             {termsList.map((TermsName,index) => (
-                            <option>{TermsName.name}</option>
+                            <option value={TermsName.id}>{TermsName.name}</option>
                             ))}
                         </select>
                     </div>
