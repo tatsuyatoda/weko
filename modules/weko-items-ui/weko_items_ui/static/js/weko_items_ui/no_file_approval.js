@@ -10,6 +10,28 @@ class NoneContentsApproval extends React.Component{
         }
     }
 
+    componentDidMount() {
+        const activityID = $("#activity_id").text();
+        let item_application = [];
+        let display_item_application_button = false
+        $.ajax({
+            url: "/workflow/get_item_application/" + activityID,
+            async: false,
+            method: "GET",
+            success: function (response) {
+            if (response.code) {
+                item_application = response.item_application || {};
+                display_item_application_button = response.is_display_item_application_button || false
+            }
+            },
+            error: function(jqXHR, status) {
+                alert(jqXHR.responseJSON.msg);
+            }
+        })
+        this.setState({showNoneContentsApproval:display_item_application_button})
+    }
+    
+
     getDataInit() {
         let dataInit = {'workflows': [], 'roles': []};
         $.ajax({
@@ -22,11 +44,12 @@ class NoneContentsApproval extends React.Component{
           error: function (data, status) {}
         })
         return dataInit
-      } 
+      }
 
     render() {
-        const workflowList = this.getDataInit()['init_workflows']
-        const termsList = this.getDataInit()['init_terms']
+        const itemApplicationList = this.getDataInit()
+        const workflowList = itemApplicationList['init_workflows']
+        const termsList = itemApplicationList['init_terms']
         return (
         <div>
             <div className="row">
@@ -47,8 +70,8 @@ class NoneContentsApproval extends React.Component{
                     <div class="col-sm-9">
                         <select class="form-control" id="workflow_for_item_application">
                             <option value=""></option>
-                            {workflowList.map((workflowName,index) => (
-                            <option value={workflowName.id}>{workflowName.flows_name}</option>
+                            {workflowList.map((workflow,index) => (
+                            <option value={workflow.id}>{workflow.flows_name}</option>
                             ))}
                         </select>
                     </div>
@@ -62,8 +85,8 @@ class NoneContentsApproval extends React.Component{
                     <div class="col-sm-9">
                         <select class="form-control" id="terms_without_contents">
                             <option value=""></option>
-                            {termsList.map((TermsName,index) => (
-                            <option value={TermsName.id}>{TermsName.name}</option>
+                            {termsList.map((Terms,index) => (
+                            <option value={Terms.id}>{Terms.name}</option>
                             ))}
                         </select>
                     </div>

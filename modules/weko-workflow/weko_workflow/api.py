@@ -1242,7 +1242,7 @@ class WorkActivity(object):
                 activity_id=activity_id).one_or_none()
             return activity_request_mail
         
-    def get_item_application(self, activity_id):
+    def get_activity_item_application(self, activity_id):
         with db.session.no_autoflush:
             item_application = ActivityItemApplication.query.filter_by(
                 activity_id=activity_id).one_or_none()

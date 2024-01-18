@@ -300,7 +300,8 @@
                   <div id="none-contents-approval"></div>
                   <input id="no_file_approval_checkbox_label" type="hidden" value="{{_('Set up the application WorkFlow')}}" />
                   <input id="no_file_approval_label" type="hidden" value="{{_('WorkFlow')}}" />
-                  <input id="terms_and_conditions_label" type="hidden" value="{{_('Terms and Conditions')}}" />                  
+                  <input id="terms_and_conditions_label" type="hidden" value="{{_('Terms and Conditions')}}" />
+                  <input id="invalid-item-application-format" type="hidden" value="{{_('File and item application cannot be set at the same time')}}" />                  
                   {%- endblock none_contents_approval %}
 
                   {% if record|length %} <!-- Check Item Registration is edit mode then show version_management -->

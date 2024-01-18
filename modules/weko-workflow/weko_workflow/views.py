@@ -68,7 +68,7 @@ from weko_deposit.pidstore import get_record_identifier, \
     get_record_without_version
 from weko_deposit.signals import item_created
 from weko_items_ui.api import item_login
-from weko_records.api import FeedbackMailList, RequestMailList, ItemLink
+from weko_records.api import FeedbackMailList, RequestMailList, ItemLink, ItemApplication
 from weko_records.models import ItemMetadata
 from weko_records.serializers.utils import get_item_type_name
 from weko_records_ui.models import FilePermission
@@ -1538,7 +1538,10 @@ def next_action(activity_id='0', action_id=0):
                 "WEKO_WORKFLOW_ITEM_REGISTRATION_ACTION_ID", 3))
         activity_request_mail = work_activity.get_activity_request_mail(
             activity_id=activity_id)
-        if action_feedbackmail or activity_request_mail:
+        activity_item_application = work_activity.get_activity_item_application(
+            activity_id=activity_id
+        )
+        if action_feedbackmail or activity_request_mail or activity_item_application:
             item_ids = [item_id]
             if not recid:
                 if ".0" in current_pid.pid_value:
@@ -1580,6 +1583,14 @@ def next_action(activity_id='0', action_id=0):
                 )
             else:
                 RequestMailList.delete_by_list_item_id(item_ids)
+
+            if activity_item_application and activity_item_application.item_application:
+                ItemApplication.update_by_list_item_id(
+                    item_ids=item_ids,
+                    item_application=activity_item_application.item_application
+                )
+            else:
+                ItemApplication.delete_by_list_item_id(item_ids)
 
         deposit.update_feedback_mail()
         deposit.update_request_mail()
@@ -2573,15 +2584,19 @@ def get_item_application(activity_id='0'):
         res = ResponseMessageSchema().load({"code":-1, "msg":"arguments error"})
         return jsonify(res.data), 400
     try:
-        item_application = WorkActivity().get_item_application(
+        item_application_and_button = WorkActivity().get_activity_item_application(
             activity_id=activity_id)
-        res = GetItemApplicationSchema().load({
-            'code':1,
-            'msg':_('Success'),
-            'item_application': item_application.item_application,
-            'is_display_item_application': item_application.display_item_application_button
-        })
-        return jsonify(res.data), 200
+        if item_application_and_button:
+            res = GetItemApplicationSchema().load({
+                'code':1,
+                'msg':_('Success'),
+                'item_application': item_application_and_button.item_application,
+                'is_display_item_application_button': item_application_and_button.display_item_application_button
+            })
+            return jsonify(res.data), 200
+        else:
+            res = ResponseMessageSchema().load({'code':0,'msg':'Empty!'})
+            return jsonify(res.data), 200
     except Exception:
         current_app.logger.exception("Unexpected error:")
     res = ResponseMessageSchema().load({'code':-1,'msg':_('Error')})

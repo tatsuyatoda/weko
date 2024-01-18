@@ -89,7 +89,7 @@ class GetRequestMailListSchema(ResponseSchema):
     is_display_request_button = fields.Boolean(required=True)
 
 class GetItemApplicationSchema(ResponseSchema):
-    item_application = fields.List(fields.Dict(),allow_none=True)
+    item_application = fields.Dict(allow_none=True)
     is_display_item_application_button = fields.Boolean(required=True)
 
 class SaveActivitySchema(Schema):

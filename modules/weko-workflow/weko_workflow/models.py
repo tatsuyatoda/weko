@@ -1111,7 +1111,7 @@ class ActivityItemApplication(db.Model, TimestampMixin):
     """Activity id of Activity Action."""
 
     display_item_application_button = db.Column(
-        db.Boolean(name='display_request_button'),
+        db.Boolean(name='display_item_application_button'),
         nullable=False, 
         default=False, 
         server_default='0')

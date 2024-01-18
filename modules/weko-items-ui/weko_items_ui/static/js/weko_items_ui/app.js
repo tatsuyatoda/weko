@@ -3762,6 +3762,18 @@ function validateThumbnails(rootScope, scope, itemSizeCheckFlg, files) {
         return emais_info['invalid_emails'];
       }
 
+      $scope.getItemApplicationCheckBox = function(){
+        const ItemApplicationCheckBox = $('#display_item_application_checkbox');
+        console.log('ItemApplicationCheckBox', ItemApplicationCheckBox);
+        return ItemApplicationCheckBox
+      }
+
+      $scope.getItemApplication = function(){
+        const ItemApplication = $('#workflow_for_item_application');
+        console.log('ItemApplication', ItemApplication);
+        return ItemApplication
+      }
+
       $scope.getMailList = function(list_id) {
         const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         let mails_info = {
@@ -4810,7 +4822,14 @@ function validateThumbnails(rootScope, scope, itemSizeCheckFlg, files) {
               this.saveDataJsonCallback(item_save_uri, startLoading);
               this.saveFeedbackMailListCallback(currentActionId);
               this.saveRequestMailListCallback(currentActionId);
-              this.saveItemApplicationCallback(currentActionId);
+              if(($("#display_item_application_checkbox").prop('checked') == true) && ($rootScope.filesVM.files.length > 0)){
+                let modalcontent = $('#invalid-item-application-format').val();
+                $("#inputModal").html(modalcontent);
+                $("#allModal").modal("show");
+                return;
+              }else{
+                this.saveItemApplicationCallback(currentActionId);
+              }
             } else {
               $("#inputModal").html(error_message);
               $("#allModal").modal("show");
