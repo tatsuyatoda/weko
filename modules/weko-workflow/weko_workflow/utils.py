@@ -23,6 +23,7 @@
 import base64
 import json
 import os
+import re
 from collections import OrderedDict
 from copy import deepcopy
 from datetime import datetime, timedelta
@@ -61,6 +62,7 @@ from weko_records.api import FeedbackMailList, RequestMailList, ItemsMetadata, I
     ItemTypes, Mapping
 from weko_records.models import ItemMetadata, ItemType
 from weko_records.serializers.utils import get_full_mapping, get_item_type_name
+from weko_records_ui.api import get_item_provide_list
 from weko_records_ui.models import FilePermission
 from weko_redis import RedisConnection
 from weko_user_profiles.config import \
@@ -2291,12 +2293,17 @@ def set_mail_info(item_info, activity_detail, guest_user=False):
             mail_info['landing_url'] = urljoin(request.url_root, url_for(
                 'invenio_records_ui.recid', pid_value=record.pid.pid_value))
             file_info = next((file_data for file_data in record.get_file_data()
-                            if file_data.get('filename') == applying_filename))
+                            if file_data.get('filename') == applying_filename), {})
         if file_info:
             term_description_ja, term_description_en = extract_term_description(file_info)
             mail_info['terms_of_use_jp'] = term_description_ja
             mail_info['terms_of_use_en'] = term_description_en
-
+        elif re.fullmatch(r'recid/\d+(?:\.\d+)?', applying_filename):
+            pid_info = PersistentIdentifier.get('recid', applying_record_id)
+            provide_info = get_item_provide_list(pid_info.object_uuid)
+            term_description_ja, term_description_en = extract_term_description(provide_info)
+            mail_info['terms_of_use_jp'] = term_description_ja
+            mail_info['terms_of_use_en'] = term_description_en
     return mail_info
 
 
