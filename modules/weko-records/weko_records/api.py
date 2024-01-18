@@ -2233,9 +2233,9 @@ class ItemApplication(object):
                 if query_object and query_object.item_application:
                     return query_object.item_application
                 else:
-                    return []
+                    return {}
         except SQLAlchemyError:
-            return []
+            return {}
 
     @classmethod
     def delete(cls, item_id):

@@ -2415,10 +2415,18 @@ def save_item_application(activity_id='0', action_id='0'):
         workflow_for_item_application = request_body.get('workflow_for_item_application', '')
         terms_without_contents = request_body.get('terms_without_contents', '')
         is_display_item_application_button = request_body.get('is_display_item_application_button', False)
-        item_application = {
-            "workflow" : workflow_for_item_application,
-            "terms" : terms_without_contents
-        }
+        terms_description_without_contents =request_body.get('terms_description_without_contents', '')
+        if terms_description_without_contents:
+            item_application = {
+                "workflow" : workflow_for_item_application,
+                "terms" : terms_without_contents,
+                "terms_description" : terms_description_without_contents
+            }
+        else:
+            item_application = {
+                "workflow" : workflow_for_item_application,
+                "terms" : terms_without_contents
+            }
         work_activity = WorkActivity()
         work_activity.create_or_update_activity_item_application(
             activity_id=activity_id,

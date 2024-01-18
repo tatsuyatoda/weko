@@ -4992,15 +4992,20 @@ function validateThumbnails(rootScope, scope, itemSizeCheckFlg, files) {
         const terms_without_contents = $("#terms_without_contents").val();
         const workflow_for_item_application = $("#workflow_for_item_application").val();
       
-
         let result = true;
         if ($.isEmptyObject(workflow_for_item_application)) {
           return result;
         }
+
+        if(terms_without_contents == "term_free"){
+          var terms_description_without_contents = $("#terms_description").val();
+        }
+
         let request_body = {
           'is_display_item_application_button': display_item_application_btn,
           'terms_without_contents': terms_without_contents,
-          'workflow_for_item_application': workflow_for_item_application
+          'workflow_for_item_application': workflow_for_item_application,
+          'terms_description_without_contents': terms_description_without_contents
         }
         $.ajax({
           url: '/workflow/save_item_application' + '/' + activityID + '/' + actionID,

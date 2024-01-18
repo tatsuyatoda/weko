@@ -6,7 +6,8 @@ class NoneContentsApproval extends React.Component{
     constructor(props){
         super(props);
         this.state = {
-            showNoneContentsApproval:false
+            showNoneContentsApproval:false,
+            showTextareaForTerms:false
         }
     }
 
@@ -46,6 +47,14 @@ class NoneContentsApproval extends React.Component{
         return dataInit
       }
 
+    TextareaForTerms(){
+        let term_id = $('#terms_without_contents').val();
+        if(term_id == "term_free"){
+            return true
+        }
+        return false
+    }
+
     render() {
         const itemApplicationList = this.getDataInit()
         const workflowList = itemApplicationList['init_workflows']
@@ -83,13 +92,21 @@ class NoneContentsApproval extends React.Component{
                         {TERMS_AND_CONDITIONS_LABEL}
                     </label>
                     <div class="col-sm-9">
-                        <select class="form-control" id="terms_without_contents">
+                        <select class="form-control" id="terms_without_contents" onChange={() => {this.setState({showTextareaForTerms : this.TextareaForTerms()})}} > 
                             <option value=""></option>
                             {termsList.map((Terms,index) => (
                             <option value={Terms.id}>{Terms.name}</option>
                             ))}
                         </select>
                     </div>
+                <div className={`row ${this.state.showTextareaForTerms ? 'show': 'hidden'}`}>
+                    <div className="col-sm-12 form-group schema-form-textarea">
+                        <label className="control-label col-sm-3"></label>
+                        <div class="col-sm-9">
+                            <textarea class="form-control" id="terms_description"></textarea>
+                        </div>
+                    </div>
+                </div>
                 </div>
             </div>
         </div>
