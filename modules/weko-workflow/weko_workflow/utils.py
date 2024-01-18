@@ -59,7 +59,7 @@ from weko_deposit.api import WekoDeposit, WekoRecord
 from weko_deposit.pidstore import get_record_without_version
 from weko_handle.api import Handle
 from weko_records.api import FeedbackMailList, RequestMailList, ItemsMetadata, ItemTypeNames, \
-    ItemTypes, Mapping
+    ItemTypes, Mapping, ItemApplication
 from weko_records.models import ItemMetadata, ItemType
 from weko_records.serializers.utils import get_full_mapping, get_item_type_name
 from weko_records_ui.api import get_item_provide_list
@@ -1516,6 +1516,15 @@ def prepare_edit_workflow(post_activity, recid, deposit):
                 activity_id=rtn.activity_id,
                 request_maillist=request_maillist,
                 is_display_request_button=True
+            )
+
+        item_application = ItemApplication.get_item_application_by_item_id(
+            item_id=recid.object_uuid)
+        if item_application:
+            activity.create_or_update_activity_item_application(
+                activity_id=rtn.activity_id,
+                item_application=item_application,
+                is_display_item_application_button=True
             )
 
     return rtn
