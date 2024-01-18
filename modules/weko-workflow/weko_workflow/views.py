@@ -649,6 +649,25 @@ def init_activity_guest():
 
 @workflow_blueprint.route('/activity/guest-user/<string:file_name>', methods=['GET'])
 def display_guest_activity(file_name=""):
+    """Display content application activity for guest user.
+
+    @param file_name:File name
+    @return:
+    """
+    render_guest_workflow(file_name=file_name)
+
+
+@workflow_blueprint.route('/activity/guest-user/recid/<string:record_id>', methods=['GET'])
+def display_guest_activity_item_application(record_id=""):
+    """Display item application activity for guest user.
+
+    @param record_id:File name
+    @return:
+    """
+    render_guest_workflow(file_name='recid/' + record_id)
+
+
+def render_guest_workflow(file_name=""):
     """Display activity for guest user.
 
     @param file_name:File name

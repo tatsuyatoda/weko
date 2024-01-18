@@ -3000,9 +3000,15 @@ def send_usage_application_mail_for_guest_user(guest_mail: str, temp_url: str, d
     file_info = None
     if record:
         file_info = next((file_data for file_data in record.get_file_data()
-                            if file_data.get('filename') == applying_filename))
+                            if file_data.get('filename') == applying_filename), {})
         if file_info:
             term_description_ja, term_description_en = extract_term_description(file_info)
+            mail_info['terms_of_use_jp'] = term_description_ja
+            mail_info['terms_of_use_en'] = term_description_en
+        elif re.fullmatch(r'recid/\d+(?:\.\d+)?', applying_filename):
+            pid_info = PersistentIdentifier.get('recid', applying_record_id)
+            provide_info = get_item_provide_list(pid_info.object_uuid)
+            term_description_ja, term_description_en = extract_term_description(provide_info)
             mail_info['terms_of_use_jp'] = term_description_ja
             mail_info['terms_of_use_en'] = term_description_en
 

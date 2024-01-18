@@ -358,12 +358,7 @@ def get_item_usage_workflow(record):
     if locale.get_language_name('en') == 'Japanese' and termsDescription_ja:
         termsDescription = termsDescription_ja
 
-    provide = provide_list.get("provide")
-    if provide:
-        for data in provide:
-            return termsDescription, data.get("workflow")
-
-    return termsDescription, None
+    return termsDescription, provide_list.get("workflow")
 
 
 @blueprint.app_template_filter('get_workflow_detail')
