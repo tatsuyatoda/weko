@@ -45,7 +45,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from weko_deposit.api import WekoRecord
 from weko_records.api import ItemTypes
 from weko_records.serializers import citeproc_v1
-from weko_records_ui.api import create_captcha_image, send_request_mail
+from weko_records_ui.api import create_captcha_image, send_request_mail, validate_captcha_answer
 from weko_workflow.api import WorkActivity, WorkFlow
 from weko_workflow.models import GuestActivity
 from weko_workflow.scopes import activity_scope
@@ -142,6 +142,16 @@ def create_blueprint(endpoints):
                 options.get('route'),
                 view_func=view_func,
                 methods=['GET'],
+            )
+        if endpoint == 'validate_captcha_answer':
+            view_func = CaptchaAnswerValidation.as_view(
+                CaptchaAnswerValidation.view_name.format(endpoint),
+                default_media_type=options.get('default_media_type'),
+            )
+            blueprint.add_url_rule(
+                options.get('route'),
+                view_func=view_func,
+                methods=['POST'],
             )
 
     return blueprint
@@ -672,6 +682,54 @@ class CreateCaptchaImage(ContentNegotiatedMethodView):
 
         if not result:
             current_app.logger.error(res_json)
+            raise InternalServerError()
+
+        response = make_response(jsonify(res_json), 200)
+        return response
+
+
+class CaptchaAnswerValidation(ContentNegotiatedMethodView):
+
+    view_name = 'records_ui_{0}'
+
+    def __init__(self, *args, **kwargs):
+        """Constructor."""
+        super(CaptchaAnswerValidation, self).__init__(*args, **kwargs)
+
+    @limiter.limit('')
+    def post(self, **kwargs):
+        """
+        Post file application.
+
+        Returns:
+            Result json.
+        """
+        version = kwargs.get('version')
+        func_name = f'post_{version}'
+        if func_name in [func[0] for func in inspect.getmembers(self, inspect.ismethod)]:
+            return getattr(self, func_name)(**kwargs)
+        else:
+            raise VersionNotFoundRESTError() # 400 Error
+
+    def post_v1(self, **kwargs):
+        # Get parameter
+        language = str(request.headers.get('Accept-Language', 'en'))
+        param_pretty = str(request.values.get('pretty', 'false'))
+
+        # Check pretty
+        check_pretty(param_pretty)
+
+        # Setting language
+        if language in current_app.config.get('WEKO_RECORDS_UI_API_ACCEPT_LANGUAGES'):
+            get_locale().language = language
+
+        # Get request mail senders
+        request_body = request.get_json(force=True, silent=True)
+
+        try:
+            __, res_json = validate_captcha_answer(request_body)
+        except SQLAlchemyError as ex:
+            current_app.logger.exception('DB access Error')
             raise InternalServerError()
 
         response = make_response(jsonify(res_json), 200)

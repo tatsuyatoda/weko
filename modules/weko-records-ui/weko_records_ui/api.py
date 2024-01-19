@@ -15,18 +15,18 @@ from weko_redis.redis import RedisConnection
 
 def send_request_mail(item_id, mail_info):
 
-    # Validate CAPTCHA
+    # Validate token
     captcha_key = mail_info.get('key')
-    calculation_result = mail_info.get('calculation_result')
-    if not captcha_key or not calculation_result:
+    authorization_token = mail_info.get('authorization_token')
+    if not captcha_key or not authorization_token:
         raise ContentsNotFoundError()
 
     redis_connection = RedisConnection()
     datastore = redis_connection.connection(db=current_app.config['CACHE_REDIS_DB'])
-    captcha_answer = datastore.hgetall(captcha_key)
-    encoded_calc_answer = captcha_answer.get('calculation_result'.encode())
-    if encoded_calc_answer is None or calculation_result is None or \
-        (int(encoded_calc_answer.decode()) != calculation_result):
+    captcha_info = datastore.hgetall(captcha_key)
+    encoded_token = captcha_info.get('authorization_token'.encode())
+    if encoded_token is None or authorization_token is None or \
+        (encoded_token.decode() != authorization_token):
         raise InvalidCaptchaError()
 
     # Get mail recipients
@@ -46,7 +46,7 @@ def send_request_mail(item_id, mail_info):
     except Exception as ex:
         # Invalid email
         raise InvalidEmailError() # 400 Error
-    
+
     try:
         mail_cfg = _load_mail_cfg_from_db()
         _set_flask_mail_cfg(mail_cfg)
@@ -76,10 +76,43 @@ def send_request_mail(item_id, mail_info):
     return True, res_json
 
 
+def validate_captcha_answer(captcha_answer):
+
+    expiration_seconds = current_app.config.get('WEKO_RECORDS_UI_CAPTCHA_EXPIRATION_SECONDS', 900)
+
+    # Validate CAPTCHA
+    captcha_key = captcha_answer.get('key')
+    calculation_result = captcha_answer.get('calculation_result')
+    if not captcha_key or not calculation_result:
+        raise ContentsNotFoundError()
+
+    redis_connection = RedisConnection()
+    datastore = redis_connection.connection(db=current_app.config['CACHE_REDIS_DB'])
+    captcha_answer = datastore.hgetall(captcha_key)
+    encoded_calc_answer = captcha_answer.get('calculation_result'.encode())
+    # if calculation validation failed
+    if encoded_calc_answer is None or calculation_result is None or \
+        (int(encoded_calc_answer.decode()) != calculation_result):
+        # delete Redis info
+        datastore.delete(captcha_key)
+        raise InvalidCaptchaError()
+
+    authorization_token = captcha_answer.get('authorization_token'.encode())
+
+    # Reset expiration seconds
+    datastore.expire(captcha_key, expiration_seconds)
+
+    # Create response
+    res_json = {
+        "authorization_token": authorization_token
+    }
+    return True, res_json
+
+
 def create_captcha_image():
 
     expiration_seconds = current_app.config.get('WEKO_RECORDS_UI_CAPTCHA_EXPIRATION_SECONDS', 900)
-    ttl = expiration_seconds - 300
+    ttl = min(expiration_seconds, current_app.config.get('WEKO_RECORDS_UI_CAPTCHA_TTL_SECONDS', expiration_seconds))
 
     # Get CAPTCHA info
     captcha_info = get_captcha_info()
@@ -89,16 +122,23 @@ def create_captcha_image():
     random_salt = ''.join([random.choice(string.ascii_letters + string.digits) for _ in range(10)])
     key = hashlib.sha1((current_dt.strftime('%Y/%m/%d-%H:%M:%S') + random_salt).encode()).hexdigest()
 
-    # Set calculation answer
+    # Create Authorization custom token
+    random_salt = ''.join([random.choice(string.ascii_letters + string.digits) for _ in range(10)])
+    authorization_token = hashlib.sha256((current_dt.strftime('%Y/%m/%d-%H:%M:%S') + random_salt).encode()).hexdigest()
+
+    # Set calculation answer and authorization token
     redis_connection = RedisConnection()
     datastore = redis_connection.connection(db=current_app.config['CACHE_REDIS_DB'])
     datastore.hset(key, 'calculation_result', captcha_info['answer'])
+    datastore.hset(key, 'authorization_token', authorization_token)
     datastore.expire(key, expiration_seconds)
 
     # Create response
     res_json = {
         "key": key,
         'image': captcha_info['image'],
-        'ttl': ttl 
+        'ttl': ttl
     }
     return True, res_json
+
+
