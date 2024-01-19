@@ -1962,7 +1962,7 @@ def check_terms_in_system_for_item_application(terms):
     if not terms:
         return True
     # 自由入力
-    if 'terms_free' == terms:
+    if 'term_free' == terms:
         return True
     # DBに利用規約を登録済みの場合
     for system_terms in system_terms_list:
