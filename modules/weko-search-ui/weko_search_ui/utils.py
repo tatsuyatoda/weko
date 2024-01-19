@@ -1345,7 +1345,6 @@ def register_item_metadata(item, root_path, is_gakuninrdm=False):
         deposit.remove_request_mail()
 
     item_application = item.get("item_application")
-    current_app.logger.debug("あああああ: {}".format(item_application))
     if item_application:
         if item_application.get("terms_description", ""):
             item_application["termsDescription"]=item_application.pop("terms_description", "")
