@@ -1899,6 +1899,11 @@ def handle_check_and_prepare_request_mail(list_record):
                 )
 
 def handle_check_and_prepare_item_application(list_record):
+    """Check item_application is existed in database and prepare data.
+    :argument
+        list_record -- {list} list record import.
+    :return
+    """
     for item in list_record:
         errors = []
         item_application = {}
@@ -1938,6 +1943,13 @@ def handle_check_and_prepare_item_application(list_record):
                 )
                 
 def check_exists_file_name(item):
+    """
+    Check value of file_name is existed in item[metadata]
+    :argument
+        item -- {json} item import
+    :return 
+        {boolean} has item value of file_name?
+    """
     file_meta_ids = []
     metadata = item["metadata"]
     for key, val in metadata.items():
@@ -1956,6 +1968,13 @@ def check_exists_file_name(item):
     return False
                     
 def check_terms_in_system_for_item_application(terms):
+    """
+    Check terms in terms of system
+    :argument
+        terms -- {String} system_terms.key
+    :return
+     {boolean} has system_terms terms?
+    """
     system_terms_list = get_restricted_access('terms_and_conditions')
     # DBに利用規約を登録していない場合
     # 未設定
