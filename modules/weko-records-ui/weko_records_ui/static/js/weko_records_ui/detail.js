@@ -197,11 +197,11 @@ require([
     }
     if ($(this).prop("checked") == true) {
       $nextActionBtn.removeClass("disabled");
-      $(this).attr("checked");
-      $nextActionBtn.attr("disabled", false);
+      $nextActionBtn.prop('disabled', false);
+      $('input[type="checkbox"][name="term_check"]').prop('checked', true)
     } else {
       $nextActionBtn.addClass("disabled");
-      $nextActionBtn.attr("disabled", true);
+      $nextActionBtn.prop('disabled', true);
     }
   });
 
@@ -249,11 +249,11 @@ require([
     let isTermsOnly = $("#is_terms_only").val();
     let startGuestWorkflowId = "#btn-start-guest-wf";
     let startNormalWorkflowId = "#btn-start-workflow";
-    let termsAndContirionModalId = "#term_and_condtion_modal";
+    let termsAndConditionModalId = "#term_and_condtion_modal";
     if(file_version_id != null) {
       startGuestWorkflowId = "#btn-start-guest-wf-" + file_version_id
       startNormalWorkflowId = "#btn-start-workflow-" + file_version_id
-      termsAndContirionModalId = "#term_and_condtion_modal-" + file_version_id
+      termsAndConditionModalId = "#term_and_condtion_modal-" + file_version_id
     }
     if (isGuest == "True" && isTermsOnly == "True") {
       const $btnStartGuestTermOnly=$(startGuestWorkflowId)
@@ -265,7 +265,7 @@ require([
       let flowId = $btnStartGuestTermOnly.data('guest_flow_id');
       var deferred = terms_only_guest_download(fileName,dataType,recordId,itemTypeId,workflowId,flowId);
       deferred.done(function(){
-        $(termsAndContirionModalId).modal("hide");
+        $(termsAndConditionModalId).modal("hide");
       });
     } else if(isGuest=="True"){
       let $confirmEmailBtn = $("#confirm_email_btn");
@@ -276,7 +276,7 @@ require([
       $confirmEmailBtn.attr("data-guest_itemtype_id", btnSender.data("guest_itemtype_id"));
       $confirmEmailBtn.attr("data-guest_workflow_id", btnSender.data("guest_workflow_id"));
       $confirmEmailBtn.attr("data-guest_flow_id", btnSender.data("guest_flow_id"));
-      $(termsAndContirionModalId).modal('toggle');
+      $(termsAndConditionModalId).modal('toggle');
       setTimeout(function () {
         $("#email_modal").modal("show");
       }, 0);
@@ -290,7 +290,7 @@ require([
       let itemTitle =$btnStartWorkflow.data('itemtitle');
       var deferred = startWorkflow(workflowId, communityId, recordId, fileName, itemTitle);
       deferred.done(function(){
-        $(termsAndContirionModalId).modal("hide");
+        $(termsAndConditionModalId).modal("hide");
       });
     }
   });
