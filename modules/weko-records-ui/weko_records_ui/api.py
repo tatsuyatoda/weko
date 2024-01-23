@@ -7,10 +7,9 @@ from flask_mail import Message
 import hashlib
 from invenio_mail.admin import _load_mail_cfg_from_db, _set_flask_mail_cfg
 
-
 from weko_records.api import RequestMailList
 from weko_records_ui.captcha import get_captcha_info
-from weko_records_ui.errors import ContentsNotFoundError, InternalServerError, InvalidCaptchaError, InvalidEmailError
+from weko_records_ui.errors import AuthenticationRequiredError, ContentsNotFoundError, InternalServerError, InvalidCaptchaError, InvalidEmailError, RequiredItemNotExistError
 from weko_redis.redis import RedisConnection
 
 def send_request_mail(item_id, mail_info):
@@ -19,7 +18,7 @@ def send_request_mail(item_id, mail_info):
     captcha_key = mail_info.get('key')
     authorization_token = mail_info.get('authorization_token')
     if not captcha_key or not authorization_token:
-        raise ContentsNotFoundError()
+        raise RequiredItemNotExistError()
 
     redis_connection = RedisConnection()
     datastore = redis_connection.connection(db=current_app.config['CACHE_REDIS_DB'])
@@ -27,7 +26,7 @@ def send_request_mail(item_id, mail_info):
     encoded_token = captcha_info.get('authorization_token'.encode())
     if encoded_token is None or authorization_token is None or \
         (encoded_token.decode() != authorization_token):
-        raise InvalidCaptchaError()
+        raise AuthenticationRequiredError()
 
     # Get mail recipients
     recipients_json = RequestMailList.get_mail_list_by_item_id(item_id)
@@ -36,14 +35,18 @@ def send_request_mail(item_id, mail_info):
         raise ContentsNotFoundError()
 
     # Get request mail info
-    msg_sender = mail_info['from']
-    msg_subject = mail_info['subject']
+    msg_sender = mail_info.get('from')
+    msg_subject = mail_info.get('subject')
+    msg_message = mail_info.get('message')
+    if not msg_sender or not msg_subject or not msg_message:
+        raise RequiredItemNotExistError()
+
     msg_body = msg_sender + current_app.config.get("WEKO_RECORDS_UI_REQUEST_MESSAGE") + mail_info['message']
 
     # Validate request mail sender
     try :
         validate_email(msg_sender, check_deliverability=False)
-    except Exception as ex:
+    except Exception:
         # Invalid email
         raise InvalidEmailError() # 400 Error
 
@@ -83,8 +86,8 @@ def validate_captcha_answer(captcha_answer):
     # Validate CAPTCHA
     captcha_key = captcha_answer.get('key')
     calculation_result = captcha_answer.get('calculation_result')
-    if not captcha_key or not calculation_result:
-        raise ContentsNotFoundError()
+    if not captcha_key or (not calculation_result and calculation_result != 0):
+        raise RequiredItemNotExistError()
 
     redis_connection = RedisConnection()
     datastore = redis_connection.connection(db=current_app.config['CACHE_REDIS_DB'])

@@ -30,6 +30,8 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login import current_user
 from urllib import parse
+
+from redis import RedisError
 from invenio_db import db
 from invenio_oauth2server import require_api_auth, require_oauth_scopes
 from invenio_pidrelations.contrib.versioning import PIDVersioning
@@ -52,7 +54,7 @@ from weko_workflow.scopes import activity_scope
 from weko_workflow.utils import check_etag, check_pretty, init_activity_for_guest_user
 from werkzeug.http import generate_etag
 
-from .errors import ContentsNotFoundError, InternalServerError, InvalidEmailError, InvalidTokenError, InvalidWorkflowError, VersionNotFoundRESTError
+from .errors import ContentsNotFoundError, InternalServerError, InvalidEmailError, InvalidTokenError, InvalidWorkflowError, RequiredItemNotExistError, VersionNotFoundRESTError
 from .scopes import item_read_scope
 from .utils import create_limmiter
 from .views import escape_str, get_usage_workflow
@@ -620,7 +622,6 @@ class RequestMail(ContentNegotiatedMethodView):
         pid_value = kwargs.get('pid_value')
         pid = PersistentIdentifier.query.filter_by(
             pid_type='recid', pid_value=str(pid_value)).first()
-
         if not pid:
             raise ContentsNotFoundError() # 404 Error
 
@@ -628,12 +629,9 @@ class RequestMail(ContentNegotiatedMethodView):
         request_body = request.get_json(force=True, silent=True)
         msg_sender = request_body.get('from')
         if not msg_sender:
-            raise ContentsNotFoundError() # 404 Error
+            raise RequiredItemNotExistError() # 400 Error
 
         try:
-            # if is_guest:
-            #     __, res_json = send_request_mail(pid, request_body, mail_address=email)
-            # else:
             __, res_json = send_request_mail(pid.object_uuid, request_body)
         except SQLAlchemyError as ex:
             current_app.logger.exception('DB access Error')
@@ -728,8 +726,8 @@ class CaptchaAnswerValidation(ContentNegotiatedMethodView):
 
         try:
             __, res_json = validate_captcha_answer(request_body)
-        except SQLAlchemyError as ex:
-            current_app.logger.exception('DB access Error')
+        except RedisError as ex:
+            current_app.logger.exception('Redis access Error')
             raise InternalServerError()
 
         response = make_response(jsonify(res_json), 200)
