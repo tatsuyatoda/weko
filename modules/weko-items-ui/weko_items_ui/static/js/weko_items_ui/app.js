@@ -4998,7 +4998,7 @@ function validateThumbnails(rootScope, scope, itemSizeCheckFlg, files) {
         }
 
         if(terms_without_contents == "term_free"){
-          var terms_description_without_contents = $("#terms_description").val();
+          var terms_description_without_contents = $("#termsDescription").val();
         }
 
         let request_body = {

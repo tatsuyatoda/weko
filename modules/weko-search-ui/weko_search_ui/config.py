@@ -549,7 +549,7 @@ WEKO_EXPORT_TEMPLATE_BASIC_ID = [
     ".request_mail[0]",
     ".item_application.workflow",
     ".item_application.terms",
-    ".item_application.terms_description",
+    ".item_application.termsDescription",
     ".cnri",
     ".doi_ra",
     ".doi",

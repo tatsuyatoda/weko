@@ -2324,8 +2324,8 @@ def extract_term_description(file_info):
     """
     terms = file_info.get('terms')
     if terms == 'term_free':
-        terms_description = file_info.get('termsDescription', '')
-        return '', terms_description
+        termsDescription = file_info.get('termsDescription', '')
+        return '', termsDescription
     elif not terms:
         return '', ''
 

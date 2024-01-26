@@ -983,7 +983,7 @@ def make_stats_file(item_type_id, recids, list_item_role):
                     item_application = ItemApplication.get_item_application_by_item_id(record.id)
                     self.attr_data['item_application'][record_id] = {'workflow':item_application.get('workflow',""),
                                                                     'terms':item_application.get('terms',""),
-                                                                    'terms_description':item_application.get('termsDescription',"")}
+                                                                    'termsDescription':item_application.get('termsDescription',"")}
             return 0
 
         def get_max_items(self, item_attrs):
@@ -1178,7 +1178,7 @@ def make_stats_file(item_type_id, recids, list_item_role):
 
     records.get_item_application()
 
-    ret.extend(['.item_application.workflow','.item_application.terms','.item_application.terms_description',
+    ret.extend(['.item_application.workflow','.item_application.terms','.item_application.termsDescription',
                 '.cnri', '.doi_ra', '.doi', '.edit_mode'])
     ret_label.extend(['.ITEM_APPLICATION.WORKFLOW','.ITEM_APPLICATION.TERMS','.ITEM_APPLICATION.TERMS_DESCRIPTION',
                       '.CNRI', '.DOI_RA', '.DOI', 'Keep/Upgrade Version'])
@@ -1229,7 +1229,7 @@ def make_stats_file(item_type_id, recids, list_item_role):
         item_application = records.attr_data['item_application'].get(recid, {})
         records.attr_output[recid].append(item_application.get('workflow',''))
         records.attr_output[recid].append(item_application.get('terms',''))
-        records.attr_output[recid].append(item_application.get('terms_description',''))
+        records.attr_output[recid].append(item_application.get('termsDescription',''))
 
         pid_cnri = record.pid_cnri
         cnri = ''
@@ -2977,7 +2977,7 @@ def make_stats_file_with_permission(item_type_id, recids,
                     item_application = ItemApplication.get_item_application_by_item_id(record.id)
                     self.attr_data['item_application'][record_id] = {'workflow':item_application.get('workflow',""),
                                                                     'terms':item_application.get('terms',""),
-                                                                    'terms_description':item_application.get('termsDescription',"")}
+                                                                    'termsDescription':item_application.get('termsDescription',"")}
             return 0
 
         def get_max_items(self, item_attrs):
@@ -3171,7 +3171,7 @@ def make_stats_file_with_permission(item_type_id, recids,
 
     records.get_item_application()
 
-    ret.extend(['.item_application.workflow','.item_application.terms','.item_application.terms_description',
+    ret.extend(['.item_application.workflow','.item_application.terms','.item_application.termsDescription',
                 '.cnri', '.doi_ra', '.doi', '.edit_mode'])
     ret_label.extend(['.ITEM_APPLICATION.WORKFLOW','.ITEM_APPLICATION.TERMS','.ITEM_APPLICATION.TERMS_DESCRIPTION',
                       '.CNRI', '.DOI_RA', '.DOI', 'Keep/Upgrade Version'])
@@ -3217,7 +3217,7 @@ def make_stats_file_with_permission(item_type_id, recids,
         item_application = records.attr_data['item_application'].get(recid, {})
         records.attr_output[recid].append(item_application.get('workflow',''))
         records.attr_output[recid].append(item_application.get('terms',''))
-        records.attr_output[recid].append(item_application.get('terms_description',''))
+        records.attr_output[recid].append(item_application.get('termsDescription',''))
 
         pid_cnri = record.pid_cnri
         cnri = ''
