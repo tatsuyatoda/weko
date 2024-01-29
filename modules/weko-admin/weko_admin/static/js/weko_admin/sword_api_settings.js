@@ -1,8 +1,12 @@
 //poファイル定義の文言をhiddenから取得
 const Required_item = document.getElementById("Required_item").value;
 const Successfully_Changed = document.getElementById("Successfully_Changed").value;
-const Failed_Change = document.getElementById("Failed_Change").value;
-
+const Failed_Changed = document.getElementById("Failed_Changed").value;
+const itemtype_alert = document.getElementById("Dependency_ItemType_not_found.").value;
+let lists = document.getElementById("itemtype_lists").value;
+lists = lists.replace('[', '');
+lists = lists.replace(']','');
+listsarray = lists.split(',');
 /** close ErrorMessage area */
 function closeError() {
   $('#errors').empty();
@@ -26,19 +30,55 @@ function componentDidMount() {
   }
 }
 
+function isItemtypeDeleted(value){
+  var value = new RegExp(value);
+  var deletedFlag = true;
+  for(i=0; i < Object.keys(listsarray).length; i++){
+    if(value.test(listsarray[i])){
+      deletedFlag = false;
+    }
+  }
+  return deletedFlag;
+}
+
 function toggleMenu() {
   var dataMenu = document.getElementById("data_format");
   var registerMenu = document.getElementById("register_format");
   var itemMenu = document.getElementById("sword_item_type");
+  let settings = document.getElementById("current_settings").value;
+  settings = JSON.parse(settings);
 
   if (dataMenu.value === "empty") {
     // 最初のメニューが空欄の場合、二番目のメニューを非活性化し、空欄を選択状態にする
+    // 最初のメニューが選択された場合、二番目のメニューを活性化する
     registerMenu.disabled = true;
     registerMenu.value = "empty";
     itemMenu.disabled = true;
     itemMenu.value = "empty";
-  } else {
-    // 最初のメニューが選択された場合、二番目のメニューを活性化する
+  } else if(dataMenu.value === "TSV"){
+    registerMenu.removeAttribute("disabled");
+    itemMenu.removeAttribute("disabled");
+    registerMenu.setAttribute("required",true);
+    itemMenu.setAttribute("required",true);
+
+    registerMenu.value = settings["data_format"]["TSV"]["register_format"];
+    if(isItemtypeDeleted(settings["data_format"]["TSV"]["item_type"])){
+      itemMenu.value = "deleted_Item_Type";
+    }else{
+      itemMenu.value = settings["data_format"]["TSV"]["item_type"];
+    }
+  } else if(dataMenu.value === "XML"){
+    registerMenu.removeAttribute("disabled");
+    itemMenu.removeAttribute("disabled");
+    registerMenu.setAttribute("required",true);
+    itemMenu.setAttribute("required",true);
+    registerMenu.value = settings["data_format"]["XML"]["register_format"];
+    if(isItemtypeDeleted(settings["data_format"]["XML"]["item_type"])){
+      itemMenu.value = "deleted_Item_Type";
+    }else{
+      itemMenu.value = settings["data_format"]["XML"]["item_type"];
+    }
+  }else{
     registerMenu.removeAttribute("disabled");
     itemMenu.removeAttribute("disabled");
     registerMenu.setAttribute("required",true);
@@ -60,7 +100,7 @@ function handleDefaultSubmit() {
   const form ={
     'default_format': document.getElementById("default_select").value
   }
-  fetch("/admin/swordapi/" ,{method:'POST' ,headers:{'Content-Type':'application/json'} ,credentials:"include", body: JSON.stringify(form)})
+  fetch("/admin/swordapi/default_format" ,{method:'POST' ,headers:{'Content-Type':'application/json'} ,credentials:"include", body: JSON.stringify(form)})
   .then(res => {
     if(!res.ok){
       console.log(etext);
@@ -71,7 +111,7 @@ function handleDefaultSubmit() {
   .catch(error => {
     console.log(error);
     componentDidMount();
-    showMsg(Failed_Change , false);
+    showMsg(Failed_Changed , false);
   });
 }
 
@@ -80,6 +120,8 @@ function handleSubmit(event) {
   var registerMenu = document.getElementById("register_format");
   var itemMenu = document.getElementById("sword_item_type");
   const errorMessages = document.getElementsByClassName('errorMessage');
+  const alertMessage = document.getElementsByClassName('alertMessage');
+  alertMessage.textContent ='';
   var errorMessagearray = Array.from(errorMessages)
   errorMessagearray.forEach(function(errorMessage){
     errorMessage.textContent = '';
@@ -100,6 +142,9 @@ function handleSubmit(event) {
   }else if(isEmpty(itemMenu.value)){
     errorMessages[2].textContent = Required_item;
     return;
+  }else if(itemMenu.value === "deleted_Item_Type") {
+    errorMessages[2].textContent = itemtype_alert;
+    return;
   }
 
   const form = {
@@ -119,7 +164,6 @@ function handleSubmit(event) {
   .catch(error => {
     console.log(error);
     componentDidMount();
-    showMsg(Failed_Change , false);
+    showMsg(Failed_Changed , false);
   });
-
 }

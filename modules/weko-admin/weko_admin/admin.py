@@ -1353,8 +1353,8 @@ class FacetSearchSettingView(ModelView):
             type_str='delete',
             id=id
         )
-    
-#Sword API 入力画面（仮)
+
+# Sword API 入力画面
 class SwordAPISettingsView(BaseView):
 
     def isEmpty(self,data):
@@ -1365,74 +1365,81 @@ class SwordAPISettingsView(BaseView):
         else:
             return False
 
-    @expose('/', methods=['GET', 'POST'])
+    @expose('/', methods=['GET'])
     def index(self):
-        """Default Format."""
-        if request.method == 'POST':
-            try:
-                settings = AdminSettings.get('sword_api_setting')
-                default_format_setting = request.json.get('default_format')
-                settings.default_format = default_format_setting
-                AdminSettings.update('sword_api_setting',
-                            settings.__dict__)
-            except Exception as e:
-                current_app.logger.error(
-                    'ERROR Default Form Settings: {}'.format(e))
-                flash(_('Failed To Change Settings'), 'error')
-    
+        default_sword_api = { "default_format": "TSV",
+                            "data_format":{ "TSV":{"item_type": "empty",  "register_format": "empty"},
+                                           "XML":{"item_type": "empty",  "register_format": "empty"}}}  # Default
+        current_settings = AdminSettings.get(
+                name='sword_api_setting',
+                dict_to_object=False)
+        if not current_settings:
+            current_settings = AdminSettings.update('sword_api_setting', default_sword_api)
+        current_settings = json.dumps(current_settings)
         lists = ItemTypes.get_latest()  # ItemTypes.get_all()
         form = FlaskForm(request.form)
-        default_format_setting = 'TSV'
-        data_format_setting = 'empty'
-        register_format_setting = 'empty'
-        item_type_setting = 'empty'
+        print(lists)
         return self.render(current_app.config['WEKO_ADMIN_SWORD_API_TEMPLATE'],
-                            default_format=default_format_setting,
-                            data_format = data_format_setting,
-                            register_format = register_format_setting,
-                            item_type = item_type_setting,
-                            lists = lists,
-                            form = form)
+                           current_settings = current_settings,
+                           lists = lists,
+                           form = form)
 
-    @expose('/data_format', methods=['GET', 'POST'])
+    @expose('/default_format', methods=['POST'])
+    def default_format(self):
+        """Default Format."""
+        try:
+            settings = AdminSettings.get('sword_api_setting')
+            default_format_setting = request.json.get('default_format')
+            settings.default_format = default_format_setting
+            AdminSettings.update('sword_api_setting',
+                        settings.__dict__)
+        except Exception as e:
+            return current_app.logger.error(
+                'ERROR Default Form Settings: {}'.format(e))
+
+        current_settings = AdminSettings.get(
+                name='sword_api_setting',
+                dict_to_object=False)
+        current_settings = json.dumps(current_settings)
+        lists = ItemTypes.get_latest()  # ItemTypes.get_all()
+        form = FlaskForm(request.form)
+        return self.render(current_app.config['WEKO_ADMIN_SWORD_API_TEMPLATE'],
+                           current_settings = current_settings,
+                           lists = lists,
+                           form = form)
+
+    @expose('/data_format', methods=['POST'])
     def data_format(self):
         """Data Format Settings."""
-        if request.method == 'POST':    
-            try:
-                    form = request.form.get('submit', None)
-                    settings = AdminSettings.get('sword_api_setting')
-                    data_format_setting = request.json.get('data_format')
-                    register_format_setting = request.json.get('register_format')
-                    item_type_setting = request.json.get('sword_item_type')
-                    if(self.isEmpty(data_format_setting) or self.isEmpty(register_format_setting) or self.isEmpty(item_type_setting)):
-                        return flash(_('Failed To Change Settings'), 'error')
-                    if data_format_setting == "TSV":
-                        settings.data_format["TSV"]["register_format"] = register_format_setting                       
-                        settings.data_format["TSV"]["item_type"] = item_type_setting
-                    if data_format_setting == "XML":                        
-                        settings.data_format["XML"]["register_format"] = register_format_setting                       
-                        settings.data_format["XML"]["item_type"] = item_type_setting
-                    AdminSettings.update('sword_api_setting',
-                                            settings.__dict__)
-            except Exception as e:
-                current_app.logger.error(
-                    'ERROR Default Form Settings: {}'.format(e))
-                flash(_('Failed To Change Settings'), 'error')
+        try:
+            settings = AdminSettings.get('sword_api_setting')
+            data_format_setting = request.json.get('data_format')
+            register_format_setting = request.json.get('register_format')
+            item_type_setting = request.json.get('sword_item_type')
+            if(self.isEmpty(data_format_setting) or self.isEmpty(register_format_setting) or self.isEmpty(item_type_setting)):
+                return current_app.logger.error('ERROR Default Form Settings: Failed To Change Settings')
+            if data_format_setting == "TSV":
+                settings.data_format["TSV"]["register_format"] = register_format_setting
+                settings.data_format["TSV"]["item_type"] = item_type_setting
+            if data_format_setting == "XML":
+                settings.data_format["XML"]["register_format"] = register_format_setting
+                settings.data_format["XML"]["item_type"] = item_type_setting
+            AdminSettings.update('sword_api_setting',
+                                    settings.__dict__)
+        except Exception as e:
+            return current_app.logger.error(
+                'ERROR Default Form Settings: {}'.format(e))
 
+        current_settings = AdminSettings.get(
+                name='sword_api_setting',
+                dict_to_object=False)
+        current_settings = json.dumps(current_settings)
         lists = ItemTypes.get_latest()  # ItemTypes.get_all()
         form = FlaskForm(request.form)
-        default_format_setting = 'TSV'
-        data_format_setting = 'empty'
-        register_format_setting = 'empty'
-        item_type_setting = 'empty'
-        
         return self.render(current_app.config['WEKO_ADMIN_SWORD_API_TEMPLATE'],
-                        default_format=default_format_setting,
-                        data_format = data_format_setting,
-                        register_format = register_format_setting,
-                        item_type = item_type_setting,
-                        lists = lists,
-                        form = form)
+                           current_settings = current_settings,
+                           lists = lists,
+                           form = form)
 
 style_adminview = {
     'view_class': StyleSettingView,
