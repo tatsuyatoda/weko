@@ -55,6 +55,7 @@ from weko_workflow.views import (unlock_activity,
                                  check_approval, 
                                  get_feedback_maillist, 
                                  save_activity, 
+                                 render_guest_workflow,
                                  previous_action,
                                  _generate_download_url,
                                  check_authority_action)
@@ -509,6 +510,66 @@ def test_init_activity_guest_users(client, users, db_register, users_index, stat
     res = client.post(url, json=input)
     assert res.status_code == status_code
 
+# def display_guest_activity():
+# .tox/c1/bin/pytest --cov=weko_workflow tests/test_views.py::test_display_guest_activity -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-workflow/.tox/c1/tmp
+def test_display_guest_activity(db_register, client):
+    url = url_for("weko_workflow.display_guest_activity",file_name="test.txt")
+    mock_render = MagicMock(return_value=jsonify({}))
+    with patch('weko_workflow.views.render_guest_workflow',mock_render):
+        res = client.get(url)
+        mock_render.assert_called()
+
+# def render_guest_workflow():
+# .tox/c1/bin/pytest --cov=weko_workflow tests/test_views.py::test_display_guest_activity_item_application -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-workflow/.tox/c1/tmp
+def test_display_guest_activity_item_application(db_register, client):
+    url = url_for("weko_workflow.display_guest_activity_item_application",record_id=1)
+    mock_render = MagicMock(return_value=jsonify({}))
+    with patch('weko_workflow.views.render_guest_workflow',mock_render):
+        res = client.get(url)
+        mock_render.assert_called()
+
+# def display_guest_activity_item_application():
+# .tox/c1/bin/pytest --cov=weko_workflow tests/test_views.py::test_render_guest_workflow -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-workflow/.tox/c1/tmp
+def test_render_guest_workflow(client, users, db_register, db_guestactivity):
+    url = "/activity/guest-user/file_name?token=token"
+    mock_render_template = MagicMock(return_value=jsonify({}))
+    client.get(url)
+    return_validate_guest_activity_token = (False, None, None)
+    with patch('weko_workflow.views.GuestActivity.get_expired_activities',return_value=""):
+        with patch('weko_workflow.views.validate_guest_activity_token',return_value=return_validate_guest_activity_token):
+            with patch('weko_workflow.views.render_template', mock_render_template):
+                res = render_guest_workflow("file_name")
+                mock_render_template.assert_called()
+
+    return_validate_guest_activity_token = (True, None, None)
+    with patch('weko_workflow.views.GuestActivity.get_expired_activities',return_value=""):
+        with patch('weko_workflow.views.validate_guest_activity_token',return_value=return_validate_guest_activity_token):
+            with patch('weko_workflow.views.validate_guest_activity_expired', return_value ="error"):
+                with patch('weko_workflow.views.render_template', mock_render_template):
+                    res = render_guest_workflow("file_name")
+                    mock_render_template.assert_called()
+    
+    return_validate_guest_activity_token = (True, None, None)
+    with patch('weko_workflow.views.GuestActivity.get_expired_activities',return_value=""):
+        with patch('weko_workflow.views.validate_guest_activity_token',return_value=return_validate_guest_activity_token):
+            with patch('weko_workflow.views.validate_guest_activity_expired', return_value =""):
+                with patch('weko_workflow.views.prepare_data_for_guest_activity',return_value={}):
+                    with patch('weko_workflow.views.get_usage_data',return_value={}):
+                        with patch('weko_workflow.views.get_main_record_detail',return_value={"record":{"is_guest":True}}):
+                            with patch('weko_workflow.views.render_template', mock_render_template):
+                                res = render_guest_workflow("file_name")
+                                mock_render_template.assert_called()
+
+    return_validate_guest_activity_token = (True, None, None)
+    with patch('weko_workflow.views.GuestActivity.get_expired_activities',return_value=""):
+        with patch('weko_workflow.views.validate_guest_activity_token',return_value=return_validate_guest_activity_token):
+            with patch('weko_workflow.views.validate_guest_activity_expired', return_value =""):
+                with patch('weko_workflow.views.prepare_data_for_guest_activity',return_value={}):
+                    with patch('weko_workflow.views.get_usage_data',return_value={}):
+                        with patch('weko_workflow.views.get_main_record_detail',return_value={}):
+                            with patch('weko_workflow.views.render_template', mock_render_template):
+                                res = render_guest_workflow("file_name")
+                                mock_render_template.assert_called()
 
 def test_find_doi_nologin(client,db_register2):
     """Test of find doi."""
