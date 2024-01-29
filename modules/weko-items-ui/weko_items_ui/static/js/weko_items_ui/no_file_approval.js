@@ -103,7 +103,7 @@ class NoneContentsApproval extends React.Component{
                     <div className="col-sm-12 form-group schema-form-textarea">
                         <label className="control-label col-sm-3"></label>
                         <div class="col-sm-9">
-                            <textarea class="form-control" id="terms_description"></textarea>
+                            <textarea class="form-control" id="termsDescription"></textarea>
                         </div>
                     </div>
                 </div>

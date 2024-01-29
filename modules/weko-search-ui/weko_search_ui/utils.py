@@ -1346,8 +1346,8 @@ def register_item_metadata(item, root_path, is_gakuninrdm=False):
 
     item_application = item.get("item_application")
     if item_application:
-        if item_application.get("terms_description", ""):
-            item_application["termsDescription"]=item_application.pop("terms_description", "")
+        if item_application.get("termsDescription", ""):
+            item_application["termsDescription"]=item_application.pop("termsDescription", "")
         ItemApplication.update(item_id = deposit.id, item_application = item_application)
     else:
         ItemApplication.delete_without_commit(deposit.id)
@@ -1934,7 +1934,7 @@ def handle_check_and_prepare_item_application(list_record):
                     errors.append(_("The specified terms does not exist in the system"))
                 else:
                     item_application["terms"]=_item_application.get("terms", "")
-                    item_application["termsDescription"]=_item_application.get("terms_description", "")
+                    item_application["termsDescription"]=_item_application.get("termsDescription", "")
                 
             if item_application:
                 item["metadata"]["item_application"] = item_application
