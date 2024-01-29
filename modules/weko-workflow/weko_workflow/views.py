@@ -30,6 +30,7 @@ from copy import deepcopy
 from datetime import datetime
 from functools import wraps
 from typing import List
+from urllib.parse import urljoin
 
 import redis
 from redis import sentinel
@@ -45,6 +46,7 @@ from flask import Blueprint, abort, current_app, has_request_context, \
     jsonify, make_response, render_template, request, session, url_for
 from flask_babelex import gettext as _
 from flask_login import current_user, login_required
+from flask_security.utils import hash_password
 from weko_admin.api import validate_csrf_header
 from flask_wtf import FlaskForm
 from invenio_accounts.models import Role, User, userrole
@@ -604,6 +606,11 @@ def init_activity_guest():
         
     """
     post_data = request.get_json()
+
+    password_for_download = ""
+    if post_data.get('password_for_download'):
+        pwd = post_data['password_for_download']
+        password_for_download = hash_password(pwd)
     
     if is_terms_of_use_only(post_data["workflow_id"]):
         # if the workflow is terms_of_use_only(利用規約のみ) ,
@@ -628,7 +635,8 @@ def init_activity_guest():
                     "related_title": post_data.get('guest_item_title'),
                     "file_name": post_data.get('file_name'),
                     "is_restricted_access": True,
-                }
+                    "password_for_download": password_for_download
+                },
             }
             __, tmp_url = init_activity_for_guest_user(data)
             db.session.commit()
@@ -1056,6 +1064,20 @@ def display_activity(activity_id="0"):
     approval_preview = False
     if action_endpoint == 'approval' and current_app.config.get('WEKO_WORKFLOW_APPROVAL_PREVIEW'):
         approval_preview = workflow_detail.open_restricted
+    
+    approval_pending = False
+    if action_endpoint == 'approval' and workflow_detail.open_restricted:
+        approval_pending = True
+
+    application_approved = False
+    url_to_item_to_apply_for = ''
+    if getattr(activity_detail, 'extra_info', '') and activity_detail.extra_info and action_endpoint == 'end_action':
+        applied_record_id = activity_detail.extra_info.get('record_id', -1)
+        record = WekoRecord.get_record_by_pid(applied_record_id)
+        if record:
+            url_to_item_to_apply_for = urljoin(request.url_root, url_for(
+                'invenio_records_ui.recid', pid_value=record.pid.pid_value))
+            application_approved = True
 
     # Get Settings
     enable_request_maillist = False
@@ -1072,8 +1094,10 @@ def display_activity(activity_id="0"):
         activity_id=activity_detail.activity_id,
         activity=activity_detail,
         allow_multi_thumbnail=allow_multi_thumbnail,
+        application_approved = application_approved,
         application_item_type=application_item_type,
         approval_email_key=approval_email_key,
+        approval_pending = approval_pending,
         approval_preview=approval_preview,
         auto_fill_data_type=data_type,
         auto_fill_title=title,
@@ -1124,6 +1148,7 @@ def display_activity(activity_id="0"):
         temporary_idf_grant=temporary_identifier_select,
         temporary_journal=temporary_journal,
         term_and_condition_content=term_and_condition_content,
+        url_to_item_to_apply_for = url_to_item_to_apply_for,
         user_profile=user_profile,
         form=form,
         **ctx
