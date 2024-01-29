@@ -1,9 +1,15 @@
 from smtplib import SMTPException
 from mock import patch
 import pytest
-from flask import current_app
+import io
+import uuid
+from flask import Flask, json, jsonify, session, url_for, current_app
+from flask_security.utils import login_user
+from invenio_accounts.testutils import login_user_via_session
 from pytest_mock import mocker
+from sqlalchemy.exc import SQLAlchemyError
 
+from weko_records.models import ItemApplication
 from weko_records_ui.api import send_request_mail, create_captcha_image, validate_captcha_answer
 from weko_records_ui.errors import AuthenticationRequiredError, ContentsNotFoundError, InternalServerError, InvalidCaptchaError, InvalidEmailError, RequiredItemNotExistError
 from weko_redis.redis import RedisConnection
@@ -220,8 +226,29 @@ def test_validate_captcha_answer(app):
 # .tox/c1/bin/pytest --cov=weko_records_ui tests/test_api.py::test_create_captcha_image -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-records-ui/.tox/c1/tmp
 def test_create_captcha_image(app):
     with app.test_request_context():
+        ret = create_captcha_image()
+        assert ret[0] == True
+
+# def get_item_provide_list(item_id):
+# .tox/c1/bin/pytest --cov=weko_records_ui tests/test_api.py::test_get_item_provide_list -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-records-ui/.tox/c1/tmp
+def test_get_item_provide_list(mocker, db):
+    assert get_item_provide_list(None)=={}
+    item_id_1 = uuid.uuid4()
+    item_id_2 = uuid.uuid4()
+    item_application_1 = ItemApplication(id = 1, item_id = item_id_1, item_application = {"workflow":"1", "terms":"term_free", "termsDescription":"利用規約自由入力"})
+    
+    with db.session.begin_nested():
+        db.session.add(item_application_1)
+    db.session.commit()
+    assert get_item_provide_list(item_id_1) == {"workflow":"1", "terms":"term_free", "termsDescription":"利用規約自由入力"}
+    assert get_item_provide_list(item_id_2) == {}
+
+    # error
+    mocker.patch("flask_sqlalchemy.BaseQuery.first", side_effect=SQLAlchemyError)
+    assert get_item_provide_list(item_id_1) == {}
         status, response = create_captcha_image()
         assert status == True
         assert 'key' in response.keys()
         assert 'image' in response.keys()
         assert response.get('ttl') == 600
+
