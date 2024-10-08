@@ -32,9 +32,6 @@ from dictdiffer.merge import Merger, UnresolvedConflictsException
 from invenio_search.engine import search
 from flask import abort, current_app, json, request, session
 from flask_security import current_user
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm.attributes import flag_modified
-
 from invenio_db import db
 from invenio_deposit.api import Deposit, index, preserve
 from invenio_files_rest.models import (
@@ -303,7 +300,8 @@ class WekoIndexer(RecordIndexer):
                 The response from Elasticsearch after attempting the update.
 
         Raises:
-            OpenSearchException:
+            search.OpenSearchException:
+
                 If an error occurs during the update process (excluding errors
                 with status codes 400 and 404, which are ignored).
         """
@@ -1418,7 +1416,7 @@ class WekoDeposit(Deposit):
                 self.get_content_files()
 
                 try:
-                    # Upload file content to Elasticsearch
+                    # Upload file content to search engine
                     self.indexer.upload_metadata(
                         self.jrc,
                         self.pid.object_uuid,
