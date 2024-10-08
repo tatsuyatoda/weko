@@ -2,7 +2,7 @@
 import pytest
 import uuid
 import copy
-from mock import patch
+from unittest.mock import patch
 from io import BytesIO
 from werkzeug.datastructures import FileStorage
 from flask import url_for,make_response,json,current_app
@@ -45,10 +45,10 @@ class TestItemTypeMetaDataView:
         res = client.get(url)
         assert_statuscode_with_role(res,is_permission)
 # .tox/c1/bin/pytest --cov=weko_itemtypes_ui tests/test_admin.py::TestItemTypeMetaDataView::test_index -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-itemtypes-ui/.tox/c1/tmp
-    def test_index(self,client,admin_view,item_type,users,mocker):
+    def test_index(self,client,admin_view,item_type,users):
         login_user_via_session(client=client,email=users[0]["email"])
         url = url_for("itemtypesregister.index",item_type_id=3)
-        mock_render = mocker.patch("weko_itemtypes_ui.admin.ItemTypeMetaDataView.render",return_value=make_response())
+        mock_render = patch("weko_itemtypes_ui.admin.ItemTypeMetaDataView.render",return_value=make_response())
         res = client.get(url)
         assert res.status_code == 200#
         itemtype_list_ = [(obj["item_type_name"],obj["item_type_name"].name,obj["item_type"].id,obj["item_type"].harvesting_type,obj["item_type"].is_deleted,obj["item_type"].tag) for obj in item_type]
@@ -103,7 +103,7 @@ class TestItemTypeMetaDataView:
         #     }#
 #     def delete_itemtype(self, item_type_id=0):
 # .tox/c1/bin/pytest --cov=weko_itemtypes_ui tests/test_admin.py::TestItemTypeMetaDataView::test_delete_itemtype -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-itemtypes-ui/.tox/c1/tmp
-    def test_delete_itemtype(self,client,admin_view,db,users,item_type,mocker):
+    def test_delete_itemtype(self,client,admin_view,db,users,item_type):
         login_user_via_session(client=client,email=users[0]["email"])
         with patch("weko_workflow.utils.get_cache_data", return_value=False):
             url = url_for("itemtypesregister.delete_itemtype")
@@ -115,7 +115,7 @@ class TestItemTypeMetaDataView:
             assert json.loads(res.data)["code"] == -1
             
             url = url_for("itemtypesregister.delete_itemtype",item_type_id=1)
-            mock_flash = mocker.patch("weko_itemtypes_ui.admin.flash")
+            mock_flash = patch("weko_itemtypes_ui.admin.flash")
             res = client.post(url)
             mock_flash.assert_called_with("Cannot delete Item type for Harvesting.","error")
             assert json.loads(res.data)["code"] == -1
@@ -139,14 +139,14 @@ class TestItemTypeMetaDataView:
             )
             db.session.add(pid)
             db.session.commit()
-            mock_flash = mocker.patch("weko_itemtypes_ui.admin.flash")
+            mock_flash = patch("weko_itemtypes_ui.admin.flash")
             url = url_for("itemtypesregister.delete_itemtype",item_type_id=item_type1.id)
             res = client.post(url)
             mock_flash.assert_called_with("Cannot delete due to child existing item types.","error")
             assert json.loads(res.data)["code"] == -1#
 
         with patch("weko_workflow.utils.get_cache_data", return_value=True):
-            mock_flash = mocker.patch("weko_itemtypes_ui.admin.flash")
+            mock_flash = patch("weko_itemtypes_ui.admin.flash")
             url = url_for("itemtypesregister.delete_itemtype",item_type_id=item_type2.id)
             res = client.post(url)
             mock_flash.assert_called_with("Item type cannot be deleted becase import is in progress.","error")
@@ -154,7 +154,7 @@ class TestItemTypeMetaDataView:
 
 
         with patch("weko_workflow.utils.get_cache_data", return_value=False):
-            mock_flash = mocker.patch("weko_itemtypes_ui.admin.flash")
+            mock_flash = patch("weko_itemtypes_ui.admin.flash")
             url = url_for("itemtypesregister.delete_itemtype",item_type_id=item_type2.id)
             res = client.post(url)
             mock_flash.assert_called_with("Deleted Item type successfully.")
@@ -184,12 +184,12 @@ class TestItemTypeMetaDataView:
                 assert res.status_code == 403
 
 # .tox/c1/bin/pytest --cov=weko_itemtypes_ui tests/test_admin.py::TestItemTypeMetaDataView::test_register -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-itemtypes-ui/.tox/c1/tmp
-    def test_register(self,app,client,db,admin_view,users,item_type,mocker):
+    def test_register(self,app,client,db,admin_view,users,item_type):
         login_user_via_session(client=client,email=users[0]["email"])
         login(app,client,obj=users[0]["obj"])
         with patch("weko_workflow.utils.get_cache_data", return_value=False):
-            mocker.patch("weko_records.api.after_record_insert.send")
-            mocker.patch("weko_records.api.before_record_insert.send")
+            patch("weko_records.api.after_record_insert.send")
+            patch("weko_records.api.before_record_insert.send")
             url = url_for("itemtypesregister.register")
             res = client.post(url,headers={"Content-Type":"plain/text"})
             assert json.loads(res.data)["msg"] == "Header Error"
@@ -203,11 +203,11 @@ class TestItemTypeMetaDataView:
             }
             schema = copy.deepcopy(data["table_row_map"]["schema"])
             form = copy.deepcopy(data["table_row_map"]["form"])
-            mocker.patch("weko_itemtypes_ui.admin.fix_json_schema",return_value=schema)
-            mocker.patch("weko_itemtypes_ui.admin.update_text_and_textarea",return_value=(schema,form))
+            patch("weko_itemtypes_ui.admin.fix_json_schema",return_value=schema)
+            patch("weko_itemtypes_ui.admin.update_text_and_textarea",return_value=(schema,form))
             
             # raise ValueError
-            mocker.patch("weko_itemtypes_ui.admin.update_required_schema_not_exist_in_form",return_value={})
+            patch("weko_itemtypes_ui.admin.update_required_schema_not_exist_in_form",return_value={})
             res = client.post(url,json=data,headers={"Content-Type":"application/json"})
             assert res.status_code == 400
             result = json.loads(res.data)
@@ -242,7 +242,7 @@ class TestItemTypeMetaDataView:
         
         with patch("weko_workflow.utils.get_cache_data", return_value=False):
             url = url_for("itemtypesregister.register",item_type_id=0)
-            mocker.patch("weko_itemtypes_ui.admin.update_required_schema_not_exist_in_form",return_value=schema)
+            patch("weko_itemtypes_ui.admin.update_required_schema_not_exist_in_form",return_value=schema)
             res = client.post(url,json=data,headers={"Content-Type":"application/json"})
             result = json.loads(res.data)
             assert result["msg"] == "Successfuly registered Item type."
@@ -288,7 +288,7 @@ class TestItemTypeMetaDataView:
         
 #     def get_property_list(self, property_id=0):
 # .tox/c1/bin/pytest --cov=weko_itemtypes_ui tests/test_admin.py::TestItemTypeMetaDataView::test_get_property_list -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-itemtypes-ui/.tox/c1/tmp
-    def test_get_property_list(self,client,admin_view,db,itemtype_props,admin_settings,users,mocker):
+    def test_get_property_list(self,client,admin_view,db,itemtype_props,admin_settings,users):
         login_user_via_session(client=client,email=users[0]["email"])
         url = url_for("itemtypesregister.get_property_list")
         billing_permission = BillingPermission(user_id=1,is_active=True)
@@ -323,7 +323,7 @@ class TestItemTypeMetaDataView:
         }
         assert result == test
         # adminsetting is None
-        mocker.patch("weko_itemtypes_ui.admin.AdminSettings.get",return_value=None)
+        patch("weko_itemtypes_ui.admin.AdminSettings.get",return_value=None)
         res = client.get(url,query_string={"lang":"en"})
         result = json.loads(res.data)
         test = {
@@ -348,7 +348,7 @@ class TestItemTypeMetaDataView:
         assert result == test
 #     def export(self,item_type_id):
 # .tox/c1/bin/pytest --cov=weko_itemtypes_ui tests/test_admin.py::TestItemTypeMetaDataView::test_export -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-itemtypes-ui/.tox/c1/tmp
-    def test_export(self,client,db,admin_view,users,item_type,itemtype_props,mocker):
+    def test_export(self,client,db,admin_view,users,item_type,itemtype_props):
         login_user_via_session(client=client,email=users[0]["email"])
         item_type1 = item_type[0]["item_type"]
         item_type1.harvesting_type = False
@@ -356,13 +356,13 @@ class TestItemTypeMetaDataView:
         db.session.commit()
         # not exist itemtype
         url = url_for("itemtypesregister.export",item_type_id=100)
-        mock_render = mocker.patch("weko_itemtypes_ui.admin.ItemTypeMetaDataView.render",return_value=make_response())
+        mock_render = patch("weko_itemtypes_ui.admin.ItemTypeMetaDataView.render",return_value=make_response())
         
         res = client.get(url)
         mock_render.assert_called_with("weko_itemtypes_ui/admin/error.html")
         
         url = url_for("itemtypesregister.export",item_type_id=1)
-        mock_send = mocker.patch("weko_itemtypes_ui.admin.send_file",return_value=make_response())#
+        mock_send = patch("weko_itemtypes_ui.admin.send_file",return_value=make_response())#
         class MockZip:
             def __init__(self,fp,mode,compression):
                 self.fp=fp
@@ -377,8 +377,8 @@ class TestItemTypeMetaDataView:
                 self.data = {}
             def seek(self,flg):
                 pass
-        mocker.patch("weko_itemtypes_ui.admin.io.BytesIO",side_effect=MockBytesIO)
-        mocker.patch("weko_itemtypes_ui.admin.ZipFile",side_effect=MockZip)
+        patch("weko_itemtypes_ui.admin.io.BytesIO",side_effect=MockBytesIO)
+        patch("weko_itemtypes_ui.admin.ZipFile",side_effect=MockZip)
         res = client.get(url)
         fp,kwargs = mock_send.call_args
         assert "ItemType.json" in fp[0].data
@@ -431,7 +431,7 @@ class TestItemTypePropertiesView():
         assert_statuscode_with_role(res,is_permission)
 
 # .tox/c1/bin/pytest --cov=weko_itemtypes_ui tests/test_admin.py::TestItemTypePropertiesView::test_index -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-itemtypes-ui/.tox/c1/tmp
-    def test_index(self,client,db,admin_view,users,itemtype_props,mocker):
+    def test_index(self,client,db,admin_view,users,itemtype_props):
         login_user_via_session(client,email=users[0]["email"])
         billing_permission = BillingPermission(user_id=1,is_active=False)
         db.session.add(billing_permission)
@@ -441,7 +441,7 @@ class TestItemTypePropertiesView():
         test_props = itemtype_props.copy()
         test_props.pop(3)
         test_props.pop(2)
-        mock_render = mocker.patch("weko_itemtypes_ui.admin.ItemTypePropertiesView.render",return_value=make_response())
+        mock_render = patch("weko_itemtypes_ui.admin.ItemTypePropertiesView.render",return_value=make_response())
         res = client.get(url)
         mock_render.assert_called_with(
             'weko_itemtypes_ui/admin/create_property.html',
@@ -455,7 +455,7 @@ class TestItemTypePropertiesView():
         test_props=itemtype_props.copy()
         test_props.pop(3)
         
-        mock_render = mocker.patch("weko_itemtypes_ui.admin.ItemTypePropertiesView.render",return_value=make_response())
+        mock_render = patch("weko_itemtypes_ui.admin.ItemTypePropertiesView.render",return_value=make_response())
         res = client.get(url)
         mock_render.assert_called_with(
             'weko_itemtypes_ui/admin/create_property.html',
@@ -511,10 +511,10 @@ class TestItemTypePropertiesView():
         res = client.post(url,json={})
         assert_statuscode_with_role(res,is_permission)
 # .tox/c1/bin/pytest --cov=weko_itemtypes_ui tests/test_admin.py::TestItemTypePropertiesView::test_custom_property_new -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-itemtypes-ui/.tox/c1/tmp
-    def test_custom_property_new(self,client,admin_view,db,users,mocker):
+    def test_custom_property_new(self,client,admin_view,db,users):
         login_user_via_session(client,email=users[0]["email"])
-        mocker.patch("weko_records.api.before_record_insert.send")
-        mocker.patch("weko_records.api.after_record_insert.send")
+        patch("weko_records.api.before_record_insert.send")
+        patch("weko_records.api.after_record_insert.send")
         url = url_for("itemtypesproperties.custom_property_new")
         data = {
             "name":"new_prop",
@@ -560,26 +560,26 @@ class TestItemTypeMappingView:
         res = client.get(url)
         assert_statuscode_with_role(res,is_permission)
 # .tox/c1/bin/pytest --cov=weko_itemtypes_ui tests/test_admin.py::TestItemTypeMappingView::test_index -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-itemtypes-ui/.tox/c1/tmp
-    def test_index(self,app,client,admin_view,users,item_type,oaiserver_schema,mocker):
+    def test_index(self,app,client,admin_view,users,item_type,oaiserver_schema):
         login_user_via_session(client,email=users[0]["email"])
         login(app,client,obj=users[0]["obj"])
         url = url_for("itemtypesmapping.index")
         # not exist itemtypes
         with patch("weko_itemtypes_ui.admin.ItemTypes.get_latest",return_value=[]):
-            mock_render = mocker.patch("weko_itemtypes_ui.admin.ItemTypeMappingView.render",return_value=make_response())
+            mock_render = patch("weko_itemtypes_ui.admin.ItemTypeMappingView.render",return_value=make_response())
             res = client.get(url)
             mock_render.assert_called_with("weko_itemtypes_ui/admin/error.html")
         
         # item_type is None
-        mock_render = mocker.patch("weko_itemtypes_ui.admin.redirect",return_value=make_response())
+        mock_render = patch("weko_itemtypes_ui.admin.redirect",return_value=make_response())
         res = client.get(url)
         mock_render.assert_called_with(
             "/admin/itemtypes/mapping/1"
         )
         
         url = url_for("itemtypesmapping.index",ItemTypeID=7)
-        mock_render = mocker.patch("weko_itemtypes_ui.admin.ItemTypeMappingView.render",return_value=make_response())
-        mocker.patch("weko_itemtypes_ui.admin.remove_xsd_prefix",return_value="called remove_xsd_prefix")
+        mock_render = patch("weko_itemtypes_ui.admin.ItemTypeMappingView.render",return_value=make_response())
+        patch("weko_itemtypes_ui.admin.remove_xsd_prefix",return_value="called remove_xsd_prefix")
         res = client.get(url,headers={"Accept-Language":"ja"})
         mock_render.assert_called_with(
             "weko_itemtypes_ui/admin/create_mapping.html",
@@ -636,15 +636,15 @@ class TestItemTypeMappingView:
         (5,False),
         (7,False)
     ])
-    def test_mapping_register_acl(self,client,admin_view,users,index,is_permission,mocker):
+    def test_mapping_register_acl(self,client,admin_view,users,index,is_permission):
         login_user_via_session(client,email=users[index]["email"])
         url = url_for("itemtypesmapping.mapping_register")
         res = client.post(url,data="test",headers={"Content-Type":"text/plain"})
         assert_statuscode_with_role(res,is_permission)
 # .tox/c1/bin/pytest --cov=weko_itemtypes_ui tests/test_admin.py::TestItemTypeMappingView::test_mapping_register -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-itemtypes-ui/.tox/c1/tmp
-    def test_mapping_register(self,client,admin_view,users,item_type,mocker):
-        mocker.patch("weko_records.api.before_record_insert.send")
-        mocker.patch("weko_records.api.after_record_insert.send")
+    def test_mapping_register(self,client,admin_view,users,item_type):
+        patch("weko_records.api.before_record_insert.send")
+        patch("weko_records.api.after_record_insert.send")
         login_user_via_session(client,email=users[0]["email"])
         url = url_for("itemtypesmapping.mapping_register")
         # header is not application/json
@@ -733,7 +733,7 @@ class TestItemTypeRocrateMappingView:
         assert_statuscode_with_role(res, is_admin)
 
     # .tox/c1/bin/pytest --cov=weko_itemtypes_ui tests/test_admin.py::TestItemTypeRocrateMappingView::test_index -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-itemtypes-ui/.tox/c1/tmp
-    def test_index(self, client, admin_view, item_type, users, mocker):
+    def test_index(self, client, admin_view, item_type, users):
         login_user_via_session(client=client, email=users[0]['email'])
 
         # item_type_id is none : redirect first item type
@@ -755,7 +755,7 @@ class TestItemTypeRocrateMappingView:
 
         # Item type table has no record : render error screen
         with patch('weko_records.api.ItemTypes.get_latest', return_value=[]):
-            mock_render = mocker.patch('weko_itemtypes_ui.admin.ItemTypeRocrateMappingView.render', return_value=make_response())
+            mock_render = patch('weko_itemtypes_ui.admin.ItemTypeRocrateMappingView.render', return_value=make_response())
             url1 = url_for('itemtypesrocratemapping.index', item_type_id=1)
             res = client.get(url1)
             assert res.status_code == 200

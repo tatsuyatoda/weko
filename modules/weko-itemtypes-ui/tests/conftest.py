@@ -141,7 +141,7 @@ from invenio_theme import InvenioTheme
 from weko_records import WekoRecords
 
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def instance_path():
     """Temporary instance path."""
     path = tempfile.mkdtemp()
@@ -298,7 +298,7 @@ def base_app(instance_path):
     return app_
 
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def app(base_app):
     """Flask application fixture."""
     with base_app.app_context():
@@ -306,7 +306,7 @@ def app(base_app):
 
 
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def client_api(app):
     app.register_blueprint(weko_items_ui_blueprint_api, url_prefix="/api/items")
     with app.test_client() as client:
@@ -314,7 +314,7 @@ def client_api(app):
 
 
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def client(app):
     """make a test client.
 
@@ -324,7 +324,7 @@ def client(app):
     Yields:
         FlaskClient: test client
     """
-    app.register_blueprint(weko_items_ui_blueprint, url_prefix="/items")
+    # app.register_blueprint(weko_items_ui_blueprint, url_prefix="/items")
     with app.test_client() as client:
         yield client
 

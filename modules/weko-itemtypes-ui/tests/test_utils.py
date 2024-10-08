@@ -1,6 +1,7 @@
 
 from flask_login import login_user,logout_user
 import pytest
+from unittest.mock import patch
 from weko_records.models import ItemType, ItemTypeName
 from weko_itemtypes_ui.utils import (
     remove_xsd_prefix,
@@ -258,7 +259,7 @@ def test_get_detail_node():
 # def get_all_mapping(item_value, mapping_type):
 # .tox/c1/bin/pytest --cov=weko_itemtypes_ui tests/test_utils.py::test_get_all_mapping -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/weko-itemtypes-ui/.tox/c1/tmp
 def test_get_all_mapping(mocker):
-    mocker.patch("weko_itemtypes_ui.utils.get_lst_mapping",return_value=["jpcoar.key1.key1_1","jpcoar.key2"])
+    patch("weko_itemtypes_ui.utils.get_lst_mapping",return_value=["jpcoar.key1.key1_1","jpcoar.key2"])
     data = {
         "jpcoar":{
             "key1":{
