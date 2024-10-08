@@ -396,13 +396,12 @@ class WekoIndexer(RecordIndexer):
                 }
             }
 
-        if update_revision:# TODO version があるとエラー
+        if update_revision:
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='update_revision is True')
             result = self.client.update(
                 index=self.es_index,
                 id=str(record.id),
-                version=record.revision_id,
                 body=body
             )
 
@@ -1166,7 +1165,6 @@ class WekoDeposit(Deposit):
                     'displayname': user._displayname if user else '',
                     'email': current_user.email
                 }
-
         if recid:
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='recid is not None')
@@ -1179,19 +1177,12 @@ class WekoDeposit(Deposit):
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='recid is None')
             deposit = super(WekoDeposit, cls).create(data, id_=id_)
-        print(1111111111111111111111)
         record_id = 0
-        
-        data11 = db.session.query(PersistentIdentifier).all()
-        print(data11)
-        print(data.get('_deposit'))
         
         if data.get('_deposit'):
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='_deposit is in data')
             record_id = str(data['_deposit']['id'])
-        print(1111111111111111111111)
-        print(record_id)
         
         parent_pid = PersistentIdentifier.create(
             'parent',
@@ -1200,20 +1191,11 @@ class WekoDeposit(Deposit):
             object_uuid=deposit.id,
             status=PIDStatus.REGISTERED
         )
-        print(1111111111111111111111)
-        print(record_id)
 
         RecordsBuckets.create(record=deposit.model, bucket=bucket)
-        print(1111111111111111111111)
-        print(record_id)
 
         recid = PersistentIdentifier.get('recid', record_id)
         depid = PersistentIdentifier.get('depid', record_id)
-        print(1111111111111111111111)
-        print(record_id)
-        print(recid)
-        print(depid)
-        print(1111111111111111111111)
         PIDNodeVersioning(pid=parent_pid).insert_draft_child(child_pid=recid)
         PIDNodeDraft(pid=recid).insert_child(depid)
         # Update this object_uuid for item_id of activity.
@@ -1623,13 +1605,7 @@ class WekoDeposit(Deposit):
             weko_logger(key='WEKO_DEPOSIT_PID_STATUS_NOT_REGISTERED',
                         pid=pid)
             raise WekoDepositError(msg="PID status is not registered.")
-
-        print(11111111111111)
-        print(record)
-        print(11111111111111)
-        print(parent_pid)
-        print(11111111111111)
-        if not record or versioning.is_child is None or versioning.draft_child:
+        if not record or parent_pid is None or versioning.draft_child:
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='record is None or versioning does not exists '
                                 'or draft_child exists')
@@ -1667,7 +1643,7 @@ class WekoDeposit(Deposit):
 
         PIDNodeVersioning(
             pid=parent_pid).insert_draft_child(
-            child=recid)
+            recid)
         PIDNodeDraft(pid=recid).insert_child(depid)
         if is_draft:
             weko_logger(key='WEKO_COMMON_IF_ENTER',

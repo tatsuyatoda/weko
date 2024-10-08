@@ -692,12 +692,12 @@ def es_records(app, db, db_index, location, db_itemtype,db_oaischema):
 
             recid = PersistentIdentifier.create('recid', str(i),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.REGISTERED)
             depid = PersistentIdentifier.create('depid', str(i),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.REGISTERED)
-            rel = PIDRelation.create(recid,depid,0)
+            rel = PIDRelation.create(recid,depid,1)
             db.session.add(rel)
             parent = None
             doi = None
             parent = PersistentIdentifier.create('parent', "parent:{}".format(i),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.REGISTERED)
-            rel = PIDRelation.create(parent,recid,1,0)
+            rel = PIDRelation.create(parent,recid,0,0)
             db.session.add(rel)
             if(i%2==1):
                 doi = PersistentIdentifier.create('doi', "https://doi.org/10.xyz/{}".format((str(i)).zfill(10)),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.REGISTERED)
@@ -747,12 +747,12 @@ def es_records_1(app, db, db_index, location, db_itemtype,db_oaischema):
 
             recid = PersistentIdentifier.create('recid', str(i),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.RESERVED)
             depid = PersistentIdentifier.create('depid', str(i),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.RESERVED)
-            rel = PIDRelation.create(recid,depid,3)
+            rel = PIDRelation.create(recid,depid,1)
             db.session.add(rel)
             parent = None
             doi = None
             parent = PersistentIdentifier.create('parent', "parent:{}".format(i),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.RESERVED)
-            rel = PIDRelation.create(parent,recid,2,0)
+            rel = PIDRelation.create(parent,recid,0,0)
             db.session.add(rel)
             if(i%2==1):
                 doi = PersistentIdentifier.create('doi', "https://doi.org/10.xyz/{}".format((str(i)).zfill(10)),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.RESERVED)
@@ -805,7 +805,7 @@ def es_records_with_draft(app, db, db_index, location, db_itemtype,db_oaischema)
 
             recid = PersistentIdentifier.create('recid', str(i),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.REGISTERED)
             depid = PersistentIdentifier.create('depid', str(i),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.REGISTERED)
-            rel = PIDRelation.create(recid,depid,3)
+            rel = PIDRelation.create(recid,depid,1)
             db.session.add(rel)
             db.session.commit()
             recids.append(recid)
@@ -819,7 +819,7 @@ def es_records_with_draft(app, db, db_index, location, db_itemtype,db_oaischema)
 
         parent = PersistentIdentifier.create('parent', "parent:1",object_type='rec', object_uuid=rec_uuid,status=PIDStatus.REGISTERED)
         for recid in recids:
-            rel = PIDRelation.create(parent,recid,2,0)
+            rel = PIDRelation.create(parent,recid,0,0)
             db.session.add(rel)
         db.session.commit()
 
@@ -844,12 +844,12 @@ def es_records_3(app, db, db_index, location, db_itemtype,db_oaischema):
 
             recid = PersistentIdentifier.create('recid', str(i),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.REGISTERED)
             depid = PersistentIdentifier.create('depid', str(i),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.REGISTERED)
-            rel = PIDRelation.create(recid,depid,3)
+            rel = PIDRelation.create(recid,depid,1)
             db.session.add(rel)
             parent = None
             doi = None
             parent = PersistentIdentifier.create('parent', "parent:{}".format(i),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.REGISTERED)
-            rel = PIDRelation.create(parent,recid,2,0)
+            rel = PIDRelation.create(parent,recid,0,0)
             db.session.add(rel)
             if(i%2==1):
                 doi = PersistentIdentifier.create('doi', "https://doi.org/10.xyz/{}".format((str(i)).zfill(10)),object_type='rec', object_uuid=rec_uuid,status=PIDStatus.REGISTERED)
