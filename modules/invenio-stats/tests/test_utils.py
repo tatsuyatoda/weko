@@ -176,7 +176,7 @@ def test_is_valid_access(app):
                                start_date=datetime.date(2022, 10, 3),
                                end_date=datetime.date(2022, 10, 3))],
                          indirect=['aggregated_file_download_events'])
-def test_query_file_reports_helper(app, event_queues, aggregated_file_download_events):
+def test_query_file_reports_helper(app, db, event_queues, aggregated_file_download_events):
     with app.app_context():# calc_per_group_counts
         res = QueryFileReportsHelper.calc_per_group_counts('test1, test1, test2', {}, 1)
         assert res=={'test1': 2, 'test2': 1}
