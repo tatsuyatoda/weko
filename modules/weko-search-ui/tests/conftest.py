@@ -48,7 +48,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 from werkzeug.local import LocalProxy
 from invenio_records.api import Record
-from invenio_stats.processors import EventsIndexer
 from tests.helpers import create_record, json_data
 
 from invenio_access import InvenioAccess
@@ -794,28 +793,6 @@ def client_request_args(app, file_instance_mock):
     # r = requests.post(url, files=files, data=values)
 
     with app.test_client() as client:
-        # with patch("flask.templating._render", return_value=""):
-        #     r = client.get(
-        #         "/",
-        #         query_string={
-        #             "index_id": "33",
-        #             "page": 1,
-        #             "count": 20,
-        #             "term": 14,
-        #             "lang": "en",
-        #             "parent_id": 33,
-        #             "index_info": {},
-        #             "community": "comm1",
-        #             "item_link": "1",
-        #             "is_search": 1,
-        #             "search_type": WEKO_SEARCH_TYPE_DICT["INDEX"],
-        #             "is_change_identifier": True,
-        #             "remote_addr": "0.0.0.0",
-        #             "referrer": "test",
-        #             "host": "127.0.0.1",
-        #             # 'search_type': WEKO_SEARCH_TYPE_DICT["FULL_TEXT"],
-        #         },
-        #     )
         yield client
 
 
@@ -1751,6 +1728,7 @@ def generate_events(
     mock_queue.consume.return_value = generator_list()
     # mock_queue.routing_key = 'stats-file-download'
     mock_queue.routing_key = "generate-sample"
+    from invenio_stats.processors import EventsIndexer
 
     EventsIndexer(
         mock_queue, preprocessors=[build_file_unique_id], double_click_window=0
@@ -2356,7 +2334,7 @@ def es_records(app, db, db_index, location, db_itemtype, db_oaischema):
                 },
                 "item_title": "title",
                 "author_link": [],
-                "item_type_id": "1",
+                "item_type_id": "10",
                 "publish_date": "2022-08-20",
                 "publish_status": "1",
                 "weko_shared_id": -1,
@@ -2419,7 +2397,7 @@ def es_records(app, db, db_index, location, db_itemtype, db_oaischema):
                 "owner": "1",
                 "title": "title",
                 "owners": [1],
-                "item_type_id": 1,
+                "item_type_id": 10,
                 "status": "keep",
                 "$schema": "/items/jsonschema/1",
                 "item_title": "item_title",
@@ -2791,7 +2769,7 @@ def make_record(db, indexer, i, filepath, filename, mimetype, doi_prefix=None):
         },
         "item_title": "ja_conference paperITEM00000009(public_open_access_open_access_simple)",
         "author_link": ["4"],
-        "item_type_id": "1",
+        "item_type_id": "10",
         "publish_date": "2021-08-06",
         "publish_status": "0",
         "weko_shared_id": -1,
