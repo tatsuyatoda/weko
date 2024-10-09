@@ -71,9 +71,8 @@ def weko_deposit_minter(record_uuid, data, recid=None):
         str(recid.pid_value),
         object_type='rec',
         object_uuid=record_uuid,
-        status=PIDStatus.REGISTERED,
+        status=PIDStatus.RESERVED
     )
-
     data.update({
         '_deposit': {
             'id': depid.pid_value,
