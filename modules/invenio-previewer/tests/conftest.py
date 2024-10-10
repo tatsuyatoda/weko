@@ -32,6 +32,8 @@ from invenio_records import InvenioRecords
 from invenio_records_files.api import Record
 from invenio_records_ui import InvenioRecordsUI
 from invenio_records_ui.views import create_blueprint_from_app
+from invenio_db import db as db_
+from sqlalchemy_utils.functions import create_database, database_exists
 from six import BytesIO
 
 from invenio_previewer import InvenioPreviewer
@@ -252,3 +254,13 @@ def zip_fp(db):
 
     fp.seek(0)
     return fp
+
+@pytest.yield_fixture()
+def db(app):
+    """Database fixture."""
+    if not database_exists(str(db_.engine.url)):
+        create_database(str(db_.engine.url))
+        db_.create_all()
+    yield db_
+    db_.session.remove()
+    # db_.drop_all()
