@@ -336,7 +336,6 @@ def deposit(app, es, users, location):
     record = {
         'title': 'fuu'
     }
-    print('testtttttttt:::', users)
     with app.test_request_context():
         datastore = app.extensions['security'].datastore
         login_user(datastore.find_user(email=users[0]['_email']))
