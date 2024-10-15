@@ -65,10 +65,6 @@ def app(request):
             SECURITY_PASSWORD_SINGLE_HASH=["plaintext"],
             SECURITY_PASSWORD_SALT="CHANGE_ME_ALSO",
             SECURITY_PASSWORD_SCHEMES=["plaintext"],
-            # SQLALCHEMY_DATABASE_URI=os.getenv(
-            #     "SQLALCHEMY_DATABASE_URI",
-            #     "sqlite:///" + os.path.join(instance_path, "test.db"),
-            # ),
             SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI',
                                           'postgresql+psycopg2://invenio:dbpass123@postgresql:5432/wekotest'),
             SQLALCHEMY_TRACK_MODIFICATIONS=True,
@@ -238,8 +234,8 @@ def models_fixture(app):
                 _redirect_uris="",
                 _default_scopes="",
             )
-            # create resource_owner -> client_1 / resource_owner -> token_1
 
+            # create resource_owner -> client_1 / resource_owner -> token_1
             u1c1u1t1 = Token(
                 client=u1c1,
                 user=resource_owner,
@@ -253,7 +249,6 @@ def models_fixture(app):
             )
 
             # create consumer -> client_1 / resource_owner -> token_2
-
             u1c1u2t2 = Token(
                 client=u1c1,
                 user=consumer,
@@ -362,6 +357,7 @@ def provider_fixture(app):
         app.user3_id = user3.id
         app.personal_token = personal_token.access_token
         app.personal_token3 = personal_token3.access_token
+        app.c1_redirect_uri = c1._redirect_uris
     return app
 
 

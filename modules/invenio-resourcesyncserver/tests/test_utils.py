@@ -92,9 +92,6 @@ def test_render_well_know_resourcesync(i18n_app):
 def test_query_record_changes(i18n_app, db, search_result, indices, es):
     test = sample_ResourceListHandler()
 
-    # db.session.add(test)
-    # db.session.commit()
-
     repository_id = 33
     date_from = datetime.datetime.now() - datetime.timedelta(days=1)
     date_until = datetime.datetime.now()

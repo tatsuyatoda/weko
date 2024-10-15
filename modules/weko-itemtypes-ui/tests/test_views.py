@@ -45,6 +45,3 @@ def test_replace_mapping_version(app, jp_key, return_key_value):
 
     else:
         assert replace_mapping_version(jp_key) == return_key_value
-
-    
-    
