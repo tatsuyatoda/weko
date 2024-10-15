@@ -504,6 +504,14 @@ def test_delete_ChangeListHandler(i18n_app):
     change_list_id = 1
     test_str = sample_ChangeListHandler("str")
 
+    # def get_change_list(x, y):
+    #     return True
+
+    # def not_get_change_list(x, y):
+    #     return False
+
+    # test_str.get_change_list = not_get_change_list
+
     with patch("invenio_resourcesyncserver.api.ChangeListHandler.get_change_list", return_value="test"):
         assert not test_str.delete(change_list_id)
 

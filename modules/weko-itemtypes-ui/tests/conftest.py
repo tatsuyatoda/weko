@@ -173,6 +173,8 @@ def base_app(instance_path):
         WEKO_PERMISSION_ROLE_COMMUNITY=["Community Administrator"],
         THEME_SITEURL="https://localhost",
         WEKO_THEME_DEFAULT_COMMUNITY="Root Index",
+        #  WEKO_ITEMS_UI_BASE_TEMPLATE = 'weko_items_ui/base.html',
+        #  WEKO_ITEMS_UI_INDEX_TEMPLATE= 'weko_items_ui/item_index.html',
         CACHE_TYPE="redis",
         ACCOUNTS_SESSION_REDIS_DB_NO=1,
         CACHE_REDIS_HOST=os.environ.get("INVENIO_REDIS_HOST"),
@@ -219,6 +221,8 @@ def base_app(instance_path):
         WEKO_USERPROFILES_GENERAL_ROLE=WEKO_USERPROFILES_GENERAL_ROLE,
         CACHE_REDIS_DB = 0,
         WEKO_DEPOSIT_ITEMS_CACHE_PREFIX=WEKO_DEPOSIT_ITEMS_CACHE_PREFIX,
+        # INDEXER_DEFAULT_DOCTYPE=INDEXER_DEFAULT_DOCTYPE,
+        # INDEXER_FILE_DOC_TYPE=INDEXER_FILE_DOC_TYPE,
         WEKO_INDEX_TREE_DEFAULT_DISPLAY_NUMBER=WEKO_INDEX_TREE_DEFAULT_DISPLAY_NUMBER,
         DEPOSIT_DEFAULT_JSONSCHEMA=DEPOSIT_DEFAULT_JSONSCHEMA,
         DEPOSIT_JSONSCHEMAS_PREFIX=DEPOSIT_JSONSCHEMAS_PREFIX,
@@ -229,30 +233,65 @@ def base_app(instance_path):
     )
 
     app_.config['WEKO_SEARCH_REST_ENDPOINTS']['recid']['search_index']='test-weko'
+    # tmp = app_.config['RECORDS_REST_SORT_OPTIONS']['tenant1-weko']
+    # app_.config['RECORDS_REST_SORT_OPTIONS']['test-weko']=tmp
+    # Babel(app_)
     InvenioI18N(app_)
     InvenioAssets(app_)
+    #InvenioAdmin(app_)
     InvenioDB(app_)
     InvenioAccounts(app_)
     InvenioAccess(app_)
+    # InvenioTheme(app_)
+    # InvenioREST(app_)
+
+    # InvenioCache(app_)
+
+    # InvenioDeposit(app_)
+    # InvenioPIDStore(app_)
+    # InvenioPIDRelations(app_)
     InvenioRecords(app_)
+    # InvenioRecordsREST(app_)
     InvenioFilesREST(app_)
     InvenioJSONSchemas(app_)
+    # InvenioOAIServer(app_)
 
     search = InvenioSearch(app_)
 
+    # WekoSchemaUI(app_)
     InvenioStats(app_)
 
+    # InvenioAdmin(app_)
     Menu(app_)
     WekoRecords(app_)
     WekoDeposit(app_)
     WekoWorkflow(app_)
     WekoGroups(app_)
     WekoAdmin(app_)
+    # WekoTheme(app_)
+    # WekoRecordsUI(app_)
+    # InvenioCommunities(app_)
 
     InvenioIndexer(app_)
+    # WekoSearchREST(app_)
+    # WekoIndexTree(app_)
+    # WekoIndexTreeREST(app_)
     WekoRecords(app_)
     WekoSearchUI(app_)
+    # ext.init_config(app_)
     WekoItemsUI(app_)
+
+    # app_.register_blueprint(invenio_accounts_blueprint)
+    # app_.register_blueprint(weko_theme_blueprint)
+    # app_.register_blueprint(weko_items_ui_blueprint)
+    # app_.register_blueprint(invenio_communities_blueprint)
+    # app_.register_blueprint(weko_workflow_blueprint)
+
+    # runner = CliRunner()
+    # result = runner.invoke(collect, [],obj=weko_items_ui_blueprint)
+    # Run build
+    # result = runner.invoke(assets, ['build'],obj=weko_items_ui_blueprint)
+    # result = runner.invoke(npm,obj=weko_items_ui_blueprint)
 
     current_assets = LocalProxy(lambda: app_.extensions["invenio-assets"])
     current_assets.collect.collect()
