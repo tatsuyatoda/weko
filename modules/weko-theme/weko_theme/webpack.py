@@ -18,8 +18,6 @@ weko_theme = WebpackThemeBundle(
                 'theme-widget': './js/weko_theme/widget_js.js',
                 'theme-angular': './node_modules/angular/angular.js',
                 'theme-schema-form': './node_modules/angular-schema-form/dist/schema-form.min.js',
-                'theme-angular': './node_modules/angular/angular.js',
-                'theme-schema-form': './node_modules/angular-schema-form/dist/schema-form.min.js',
             },
             dependencies={
                 'almond': '~0.3.1',
