@@ -12,21 +12,21 @@ from invenio_accounts.testutils import login_user_via_session
 from invenio_accounts.models import Role
 from invenio_communities.admin import community_adminview,request_adminview,featured_adminview
 
-# テスト用のモックデータを作成
+# create mock data
 @pytest.fixture
 def mock_role(db):
-    # 既存の「Contributor」ロールを削除
+    # Delete the existing "Contributor" role
     existing_role = db.session.query(Role).filter_by(name="Contributor").first()
     if existing_role:
         db.session.delete(existing_role)
         db.session.commit()
 
-    # Roleの新しいインスタンスを作成
+    # Create a new instance of the Role
     role = Role(id="1", name="Contributor")
     
-    # DBセッションに追加
+    # Add to the DB session
     db.session.add(role)
-    db.session.commit()  # 変更をコミット
+    db.session.commit()
 
     return role
 
