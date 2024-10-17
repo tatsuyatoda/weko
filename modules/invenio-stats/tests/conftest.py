@@ -1143,30 +1143,6 @@ def esindex(app,base_app):
     )
     with base_app.app_context():
         yield es
-        
-    #es.indices.delete_alias(
-    #    index=base_app.config["INDEXER_DEFAULT_INDEX"],
-    #    name=base_app.config["SEARCH_UI_SEARCH_INDEX"],
-    #    ignore=[400, 404],
-    #)
-    #es.indices.delete(index=base_app.config["INDEXER_DEFAULT_INDEX"], ignore=[400, 404])
-    # from invenio_search import current_search_client as client
-    # index_name = app.config["INDEXER_DEFAULT_INDEX"]
-    # alias_name = "test-events-stats-file-download"
-
-    # with open("tests/data/mappings/stats-file-download.json","r") as f:
-    #     mapping = json.load(f)
-
-    # with app.test_request_context():
-    #     client.indices.create(index=index_name, body=mapping)
-    #     client.indices.put_alias(index=index_name, name=alias_name)
-
-    # yield client
-
-    # with app.test_request_context():
-    #     client.indices.delete_alias(index=index_name, name=alias_name)
-    #     client.indices.delete(index=index_name, ignore=[400, 404])
-
 
 @pytest.fixture()
 def i18n_app(app):
