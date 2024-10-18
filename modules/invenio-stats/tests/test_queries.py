@@ -149,23 +149,6 @@ def test_date_histogram_query(i18n_app, queries_config):
 
 # class ESTermsQuery(ESQuery):
 # .tox/c1/bin/pytest --cov=invenio_stats tests/test_queries.py::test_terms_query -v -s -vv --cov-branch --cov-report=term --cov-config=tox.ini --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
-# @pytest.mark.parametrize('aggregated_file_download_events',
-#                          [dict(file_number=1,
-#                                event_number=7,
-#                                start_date=datetime.date(2017, 1, 1),
-#                                end_date=datetime.date(2017, 1, 7))],
-#                          indirect=['aggregated_file_download_events'])
-# @pytest.mark.parametrize("mock_execute, config_name, res_file",
-#                          [(["tests/data/ESTermsQuery_execute01.json"],
-#                            "get-search-report",
-#                            "tests/data/ESTermsQuery_result01.json")
-#                           (["tests/data/ESTermsQuery_execute02.json", 
-#                             "tests/data/ESTermsQuery_execute01.json"],
-#                            "get-search-report",
-#                            "tests/data/ESTermsQuery_result02.json"),
-#                           (["tests/data/ESTermsQuery_execute03.json"],
-#                            'bucket-record-view-total',
-#                            "tests/data/ESTermsQuery_result03.json")])
 
 # .tox/c1/bin/pytest --cov=invenio-stats tests/test_queries.py::test_terms_query -vv -s --cov-branch --cov-report=html --basetemp=/code/modules/invenio-stats/.tox/c1/tmp --full-trace 
 def test_terms_query(i18n_app, queries_config):
