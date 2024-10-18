@@ -148,8 +148,6 @@ def test_date_histogram_query(i18n_app, queries_config):
         assert query.process_query_result(_res2, 'month', None, None) == {'interval': 'month', 'key_type': 'date', 'start_date': None, 'end_date': None, 'buckets': [{'key': 'key1', 'date': '2023-01-01', 'value': 1}]}
 
 # class ESTermsQuery(ESQuery):
-# .tox/c1/bin/pytest --cov=invenio_stats tests/test_queries.py::test_terms_query -v -s -vv --cov-branch --cov-report=term --cov-config=tox.ini --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
-
 # .tox/c1/bin/pytest --cov=invenio-stats tests/test_queries.py::test_terms_query -vv -s --cov-branch --cov-report=html --basetemp=/code/modules/invenio-stats/.tox/c1/tmp --full-trace 
 def test_terms_query(i18n_app, queries_config):
     # config_num = 0        # 
@@ -202,6 +200,7 @@ def test_terms_query(i18n_app, queries_config):
         **test_config
     )
     assert query.process_query_result(_res, None, None) == {'start_date': None, 'end_date': None, 'value': 'v1'}
+
 
 # .tox/c1/bin/pytest --cov=invenio_stats tests/test_queries.py::test_terms_query2 -v -s -vv --cov-branch --cov-report=term --cov-config=tox.ini --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
 def test_terms_query2(i18n_app, queries_config):

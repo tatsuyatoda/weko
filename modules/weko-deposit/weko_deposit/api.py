@@ -23,7 +23,7 @@ import copy
 import uuid
 
 from collections import OrderedDict
-
+from opensearchpy.helpers import bulk
 from datetime import datetime, timezone,date
 from typing import NoReturn, Union
 from tika import parser
@@ -31,7 +31,6 @@ from redis import RedisError
 from dictdiffer import dot_lookup
 from dictdiffer.merge import Merger, UnresolvedConflictsException
 from invenio_search.engine import search
-
 from flask import abort, current_app, json, request, session
 from flask_security import current_user
 from invenio_db import db
@@ -322,6 +321,7 @@ class WekoIndexer(RecordIndexer):
 
         Raises:
             search.OpenSearchException:
+
                 If an error occurs during the update process (excluding errors
                 with status codes 400 and 404, which are ignored).
         """
