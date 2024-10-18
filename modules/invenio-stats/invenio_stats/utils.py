@@ -904,8 +904,10 @@ class QueryItemRegReportHelper(object):
 
         # total
         query_total_cfg = current_stats.queries[query_name]
-        query_total = query_total_cfg.query_class(
-            **query_total_cfg.query_config)
+        query_total = query_total_cfg.cls(
+            **query_total_cfg.params,
+            name = query_name
+            )
 
         d = start_date
 
