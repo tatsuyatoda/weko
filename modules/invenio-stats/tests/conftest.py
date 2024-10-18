@@ -589,11 +589,11 @@ def es(app):
 @pytest.fixture(scope='function')
 def db(app):
     """Database fixture."""
-    if not database_exists(str(db_.engine.url)):
-        create_database(str(db_.engine.url))
     with app.app_context():
+        if not database_exists(str(db_.engine.url)):
+            create_database(str(db_.engine.url))
         db_.create_all()
-    return db_
+        return db_
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -849,8 +849,8 @@ def mock_es_execute():
         if isinstance(data, str):
             with open(data, "r") as f:
                 data = json.load(f)
-        dummy = dsl.response.Response(dsl.Search(), data)
-        return dummy
+            dummy = dsl.response.Response(dsl.Search(), data)
+            return dummy
     return _dummy_response
 
 
@@ -957,8 +957,8 @@ def aggregated_file_download_events(app, es, mock_user_ctx, request):
             app=app, event_type="file-download", **request.param)
 
         from datetime import datetime, timezone
-        start_date = datetime(2022, 10, 1, tzinfo=timezone.utc).isoformat()
-        end_date = datetime(2022, 10, 30, tzinfo=timezone.utc).isoformat()
+        start_date = datetime(2022, 10, 1).isoformat()
+        end_date = datetime(2022, 10, 30).isoformat()
 
         aggregate_events(
             ["file-download-agg"],
@@ -993,23 +993,24 @@ def aggregated_file_preview_events(app, es, mock_user_ctx, request):
 
 @pytest.yield_fixture()
 def stats_events_for_db(app, db):
-    def base_event(id, event_type):
-        return StatsEvents(
-            source_id=str(id),
-            index="test-events-stats-{}".format(event_type),
-            type="stats-{}".format(event_type),
-            source=json.dumps({"test": "test"}),
-            date=datetime.datetime(2023, 1, 1, 1, 0, 0)
-        )
+    with app.test_request_context():
+        def base_event(id, event_type):
+            return StatsEvents(
+                source_id=str(id),
+                index="test-events-stats-{}".format(event_type),
+                type="stats-{}".format(event_type),
+                source=json.dumps({"test": "test"}),
+                date=datetime.datetime(2023, 1, 1, 1, 0, 0)
+            )
 
-    try:
-        with db.session.begin_nested():
-            db.session.add(base_event(1, "top-view"))
-        db.session.commit()
-    except:
-        db.session.rollback()
+        try:
+            with db.session.begin_nested():
+                db.session.add(base_event(1, "top-view"))
+            db.session.commit()
+        except:
+            db.session.rollback()
 
-        yield
+            yield
 
 
 @pytest.fixture()
@@ -1160,8 +1161,7 @@ def esindex(app):
 
 @pytest.fixture()
 def i18n_app(app):
-    with app.test_request_context(
-            headers=[('Accept-Language', 'ja')]):
+    with app.test_request_context(headers=[('Accept-Language','ja')]):
         app.extensions['invenio-oauth2server'] = 1
         app.extensions['invenio-search'] = MagicMock()
         app.extensions['invenio-i18n'] = MagicMock()

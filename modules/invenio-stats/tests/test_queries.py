@@ -148,12 +148,6 @@ def test_date_histogram_query(i18n_app, queries_config):
 
 # class ESTermsQuery(ESQuery):
 # .tox/c1/bin/pytest --cov=invenio_stats tests/test_queries.py::test_terms_query -v -s -vv --cov-branch --cov-report=term --cov-config=tox.ini --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
-@pytest.mark.parametrize('aggregated_file_download_events',
-                         [dict(file_number=1,
-                               event_number=7,
-                               start_date=datetime.date(2017, 1, 1),
-                               end_date=datetime.date(2017, 1, 7))],
-                         indirect=['aggregated_file_download_events'])
 @pytest.mark.parametrize("mock_execute, config_num, res_file",
                          [(["tests/data/ESTermsQuery_execute01.json"],
                            1,
@@ -167,13 +161,15 @@ def test_date_histogram_query(i18n_app, queries_config):
                            "tests/data/ESTermsQuery_result03.json")])
 
 # .tox/c1/bin/pytest --cov=invenio-stats tests/test_queries.py::test_terms_query -vv -s --cov-branch --cov-report=html --basetemp=/code/modules/invenio-stats/.tox/c1/tmp --full-trace 
-def test_terms_query(i18n_app,mock_es_execute, event_queues,
-                     aggregated_file_download_events, mock_execute, config_num, res_file, queries_config):
+def test_terms_query(i18n_app,mock_es_execute, event_queues, mock_execute, config_num, res_file, queries_config):
     """Test that the terms query returns the correct total count."""
     terms_query = ESTermsQuery(query_name='test_total_count',
                                **queries_config[config_num]['queries_config'])
 
-    with patch("invenio_stats.queries.Search.execute", side_effect=[mock_es_execute(data) for data in mock_execute]):
+    # mock_execute が適切なデータを返すように設定
+    mock_execute_data = [mock_es_execute(data) for data in mock_execute]
+
+    with patch("invenio_stats.queries.Search.execute", side_effect=mock_execute_data):
         results = terms_query.run(bucket_id='B0000000000000000000000000000001',
                                   start_date=datetime.datetime(2017, 1, 1),
                                   end_date=datetime.datetime(2017, 1, 7))
