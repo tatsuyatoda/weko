@@ -172,7 +172,9 @@ def is_import_running():
 
 def check_celery_is_run():
     """Check celery is running, or not."""
-    if not Inspect().ping():
+    try:
+        inspect = current_app.extensions.get('flask-celeryext').celery.control.inspect()
+        return bool(inspect.ping())
+    except Exception as e:
+        current_app.logger.error(e)
         return False
-    else:
-        return True
