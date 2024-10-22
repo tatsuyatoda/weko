@@ -1,5 +1,4 @@
 import $ from 'jquery';
-import action from 'bootstrap';
 import angular from 'angular';
 
 const SPECIFIC_INDEX_VALUE = '1';
@@ -417,9 +416,9 @@ const SPECIFIC_INDEX_VALUE = '1';
             });
 
             $('button[type="button"]').on('click', function (ev) {
-                let button_action = this.dataset.action;
+                let action = this.dataset.action;
 
-                if ('add' == button_action) {
+                if ('add' == action) {
                     frm_cnt++;
 
                     $('#tr_lists0').clone(true).appendTo($('#t_keyword > #tb_keyword')).attr('id', 'tr_lists' + frm_cnt).end();
@@ -430,7 +429,7 @@ const SPECIFIC_INDEX_VALUE = '1';
                     $scope.setTextLabel(select_inputType, 'tr_lists' + frm_cnt, true);
                 }
 
-                if ('del' == button_action) {
+                if ('del' == action) {
                     this.closest("tr").remove();
 
                     frm_cnt = 0;
@@ -446,7 +445,7 @@ const SPECIFIC_INDEX_VALUE = '1';
                     }
                 }
 
-                if ('save' == button_action) {
+                if ('save' == action) {
                     $('#search_item_chg').trigger('click');
                     var count = 0;
                     var item_type_id = $("#item-type-lists").val();
