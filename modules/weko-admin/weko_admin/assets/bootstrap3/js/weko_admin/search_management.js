@@ -417,9 +417,9 @@ const SPECIFIC_INDEX_VALUE = '1';
             });
 
             $('button[type="button"]').on('click', function (ev) {
-                action = this.dataset.action;
+                let button_action = this.dataset.action;
 
-                if ('add' == action) {
+                if ('add' == button_action) {
                     frm_cnt++;
 
                     $('#tr_lists0').clone(true).appendTo($('#t_keyword > #tb_keyword')).attr('id', 'tr_lists' + frm_cnt).end();
@@ -430,7 +430,7 @@ const SPECIFIC_INDEX_VALUE = '1';
                     $scope.setTextLabel(select_inputType, 'tr_lists' + frm_cnt, true);
                 }
 
-                if ('del' == action) {
+                if ('del' == button_action) {
                     this.closest("tr").remove();
 
                     frm_cnt = 0;
@@ -446,7 +446,7 @@ const SPECIFIC_INDEX_VALUE = '1';
                     }
                 }
 
-                if ('save' == action) {
+                if ('save' == button_action) {
                     $('#search_item_chg').trigger('click');
                     var count = 0;
                     var item_type_id = $("#item-type-lists").val();
