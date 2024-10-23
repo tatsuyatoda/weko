@@ -4318,7 +4318,7 @@ function toObject(arr) {
                     }
                 }
 
-                return removedItemKeys;
+                return removedItemKeys; 
             }
 
             $scope.saveActivity = function () {
@@ -4329,7 +4329,6 @@ function toObject(arr) {
 
                 let requestData = {
                     activity_id: activityID,
-                    title: recordModel['title'],
                     shared_user_id: recordModel['shared_user_id'],
                 }
 

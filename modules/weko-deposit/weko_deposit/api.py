@@ -37,14 +37,17 @@ from sqlalchemy.orm.attributes import flag_modified
 
 from invenio_db import db
 from invenio_deposit.api import Deposit, index, preserve
+from invenio_deposit.utils import mark_as_action
 from invenio_files_rest.models import (
     Bucket, Location, MultipartObject, ObjectVersion, Part)
 from invenio_i18n.ext import current_i18n
 from invenio_indexer.api import RecordIndexer
+from invenio_pidrelations.api import PIDRelation
 from invenio_pidrelations.contrib.draft import PIDNodeDraft
 from invenio_pidrelations.contrib.versioning import PIDNodeVersioning
 from invenio_pidrelations.models import PIDRelation
-from invenio_pidrelations.serializers.utils import serialize_relations
+from invenio_pidrelations.serializers.utils import dump_relation
+from invenio_pidrelations.utils import resolve_relation_type_config
 from invenio_pidstore.errors import PIDDoesNotExistError, PIDInvalidAction
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from invenio_records.models import RecordMetadata
@@ -1017,6 +1020,7 @@ class WekoDeposit(Deposit):
         weko_logger(key='WEKO_COMMON_RETURN_VALUE', value=True)
         return True
 
+    @mark_as_action
     def publish(self, pid=None, id_=None):
         """Publish the deposit.
 
@@ -1072,7 +1076,7 @@ class WekoDeposit(Deposit):
             pid_type='recid',
             object_uuid=self.id
         ).one_or_none()
-        relations = serialize_relations(recid)
+        relations = self.serialize_relations(recid)
         if relations and 'version' in relations:
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch="relations is not empty and "
@@ -1084,6 +1088,20 @@ class WekoDeposit(Deposit):
 
         weko_logger(key='WEKO_COMMON_RETURN_VALUE', value=deposit)
         return deposit
+
+    def serialize_relations(self, recid):
+        """Serialize the relations for given PID."""
+        data = {}
+        relations = PIDRelation.get_child_relations(recid).all()
+        for relation in relations:
+            rel_cfg = resolve_relation_type_config(relation.relation_type)
+            dump_relation(rel_cfg.api(relation.parent),
+                          rel_cfg, recid, data)
+        parent_relations = PIDRelation.get_parent_relations(recid).all()
+        rel_cfgs = set([resolve_relation_type_config(p.relation_type) for p in parent_relations])
+        for rel_cfg in rel_cfgs:
+            dump_relation(rel_cfg.api(recid), rel_cfg, recid, data)
+        return data
 
     @classmethod
     def create(cls, data, id_=None, recid=None):
@@ -1167,7 +1185,7 @@ class WekoDeposit(Deposit):
             'parent:{0}'.format(record_id),
             object_type='rec',
             object_uuid=deposit.id,
-            status=PIDStatus.REGISTERED
+            status=PIDStatus.RESERVED
         )
 
         RecordsBuckets.create(record=deposit.model, bucket=bucket)
@@ -1176,6 +1194,9 @@ class WekoDeposit(Deposit):
         depid = PersistentIdentifier.get('depid', record_id)
         PIDNodeVersioning(pid=parent_pid).insert_draft_child(child_pid=recid)
         PIDNodeDraft(pid=recid).insert_child(depid)
+        parent_pid.register()
+        recid.register()
+        depid.register()
         # Update this object_uuid for item_id of activity.
         if session and 'activity_info' in session:
             weko_logger(key='WEKO_COMMON_IF_ENTER',
@@ -1597,7 +1618,7 @@ class WekoDeposit(Deposit):
                         pid=pid)
             raise WekoDepositError(msg="PID status is not registered.")
 
-        if not record or not versioning.exists or versioning.draft_child:
+        if not record or parent_pid is None or versioning.draft_child:
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='record is None or versioning does not exists '
                                 'or draft_child exists')
@@ -1635,7 +1656,7 @@ class WekoDeposit(Deposit):
 
         PIDNodeVersioning(
             pid=parent_pid).insert_draft_child(
-            child=recid)
+            child_pid=recid)
         PIDNodeDraft(pid=recid).insert_child(depid)
         if is_draft:
             weko_logger(key='WEKO_COMMON_IF_ENTER',
@@ -1646,7 +1667,7 @@ class WekoDeposit(Deposit):
                 relation = PIDRelation.query. \
                     filter_by(parent=parent_pid,
                             child=recid).one_or_none()
-                relation.relation_type = 3
+                relation.relation_type = 1
             db.session.merge(relation)
 
         snapshot = (
