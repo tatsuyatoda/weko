@@ -1,4 +1,3 @@
-import './jquery-ui.js';
-import './lodash.min.js';
-import './gridstack.js';
-import './gridstack.jQueryUI.js';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './browser.min.js';

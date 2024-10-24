@@ -312,9 +312,9 @@ class ItemTypeMetaDataView(BaseView):
             tmp = {'name': name, 'schema': k.schema, 'form': k.form,
                    'forms': k.forms, 'sort': k.sort, 'is_file': is_file}
             if name and name[:2] == 'S_':
-                lists['system'][k.id] = tmp
+                lists['system'][str(k.id)] = tmp
             else:
-                lists[k.id] = tmp
+                lists[str(k.id)] = tmp
 
         settings = AdminSettings.get('default_properties_settings')
         default_properties = current_app.config[
@@ -356,12 +356,12 @@ class ItemTypeMetaDataView(BaseView):
         fp = io.BytesIO()
         with ZipFile(fp, 'w', compression=ZIP_DEFLATED) as new_zip:
             # zipファイルにJSON文字列を追加
-            new_zip.writestr("ItemType.json", ItemTypeSchema().dumps(item_types).data.encode().decode('unicode-escape').encode())
-            new_zip.writestr("ItemTypeName.json", ItemTypeNameSchema().dumps(item_type_names).data.encode().decode('unicode-escape').encode())
-            new_zip.writestr("ItemTypeMapping.json", ItemTypeMappingSchema().dumps(item_type_mappings.model).data.encode().decode('unicode-escape').encode())
+            new_zip.writestr("ItemType.json", ItemTypeSchema().dumps(item_types).encode().decode('unicode-escape').encode())
+            new_zip.writestr("ItemTypeName.json", ItemTypeNameSchema().dumps(item_type_names).encode().decode('unicode-escape').encode())
+            new_zip.writestr("ItemTypeMapping.json", ItemTypeMappingSchema().dumps(item_type_mappings.model).encode().decode('unicode-escape').encode())
             json_str = ""
             for item_type_property in item_type_properties :
-                prop_str = ItemTypePropertySchema().dumps(item_type_property).data
+                prop_str = ItemTypePropertySchema().dumps(item_type_property)
                 if len(json_str) > 0:
                     json_str += ","
                 json_str += prop_str
@@ -371,7 +371,7 @@ class ItemTypeMetaDataView(BaseView):
         return send_file(
             fp ,
             mimetype = 'application/zip' ,
-            attachment_filename ='ItemType_export.zip' ,
+            download_name ='ItemType_export.zip' ,
             as_attachment = True
         )
     
