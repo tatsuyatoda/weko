@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import $ from "jquery";
-const {UseState, useEffect} = React;
-const Trumbowyg = window['react-trumbowyg'];
+import Trumbowyg from 'react-trumbowyg';
+const {useState, useEffect} = React;
 
 const FREE_DESCRIPTION_TYPE = "Free description";
 const NOTICE_TYPE = "Notice";
@@ -41,11 +41,11 @@ const MESSAGE = {
 const IMAGE_MIME_TYPE = ["image/apng", "image/avif", "image/gif", "image/jpeg",
   "image/png", "image/svg+xml", "image/webp"]
 
-function userSelectedInput(initialValue, getValueOfField, key_binding, componentHandle) {
+function UserSelectedInput(initialValue, getValueOfField, key_binding, componentHandle) {
   if (key_binding === "border_style" && !initialValue) {
     initialValue = DEFAULT_BORDER_STYLE;
   }
-  const [value, setValue] = UseState(initialValue);
+  const [value, setValue] = useState(initialValue);
 
   function handleChange(e) {
     setValue(e.target.value);
@@ -63,8 +63,8 @@ function userSelectedInput(initialValue, getValueOfField, key_binding, component
 }
 
 const ComponentSelectField = function (props) {
-  const selectedData = userSelectedInput(props.data_load, props.getValueOfField, props.key_binding);
-  const [selectOptions, setSelectOptions] = UseState([]);
+  const selectedData = UserSelectedInput(props.data_load, props.getValueOfField, props.key_binding);
+  const [selectOptions, setSelectOptions] = useState([]);
 
   useEffect(() => {
     let options = [];
@@ -217,7 +217,7 @@ class ComponentTextboxField extends React.Component {
 
 
 const ComponentTextboxForAccessCounter = function (props) {
-  const [value, setValue] = UseState(props.value);
+  const [value, setValue] = useState(props.value);
 
   function handleChange(event) {
     setValue(event.target.value);
@@ -269,7 +269,7 @@ const ComponentSelectColorFiled = (props) => {
     initColor = DEFAULT_BORDER_COLOR;
   }
 
-  const [value, setValue] = UseState(props.data_load || initColor);
+  const [value, setValue] = useState(props.data_load || initColor);
   useEffect(() => {
     if (props.handleChange) {
       props.handleChange(props.key_binding, value);
@@ -307,8 +307,8 @@ const ComponentSelectColorFiled = (props) => {
   )
 };
 
-function userCheckboxInput(initialValue, getValueOfField, key_binding) {
-  const [value, setValue] = UseState(initialValue);
+function UserCheckboxInput(initialValue, getValueOfField, key_binding) {
+  const [value, setValue] = useState(initialValue);
 
   function handleChange(e) {
     setValue(e.target.value);
@@ -322,7 +322,7 @@ function userCheckboxInput(initialValue, getValueOfField, key_binding) {
 }
 
 const ComponentCheckboxField = function (props) {
-  const is_default_Checked = userCheckboxInput(props.data_load || false, props.getValueOfField, props.key_binding);
+  const is_default_Checked = UserCheckboxInput(props.data_load || false, props.getValueOfField, props.key_binding);
 
   return (
     <div className="form-group row">
@@ -682,7 +682,7 @@ class ComponentFieldContainSelectMultiple extends React.Component {
 }
 
 const TrumbowygWrapper = props => {
-  const [value, setValue] = UseState();
+  const [value, setValue] = useState();
   let timeoutHandle;
 
   useEffect(() => {
@@ -728,7 +728,7 @@ const TrumbowygWrapper = props => {
 
   return (
     <div>
-      <Trumbowyg.default
+      <Trumbowyg
         id={props.id}
         autogrow={true}
         onChange={handleChange}
@@ -743,7 +743,7 @@ const TrumbowygWrapper = props => {
 };
 
 const ComponentFieldEditor = function (props) {
-  const [value, setValue] = UseState(props.data_load || "");
+  const [value, setValue] = useState(props.data_load || "");
   const serverPath = '/widget/uploads/' + props.repositoryId + "@widget";
   const btnsDef = {
     image: {
@@ -978,7 +978,7 @@ class ExtendComponent extends React.Component {
 
     let options = newDates.map((value) => {
       return (
-        <option>{value}</option>
+        <option key={value} value={value}>{value}</option>
       )
     });
 
