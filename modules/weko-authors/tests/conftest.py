@@ -26,7 +26,8 @@ import json
 import uuid
 from os.path import dirname, join
 
-from elasticsearch import Elasticsearch
+# from elasticsearch import Elasticsearch
+from opensearchpy import OpenSearch
 from sqlalchemy import inspect
 
 import pytest
@@ -46,12 +47,14 @@ from invenio_cache import InvenioCache
 from invenio_communities.models import Community
 from invenio_db import InvenioDB, db as db_
 from invenio_files_rest import InvenioFilesREST
-from invenio_files_rest.models import Location, FileInstance
+from invenio_files_rest.models import Location, FileInstance, Bucket
 from invenio_indexer import InvenioIndexer
 from invenio_search import InvenioSearch,RecordsSearch
 from weko_authors.config import WEKO_AUTHORS_REST_ENDPOINTS
 from weko_search_ui import WekoSearchUI
 from weko_index_tree.models import Index
+from invenio_i18n import InvenioI18N
+from celery import Celery
 
 from weko_authors.views import blueprint_api
 from weko_authors import WekoAuthors
@@ -68,7 +71,6 @@ class TestSearch(RecordsSearch):
         """Test configuration."""
 
         index = 'records'
-        doc_types = None
 
     def __init__(self, **kwargs):
         """Add extra options."""
@@ -91,13 +93,20 @@ def instance_path():
 
 
 class MockEs():
-    def __init__(self,**keywargs):
+    def __init__(self, base_app,**keywargs):
+        search_hosts = base_app.config["SEARCH_ELASTIC_HOSTS"]
+        search_client_config = base_app.config["SEARCH_CLIENT_CONFIG"]
         self.indices = self.MockIndices()
-        self.es = Elasticsearch()
+        self.es = OpenSearch(
+            hosts=[{'host': search_hosts, 'port': 9200}],
+            http_auth=search_client_config['http_auth'],
+            use_ssl=search_client_config['use_ssl'],
+            verify_certs=search_client_config['verify_certs'],
+        )
         self.cluster = self.MockCluster()
-    def index(self, id="",version="",version_type="",index="",doc_type="",body="",**arguments):
+    def index(self, id="",version="",version_type="",index="",body="",**arguments):
         pass
-    def delete(self,id="",index="",doc_type="",**kwargs):
+    def delete(self,id="",index="",**kwargs):
         return Response(response=json.dumps({}),status=500)
     @property
     def transport(self):
@@ -127,90 +136,29 @@ class MockEs():
         def delete_alias(self, index="", name="",ignore=""):
             pass
         
-        # def search(self,index="",doc_type="",body={},**kwargs):
-        #     pass
     class MockCluster():
         def __init__(self,**kwargs):
             pass
         def health(self, wait_for_status="", request_timeout=0):
             pass
 
+def make_celery(app):
+    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
+    celery.conf.update(app.config)
+    return celery
 
 @pytest.fixture()
-def base_app(request, instance_path,search_class):
-    """Flask application fixture."""
+def base_app(instance_path,search_class):
+    """Flask application fixture for ES."""
     app_ = Flask('testapp', instance_path=instance_path)
     app_.config.update(
+        WEKO_ADMIN_ENABLE_LOGIN_INSTRUCTIONS = False,
         SECRET_KEY='SECRET_KEY',
         TESTING=True,
         SERVER_NAME='app',
         SQLALCHEMY_DATABASE_URI=os.environ.get(
            'SQLALCHEMY_DATABASE_URI',
-           'postgresql+psycopg2://invenio:dbpass123@postgresql:5432/wekotest'),
-        # SQLALCHEMY_DATABASE_URI=os.environ.get(
-        #     'SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db'),
-        SQLALCHEMY_TRACK_MODIFICATIONS=True,
-        INDEX_IMG='indextree/36466818-image.jpg',
-        SEARCH_UI_SEARCH_INDEX='test-weko',
-        WEKO_AUTHORS_ES_INDEX_NAME='test-authors',
-        WEKO_AUTHORS_AFFILIATION_IDENTIFIER_ITEM_OTHER=4,
-        WEKO_AUTHORS_LIST_SCHEME_AFFILIATION=[
-            'ISNI', 'GRID', 'Ringgold', 'kakenhi', 'Other'],
-        CELERY_ALWAYS_EAGER=True,
-        CELERY_CACHE_BACKEND="memory",
-        CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
-        CELERY_RESULT_BACKEND="cache",
-        CACHE_REDIS_URL='redis://redis:6379/0',
-        CACHE_REDIS_DB='0',
-        CACHE_REDIS_HOST="redis",
-        SEARCH_ELASTIC_HOSTS=os.environ.get("INVENIO_ELASTICSEARCH_HOST"),
-        SEARCH_INDEX_PREFIX="{}-".format('test'),
-        SEARCH_CLIENT_CONFIG=dict(timeout=120, max_retries=10),
-    )
-    Babel(app_)
-    InvenioDB(app_)
-    InvenioCache(app_)
-    InvenioAccounts(app_)
-    InvenioAccess(app_)
-    InvenioAdmin(app_)
-    InvenioAssets(app_)
-    InvenioIndexer(app_)
-    InvenioFilesREST(app_)
-    if hasattr(request, 'param'):
-        if 'is_es' in request.param:
-            search = InvenioSearch(app_)
-    else:
-        search = InvenioSearch(app_, client=MockEs())
-        search.register_mappings(search_class.Meta.index, 'mock_module.mapping')
-    WekoTheme(app_)
-    WekoAuthors(app_)
-    WekoSearchUI(app_)
-
-    # app_.register_blueprint(blueprint)
-    app_.register_blueprint(blueprint_api, url_prefix='/api/authors')
-    return app_
-
-
-@pytest.yield_fixture()
-def app(base_app):
-    """Flask application fixture."""
-    with base_app.app_context():
-        yield base_app
-
-
-@pytest.fixture()
-def base_app2(instance_path,search_class):
-    """Flask application fixture for ES."""
-    app_ = Flask('testapp', instance_path=instance_path)
-    app_.config.update(
-        SECRET_KEY='SECRET_KEY',
-        TESTING=True,
-        SERVER_NAME='app2',
-        # SQLALCHEMY_DATABASE_URI=os.environ.get(
-        #    'SQLALCHEMY_DATABASE_URI',
-        #    'postgresql+psycopg2://invenio:dbpass123@postgresql:5432/invenio'),
-        SQLALCHEMY_DATABASE_URI=os.environ.get(
-            'SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db'),
+           'postgresql+psycopg2://invenio:dbpass123@postgresql:5432/invenio'),
         SQLALCHEMY_TRACK_MODIFICATIONS=True,
         INDEX_IMG='indextree/36466818-image.jpg',
         INDEXER_DEFAULT_INDEX="{}-authors-author-v1.0.0".format(
@@ -221,6 +169,8 @@ def base_app2(instance_path,search_class):
         WEKO_AUTHORS_AFFILIATION_IDENTIFIER_ITEM_OTHER=4,
         WEKO_AUTHORS_LIST_SCHEME_AFFILIATION=[
             'ISNI', 'GRID', 'Ringgold', 'kakenhi', 'Other'],
+        BROKER_URL='amqp://guest:guest@172.19.0.4:5672/',
+        CELERY_BROKER_URL=os.environ.get("BROKER_URL", "amqp://guest:guest@rabbitmq:5672//"),
         CELERY_ALWAYS_EAGER=True,
         CELERY_CACHE_BACKEND="memory",
         CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
@@ -228,7 +178,9 @@ def base_app2(instance_path,search_class):
         CACHE_REDIS_URL='redis://redis:6379/0',
         CACHE_REDIS_DB='0',
         CACHE_REDIS_HOST="redis",
-        SEARCH_ELASTIC_HOSTS=os.environ.get("SEARCH_ELASTIC_HOSTS", "elasticsearch"),
+        SEARCH_ELASTIC_HOSTS=os.environ.get('SEARCH_ELASTIC_HOSTS', 'opensearch'),
+        SEARCH_HOSTS=os.environ.get('SEARCH_HOST', 'opensearch'),
+        SEARCH_CLIENT_CONFIG={"http_auth":(os.environ['INVENIO_OPENSEARCH_USER'],os.environ['INVENIO_OPENSEARCH_PASS']),"use_ssl":True, "verify_certs":False},
     )
     Babel(app_)
     InvenioDB(app_)
@@ -239,6 +191,7 @@ def base_app2(instance_path,search_class):
     InvenioAssets(app_)
     InvenioIndexer(app_)
     InvenioFilesREST(app_)
+    InvenioI18N(app_)
 
     search = InvenioSearch(app_)
     search.register_mappings(search_class.Meta.index, 'mock_module.mapping')
@@ -248,14 +201,15 @@ def base_app2(instance_path,search_class):
 
     # app_.register_blueprint(blueprint)
     app_.register_blueprint(blueprint_api, url_prefix='/api/authors')
+    app_.celery = make_celery(app_)
     return app_
 
 
 @pytest.yield_fixture()
-def app2(base_app2):
+def app(base_app):
     """Flask application fixture."""
-    with base_app2.app_context():
-        yield base_app2
+    with base_app.app_context():
+        yield base_app
 
 
 @pytest.yield_fixture()
@@ -263,10 +217,9 @@ def db(app):
     """Database fixture."""
     if not database_exists(str(db_.engine.url)):
         create_database(str(db_.engine.url))
-    db_.create_all()
+        db_.create_all()
     yield db_
     db_.session.remove()
-    db_.drop_all()
     # drop_database(str(db_.engine.url))
 
 
@@ -277,22 +230,6 @@ def client(app):
         yield client
 
 from invenio_search import current_search_client
-@pytest.fixture()
-def esindex(app):
-    current_search_client.indices.delete(index='test-*')
-    with open("tests/mock_module/mapping/v6/authors/author-v1.0.0.json","r") as f:
-        mapping = json.load(f)
-    with app.test_request_context():
-        current_search_client.indices.create("test-authors-author-v1.0.0",body=mapping)
-        current_search_client.indices.put_alias(index="test-authors-author-v1.0.0", name=app.config["WEKO_AUTHORS_ES_INDEX_NAME"])
-
-    yield current_search_client
-
-    with app.test_request_context():
-        current_search_client.indices.delete_alias(index="test-authors-author-v1.0.0", name=app.config["WEKO_AUTHORS_ES_INDEX_NAME"])
-        current_search_client.indices.delete(index="test-authors-author-v1.0.0", ignore=[400, 404])
-
-
 @pytest.fixture()
 def users(app, db):
     """Create users."""
@@ -441,7 +378,6 @@ def create_author(app, db, esindex):
             
         current_search_client.index(
             index=app.config["WEKO_AUTHORS_ES_INDEX_NAME"],
-            doc_type=app.config['WEKO_AUTHORS_ES_DOC_TYPE'],
             id=es_id,
             body=es_data,
             refresh='true')
@@ -482,7 +418,6 @@ def authors(app,db,esindex):
         es_data["id"]=""
         current_search_client.index(
             index=app.config["WEKO_AUTHORS_ES_INDEX_NAME"],
-            doc_type=app.config['WEKO_AUTHORS_ES_DOC_TYPE'],
             id=es_id,
             body=es_data,
             refresh='true')
@@ -491,29 +426,27 @@ def authors(app,db,esindex):
     db.session.commit()
     return returns
 
-
-@pytest.fixture()
-def location(app,db):
-    """Create default location."""
-    tmppath = tempfile.mkdtemp()
-    with db.session.begin_nested():
-        Location.query.delete()
-        loc = Location(name='local', uri=tmppath, default=True)
-        db.session.add(loc)
-    db.session.commit()
-    return loc
-
-
 @pytest.fixture()
 def authors_prefix_settings(db):
     apss = list()
-    apss.append(AuthorsPrefixSettings(name="WEKO",scheme="WEKO"))
-    apss.append(AuthorsPrefixSettings(name="ORCID",scheme="ORCID",url="https://orcid.org/##"))
-    apss.append(AuthorsPrefixSettings(name="CiNii",scheme="CiNii",url="https://ci.nii.ac.jp/author/##"))
-    apss.append(AuthorsPrefixSettings(name="KAKEN2",scheme="KAKEN2",url="https://nrid.nii.ac.jp/nrid/##"))
-    apss.append(AuthorsPrefixSettings(name="ROR",scheme="ROR",url="https://ror.org/##"))
-    db.session.add_all(apss)
-    db.session.commit()
+    existing_schemes = db.session.query(AuthorsPrefixSettings.scheme).all()
+    existing_schemes = {s.scheme for s in existing_schemes}
+
+    data = [
+        {"name": "WEKO", "scheme": "WEKO", "url": None},
+        {"name": "ORCID", "scheme": "ORCID", "url": "https://orcid.org/##"},
+        {"name": "CiNii", "scheme": "CiNii", "url": "https://ci.nii.ac.jp/author/##"},
+        {"name": "KAKEN2", "scheme": "KAKEN2", "url": "https://nrid.nii.ac.jp/nrid/##"},
+        {"name": "ROR", "scheme": "ROR", "url": "https://ror.org/##"}
+    ]
+
+    for entry in data:
+        if entry["scheme"] not in existing_schemes:
+            apss.append(AuthorsPrefixSettings(**entry))
+
+    if apss:
+        db.session.add_all(apss)
+        db.session.commit()
     return apss
 
 @pytest.fixture()
@@ -540,20 +473,20 @@ def file_instance(db):
 
 
 @pytest.fixture()
-def esindex(app2):
+def esindex(app):
     from invenio_search import current_search_client as client
-    index_name = app2.config["INDEXER_DEFAULT_INDEX"]
+    index_name = app.config["INDEXER_DEFAULT_INDEX"]
     alias_name = "test-author-alias"
 
-    with open("tests/data/mappings/author-v1.0.0.json","r") as f:
+    with open("tests/mock_module/mapping/os-v2/authors/author-v1.0.0.json","r") as f:
         mapping = json.load(f)
 
-    with app2.test_request_context():
+    with app.test_request_context():
         client.indices.create(index=index_name, body=mapping, ignore=[400])
         client.indices.put_alias(index=index_name, name=alias_name)
 
     yield client
 
-    with app2.test_request_context():
+    with app.test_request_context():
         client.indices.delete_alias(index=index_name, name=alias_name)
         client.indices.delete(index=index_name, ignore=[400, 404])

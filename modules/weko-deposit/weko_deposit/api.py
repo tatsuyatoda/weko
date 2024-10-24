@@ -23,6 +23,7 @@ import copy
 import uuid
 
 from collections import OrderedDict
+from opensearchpy.helpers import bulk
 from datetime import datetime, timezone,date
 from typing import NoReturn, Union
 from tika import parser
@@ -32,9 +33,6 @@ from dictdiffer.merge import Merger, UnresolvedConflictsException
 from invenio_search.engine import search
 from flask import abort, current_app, json, request, session
 from flask_security import current_user
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm.attributes import flag_modified
-
 from invenio_db import db
 from invenio_deposit.api import Deposit, index, preserve
 from invenio_deposit.utils import mark_as_action
@@ -42,7 +40,6 @@ from invenio_files_rest.models import (
     Bucket, Location, MultipartObject, ObjectVersion, Part)
 from invenio_i18n.ext import current_i18n
 from invenio_indexer.api import RecordIndexer
-from invenio_pidrelations.api import PIDRelation
 from invenio_pidrelations.contrib.draft import PIDNodeDraft
 from invenio_pidrelations.contrib.versioning import PIDNodeVersioning
 from invenio_pidrelations.models import PIDRelation
@@ -54,6 +51,9 @@ from invenio_records.models import RecordMetadata
 from invenio_records_files.api import FileObject, Record
 from invenio_records_files.models import RecordsBuckets
 from invenio_records_rest.errors import PIDResolveRESTError
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.attributes import flag_modified
+
 
 from weko_admin.models import AdminSettings
 from weko_index_tree.api import Indexes
@@ -95,6 +95,7 @@ PRESERVE_FIELDS = (
 # WEKO_DEPOSIT_SYS_CREATOR_KEY = (
 #     current_app.config.get('WEKO_DEPOSIT_SYS_CREATOR_KEY')
 # )
+
 
 class WekoFileObject(FileObject):
     """Extend FileObject for detail page.
@@ -307,6 +308,7 @@ class WekoIndexer(RecordIndexer):
 
         Raises:
             search.OpenSearchException:
+
                 If an error occurs during the update process (excluding errors
                 with status codes 400 and 404, which are ignored).
         """
@@ -388,7 +390,6 @@ class WekoIndexer(RecordIndexer):
             result = self.client.update(
                 index=self.es_index,
                 id=str(record.id),
-                version=record.revision_id,
                 body=body
             )
 
@@ -1160,7 +1161,6 @@ class WekoDeposit(Deposit):
                     'displayname': user._displayname if user else '',
                     'email': current_user.email
                 }
-
         if recid:
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='recid is not None')
@@ -1173,13 +1173,13 @@ class WekoDeposit(Deposit):
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='recid is None')
             deposit = super(WekoDeposit, cls).create(data, id_=id_)
-
         record_id = 0
 
         if data.get('_deposit'):
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='_deposit is in data')
             record_id = str(data['_deposit']['id'])
+
         parent_pid = PersistentIdentifier.create(
             'parent',
             'parent:{0}'.format(record_id),
@@ -1192,6 +1192,7 @@ class WekoDeposit(Deposit):
 
         recid = PersistentIdentifier.get('recid', record_id)
         depid = PersistentIdentifier.get('depid', record_id)
+
         PIDNodeVersioning(pid=parent_pid).insert_draft_child(child_pid=recid)
         PIDNodeDraft(pid=recid).insert_child(depid)
         parent_pid.register()
@@ -1438,7 +1439,7 @@ class WekoDeposit(Deposit):
                 self.get_content_files()
 
                 try:
-                    # Upload file content to Elasticsearch
+                    # Upload file content to search engine
                     self.indexer.upload_metadata(
                         self.jrc,
                         self.pid.object_uuid,

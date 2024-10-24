@@ -18,19 +18,19 @@ import tempfile
 from time import sleep
 
 import pytest
-from elasticsearch.exceptions import RequestError
 from flask import Flask
 from flask.cli import ScriptInfo
 from flask_babel import Babel
-from flask_breadcrumbs import Breadcrumbs
 from flask_celeryext import FlaskCeleryExt
 from flask_oauthlib.provider import OAuth2Provider
 from flask_security import login_user
 from .helpers import fill_oauth2_headers, make_pdf_fixture
+from opensearchpy import OpenSearch
+from opensearchpy.exceptions import NotFoundError, RequestError
 from invenio_access import InvenioAccess
 from invenio_access.models import ActionUsers
+from invenio_i18n import InvenioI18N
 from invenio_accounts import InvenioAccounts
-# from invenio_accounts.views import blueprint as accounts_blueprint
 from invenio_accounts.views.rest import create_rest_blueprint
 from invenio_accounts.views.settings import create_settings_blueprint
 from invenio_assets import InvenioAssets
@@ -54,16 +54,13 @@ from invenio_records_ui.views import create_blueprint_from_app as records_ui_bp
 from invenio_rest import InvenioREST
 from invenio_search import InvenioSearch, current_search, current_search_client
 from invenio_search.errors import IndexAlreadyExistsError
+from invenio_search.engine import search
 from invenio_search_ui import InvenioSearchUI
 from six import BytesIO, get_method_self
 from sqlalchemy import inspect
 from sqlalchemy_utils.functions import create_database, database_exists, \
     drop_database
-
-try:
-    from werkzeug.middleware.dispatcher import DispatcherMiddleware
-except ImportError:
-    from werkzeug.wsgi import DispatcherMiddleware
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 from invenio_deposit import InvenioDeposit, InvenioDepositREST
 from invenio_deposit.api import Deposit
@@ -88,7 +85,14 @@ def base_app(request):
             CELERY_BROKER_URL='amqp://guest:guest@rabbitmq:5672/',
             CELERY_ALWAYS_EAGER=True,
             CELERY_CACHE_BACKEND='memory',
-            CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
+            CELERY_EAGER_PROPAGATES=True,
+            FILES_REST_DEFAULT_STORAGE_CLASS='S',
+            FILES_REST_STORAGE_CLASS_LIST={
+            'S': 'Standard',
+            'A': 'Archive',
+            },
+            FILES_REST_DEFAULT_QUOTA_SIZE=None,
+            FILES_REST_DEFAULT_MAX_FILE_SIZE=None,
             CELERY_RESULT_BACKEND='cache',
             JSONSCHEMAS_URL_SCHEME='http',
             SECRET_KEY='CHANGE_ME',
@@ -98,7 +102,11 @@ def base_app(request):
             SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI',
                                               'postgresql+psycopg2://invenio:dbpass123@postgresql:5432/wekotest'),
             SEARCH_ELASTIC_HOSTS=os.environ.get(
-                'SEARCH_ELASTIC_HOSTS', 'elasticsearch'),
+                    'SEARCH_ELASTIC_HOSTS', 'opensearch'),
+            SEARCH_HOSTS=os.environ.get(
+                'SEARCH_HOST', 'opensearch'
+            ),
+            SEARCH_CLIENT_CONFIG={"http_auth":(os.environ['INVENIO_OPENSEARCH_USER'],os.environ['INVENIO_OPENSEARCH_PASS']),"use_ssl":True, "verify_certs":False},
             SQLALCHEMY_TRACK_MODIFICATIONS=True,
             SQLALCHEMY_ECHO=False,
             TESTING=True,
@@ -123,8 +131,8 @@ def base_app(request):
         )
         Babel(app_)
         FlaskCeleryExt(app_)
-        Breadcrumbs(app_)
         OAuth2Provider(app_)
+        InvenioI18N(app_)
         InvenioDB(app_)
         InvenioAccounts(app_)
         InvenioAccess(app_)
@@ -152,7 +160,6 @@ def base_app(request):
     # initialize InvenioDeposit first in order to detect any invalid dependency
     InvenioDeposit(app_)
     init_app(app_)
-    # app.register_blueprint(accounts_blueprint)
     app_.register_blueprint(create_settings_blueprint(app_))
     app_.register_blueprint(create_rest_blueprint(app_))
     app_.register_blueprint(oauth2server_settings_blueprint)
@@ -301,8 +308,9 @@ def fake_schemas(app, api, es, tmpdir):
 def es(app):
     """Elasticsearch fixture."""
     try:
+        # current_search_client.indices.delete(index="test-*")
         list(current_search.create())
-    except (RequestError, IndexAlreadyExistsError):
+    except:
         list(current_search.delete(ignore=[404]))
         list(current_search.create(ignore=[400]))
     current_search_client.indices.refresh()
@@ -330,7 +338,7 @@ def deposit(app, es, users, location):
     }
     with app.test_request_context():
         datastore = app.extensions['security'].datastore
-        login_user(datastore.find_user(email=users[0]['email']))
+        login_user(datastore.find_user(email=users[0]['_email']))
         deposit = Deposit.create(record)
         deposit.commit()
         db.session.commit()
