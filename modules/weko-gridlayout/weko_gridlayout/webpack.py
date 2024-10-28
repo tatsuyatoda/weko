@@ -20,8 +20,8 @@ weko_gridlayout = WebpackThemeBundle(
                 "gridlayout_js_prop_types_react_quill_js": "./js/weko_gridlayout/prop-type-react-quill.js",
             },
             dependencies={
-                'react': '~16.8.6',
-                'react-dom': '~16.8.6',
+                # 'react': '~16.8.6',
+                # 'react-dom': '~16.8.6',
                 'react-trumbowyg': '~1.1.0',
                 'jquery': '~2.1.3',
                 'jquery-ui': '~1.14.0',
