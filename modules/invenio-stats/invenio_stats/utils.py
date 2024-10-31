@@ -660,12 +660,15 @@ class QueryRecordViewPerIndexReportHelper(object):
     index_name_field = "record_index_list.index_name"
 
     @classmethod
-    def build_query(cls, start_date, end_date, after_key=None):
+    def build_query(cls, start_date, end_date, event_type, after_key=None):
         """Get nested aggregation by index id."""
+        search_index_prefix = current_app.config["SEARCH_INDEX_PREFIX"].strip("-")
         agg_query = dsl.Search(
             using=current_search_client,
-            index="{}-events-stats-record-view".format(
-                current_app.config["SEARCH_INDEX_PREFIX"].strip("-")))[0:0]  # FIXME: Get ALL results
+            index=f"{search_index_prefix}-events-stats-index").filter(
+                "term",
+                event_type = "record-view"
+            )[0:0]  # FIXME: Get ALL results
 
         if start_date is not None and end_date is not None:
             time_range = {}
@@ -1332,9 +1335,6 @@ class StatsCliUtil:
         self.index_prefix = None
         self.affected_indices = None
         self.flush_indices = None
-        self._search_index_prefix = current_app.config[
-            "SEARCH_INDEX_PREFIX"].strip(
-            "-")
 
         if self.cli_type == self.EVENTS_TYPE:
             self.index_prefix = current_app.config["STATS_EVENT_STRING"]
@@ -1347,8 +1347,8 @@ class StatsCliUtil:
 
         :param bookmark: set True if delete bookmark
         """
-        for _index in self.__prepare_es_indexes():
-            self.__cli_delete_es_index(_index)
+        for _index, _type in self.__prepare_es_indexes():
+            self.__cli_delete_es_index(_index,_type)
         if bookmark:
             if self.verbose:
                 click.secho(
@@ -1378,15 +1378,15 @@ class StatsCliUtil:
         for _type in self.stats_types:
             if not _type:
                 continue
-            prefix = "stats-{}"
+            prefix = "stats-index"
             search_type = prefix.format(_type)
 
             if self.index_prefix:
-                _index = f"{search_index_prefix}-{self.index_prefix}-{search_type}"
+                _index = f"{search_index_prefix}-{self.index_prefix}-{prefix}"
             else:
-                _index = f"{search_index_prefix}-{search_type}"
-
-            yield _index
+                _index = f"{search_index_prefix}-{prefix}"
+            
+            yield _index, _type
 
     def __build_es_data(self, data_list: list) -> Generator:
         """Build search engine data.
@@ -1407,7 +1407,7 @@ class StatsCliUtil:
 
     def __get_data_from_db_by_stats_type(self, data_model):
         rtn_data = []
-        for _index in self.__prepare_es_indexes():
+        for _index, _type in self.__prepare_es_indexes():
             data = data_model.get_by_index(_index, self.start_date, self.end_date)
             if data:
                 rtn_data.extend(data)
@@ -1478,7 +1478,7 @@ class StatsCliUtil:
                 click.secho("There is no stats data from Database.",
                             fg="yellow")
 
-    def __cli_delete_es_index(self, _index) -> None:
+    def __cli_delete_es_index(self, _index,_type) -> None:
         """Delete ES index.
 
         :param _index: search engine index.
@@ -1486,6 +1486,9 @@ class StatsCliUtil:
         query = dsl.Search(
             using=current_search_client,
             index=_index,
+        ).filter(
+            "term",
+            event_type=_type
         ).params(raise_on_error=False, ignore=[400, 404])
         range_args = {}
         if self.start_date:
