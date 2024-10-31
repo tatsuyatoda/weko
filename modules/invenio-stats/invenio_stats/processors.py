@@ -176,7 +176,8 @@ class EventsIndexer(object):
         """
         self.queue = queue
         self.client = client or current_search_client
-        self.index = prefix_index("{0}-{1}".format(prefix, self.queue.routing_key))
+        self.index = prefix_index(f"{prefix}-stats-index")
+        self.event_type = self.queue.routing_key.replace("stats-", "")
         self.suffix = suffix
 
         # load the preprocessors
@@ -210,7 +211,7 @@ class EventsIndexer(object):
                 ts = ts.replace(microsecond=0)
                 msg["timestamp"] = ts.isoformat()
                 msg["updated_timestamp"] = datetime.now(timezone.utc).isoformat()
-                msg['event_type'] = self.queue.routing_key.replace("stats-", "")
+                msg['event_type'] = self.event_type
                 # apply timestamp windowing in order to group events too close in time
                 if self.double_click_window > 0:
                     timestamp = mktime(utc.localize(ts).utctimetuple())

@@ -129,9 +129,9 @@ class StatAggregator(object):
         """
         self.name = name
         self.event = event
-        self.event_index = prefix_index(f"events-stats-{event}")
+        self.event_index = prefix_index(f"events-stats-index")
         self.client = client or current_search_client
-        self.index = prefix_index(f"stats-{event}")
+        self.index = prefix_index(f"stats-index")
         self.field = field
         self.metric_fields = metric_fields or {}
         self.interval = interval
@@ -169,6 +169,7 @@ class StatAggregator(object):
         # from there
         query_events = (
             dsl.Search(using=self.client, index=self.event_index)
+            .filter("term", event_type=self.event)
             .sort({"timestamp": {"order": "asc"}})
             .extra(size=1)
         )
@@ -216,6 +217,9 @@ class StatAggregator(object):
                 # Filter for the specific interval (hour, day, month)
                 "term",
                 timestamp=rounded_dt,
+            ).filter(
+                "term",
+                event_type=self.event,
             )
             # we're only interested in the aggregated results but not the search hits,
             # so we tell the search to ignore them to save some bandwidth
@@ -295,14 +299,16 @@ class StatAggregator(object):
                     else:
                         aggregation_data[destination] = source(doc, aggregation_data)
 
-                index_name = prefix_index(f"stats-{self.event}")
+                index_name = prefix_index(f"stats-index")
                 logger.debug(f"index_name: {index_name}")
 
                 if manual:
                     res =  (
                         dsl.Search(using=self.client, index=index_name).filter(
                         'term',
-                        unique_id=aggregation['key'])
+                        unique_id=aggregation['key']).filter(
+                        'term',
+                        event_type=self.event)
                         .execute()
                     )
 

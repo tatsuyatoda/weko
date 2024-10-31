@@ -331,15 +331,15 @@ class QueryFileReportsHelper(object):
 
             # all
             all_query_cfg = current_stats.queries[all_query_name]
-            all_query = all_query_cfg.query_class(**all_query_cfg.query_config)
+            all_query = all_query_cfg.cls(name=all_query_cfg.name,**all_query_cfg.params)
             all_res = all_query.run(**all_params)
             cls.Calculation(all_res, all_list, all_groups=all_groups)
 
             # open access -- Only run for non-billed items
             if open_access_query_name:
                 open_access_query_cfg = current_stats.queries[open_access_query_name]
-                open_access = open_access_query_cfg.query_class(
-                    **open_access_query_cfg.query_config)
+                open_access = open_access_query_cfg.cls(
+                    name=open_access_query_cfg.name, **open_access_query_cfg.params)
                 open_access_res = open_access.run(**params)
                 cls.Calculation(open_access_res, open_access_list)
         except Exception as ex:
@@ -374,7 +374,7 @@ class QueryFileReportsHelper(object):
             for query in all_query_name:
                 all_query_cfg = current_stats.queries[query]
                 all_query = all_query_cfg.\
-                    query_class(**all_query_cfg.query_config)
+                    cls(name=all_query_cfg.name, **all_query_cfg.params)
                 all_res[query] = all_query.run(**params)
             cls.Calculation(all_res, all_list)
 
@@ -437,8 +437,8 @@ class QuerySearchReportHelper(object):
 
             # Run query
             keyword_query_cfg = current_stats.queries["get-search-report"]
-            keyword_query = keyword_query_cfg.query_class(
-                **keyword_query_cfg.query_config)
+            keyword_query = keyword_query_cfg.cls(
+                name=keyword_query_cfg.name, **keyword_query_cfg.params)
             raw_result = keyword_query.run(**params)
 
             all = []
@@ -543,7 +543,7 @@ class QueryCommonReportsHelper(object):
             for query in all_query_name:
                 all_query_cfg = current_stats.queries[query]
                 all_query = all_query_cfg.\
-                    query_class(**all_query_cfg.query_config)
+                    cls(name=all_query.name, **all_query_cfg.params)
                 all_res[query] = all_query.run(**params)
 
             Calculation(all_res, all_list)
@@ -604,7 +604,7 @@ class QueryCommonReportsHelper(object):
             for q in query_list:
                 query_cfg = current_stats.queries["get-" + q.replace("_", "-")
                                                   + "-per-site-license"]
-                query = query_cfg.query_class(**query_cfg.query_config)
+                query = query_cfg.cls(name=query_cfg.name, **query_cfg.params)
                 all_res[q] = query.run(**params)
             Calculation(query_list, all_res, site_license_list, other_list,
                         institution_name_list)
@@ -641,7 +641,7 @@ class QueryCommonReportsHelper(object):
         try:
             query_date, params = cls.get_common_params(**kwargs)
             query_cfg = current_stats.queries["item-create-per-date"]
-            query = query_cfg.query_class(**query_cfg.query_config)
+            query = query_cfg.cls(name=query_cfg.name, **query_cfg.params)
             res = query.run(**params)
             Calculation(res, data_list)
         except Exception as ex:
@@ -842,7 +842,7 @@ class QueryRecordViewReportHelper(object):
                 # Limit size
                 params.update({"agg_size": kwargs.get("agg_size", 0)})
             all_query_cfg = current_stats.queries["get-record-view-report"]
-            all_query = all_query_cfg.query_class(**all_query_cfg.query_config)
+            all_query = all_query_cfg.cls(name=all_query_cfg.name, **all_query_cfg.params)
 
             all_res = all_query.run(**params)
             cls.Calculation(all_res, all_list)
@@ -1260,7 +1260,7 @@ class QueryRankingHelper(object):
                 "new_items": False
             }
             all_query_cfg = current_stats.queries["get-ranking-data"]
-            all_query = all_query_cfg.query_class(**all_query_cfg.query_config)
+            all_query = all_query_cfg.cls(name=all_query_cfg.name, **all_query_cfg.params)
 
             all_res = all_query.run(**params)
 
@@ -1289,7 +1289,7 @@ class QueryRankingHelper(object):
                 "new_items": True
             }
             all_query_cfg = current_stats.queries["get-new-items-data"]
-            all_query = all_query_cfg.query_class(**all_query_cfg.query_config)
+            all_query = all_query_cfg.cls(name=all_query_cfg.name, **all_query_cfg.params)
 
             all_res = all_query.run(**params)
             for r in all_res["hits"]["hits"]:

@@ -163,7 +163,7 @@ def _events_delete(event_types, start_date, end_date, force, verbose):
             'Start deleting Events data...',
             fg='green'
         )
-    event_types = event_types or list(current_stats.enabled_events)
+    event_types = event_types or list(current_stats.events_config)
     stats_cli = StatsCliUtil(
         StatsCliUtil.EVENTS_TYPE,
         event_types, start_date, end_date, force, verbose

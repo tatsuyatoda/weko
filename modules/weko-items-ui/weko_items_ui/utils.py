@@ -4517,7 +4517,8 @@ def get_file_download_data(item_id, record, filenames, query_date=None, size=Non
             from invenio_stats.proxies import current_stats
             # file download query
             query_download_total_cfg = current_stats.queries['item-file-download-aggs']
-            query_download_total = query_download_total_cfg.query_class(**query_download_total_cfg.query_config)
+            query_download_total = query_download_total_cfg.\
+                cls(name=query_download_total_cfg.name, **query_download_total_cfg.params)
             res_download_total = query_download_total.run(**params)
         except Exception as e:
             current_app.logger.error(traceback.print_exc())
