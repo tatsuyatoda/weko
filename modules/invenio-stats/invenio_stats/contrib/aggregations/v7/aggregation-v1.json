@@ -201,54 +201,6 @@
     }
   },
   "aliases": {
-    "__SEARCH_INDEX_PREFIX__stats-celery-task": {
-      "filter": {
-        "term": {
-          "event_type": "celery-task"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__stats-file-download": {
-      "filter": {
-        "term": {
-          "event_type": "file-download"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__stats-file-preview": {
-      "filter": {
-        "term": {
-          "event_type": "file-preview"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__stats-item-create": {
-      "filter": {
-        "term": {
-          "event_type": "item-create"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__stats-record-view": {
-      "filter": {
-        "term": {
-          "event_type": "record-view"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__stats-search": {
-      "filter": {
-        "term": {
-          "event_type": "search"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__stats-top-view": {
-      "filter": {
-        "term": {
-          "event_type": "top-view"
-        }
-      }
-    }
+    "__SEARCH_INDEX_PREFIX__stats-index": {}
   }
 }

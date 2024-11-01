@@ -217,54 +217,6 @@
     }
   },
   "aliases": {
-    "__SEARCH_INDEX_PREFIX__events-stats-celery-task": {
-      "filter": {
-        "term": {
-          "event_type": "celery-task"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__events-stats-file-download": {
-      "filter": {
-        "term": {
-          "event_type": "file-download"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__events-stats-file-preview": {
-      "filter": {
-        "term": {
-          "event_type": "file-preview"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__events-stats-item-create": {
-      "filter": {
-        "term": {
-          "event_type": "item-create"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__events-stats-record-view": {
-      "filter": {
-        "term": {
-          "event_type": "record-view"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__events-stats-search": {
-      "filter": {
-        "term": {
-          "event_type": "search"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__events-stats-top-view": {
-      "filter": {
-        "term": {
-          "event_type": "top-view"
-        }
-      }
-    }
+    "__SEARCH_INDEX_PREFIX__events-stats-index": {}
   }
 }
