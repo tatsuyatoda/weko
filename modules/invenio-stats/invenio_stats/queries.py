@@ -50,9 +50,8 @@ class Query(object):
             raise TypeError(f"Invalid date type for statistic {self.name}.")
         return date
     
-     def set_filter_event_type(self,query):
-        query.filter("term",event_type=self.event_type)
-        return query
+    def set_filter_event_type(self,query):
+        return query.filter("term",event_type=self.event_type)
 
     def run(self, *args, **kwargs):
         """Run the query."""

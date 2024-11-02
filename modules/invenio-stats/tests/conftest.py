@@ -71,6 +71,7 @@ from invenio_stats.contrib.event_builders import (
 from invenio_stats.processors import EventsIndexer, anonymize_user
 from invenio_stats.models import StatsEvents, StatsAggregation, StatsBookmark
 from invenio_stats.tasks import aggregate_events, process_events
+from opensearchpy import OpenSearch
 
 
 def mock_iter_entry_points_factory(data, mocked_group):
@@ -237,6 +238,7 @@ def base_app(instance_path, mock_gethostbyaddr):
         SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI',
                                           'postgresql+psycopg2://invenio:dbpass123@postgresql:5432/wekotest'),
         SQLALCHEMY_TRACK_MODIFICATIONS=True,
+        STATS_ES_INTEGER_MAX_VALUE=6000,
         TESTING=True,
         OAUTH2SERVER_CLIENT_ID_SALT_LEN=64,
         OAUTH2SERVER_CLIENT_SECRET_SALT_LEN=60,
@@ -275,6 +277,8 @@ def base_app(instance_path, mock_gethostbyaddr):
             "use_ssl": True,
             "verify_certs": False
         },
+        WEKO_PERMISSION_SUPER_ROLE_USER=['System Administrator','Repository Administrator'],
+        WEKO_PERMISSION_ROLE_COMMUNITY=['Community Administrator'],
     ))
     FlaskCeleryExt(app_)
     InvenioAccess(app_)
@@ -308,6 +312,13 @@ def app(base_app):
 def client(i18n_app):
     i18n_app.register_blueprint(blueprint, url_prefix="/api/stats")
     with i18n_app.test_client() as client:
+        return client
+    
+    
+@pytest.fixture(scope='function')
+def client_1(i18n_app_1):
+    i18n_app_1.register_blueprint(blueprint, url_prefix="/api/stats")
+    with i18n_app_1.test_client() as client:
         return client
 
 
@@ -1152,6 +1163,13 @@ def i18n_app(app):
         app.extensions['invenio-search'] = MagicMock()
         app.extensions['invenio-i18n'] = MagicMock()
         app.extensions['invenio-i18n'].language = "ja"
+        InvenioI18N(app)
+        yield app
+        
+@pytest.fixture()
+def i18n_app_1(app):
+    with app.test_request_context(headers=[('Accept-Language','ja')]):
+        app.extensions['invenio-oauth2server'] = 1
         InvenioI18N(app)
         yield app
 

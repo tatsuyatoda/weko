@@ -633,7 +633,7 @@ STATS_QUERIES = {
     'bucket-file-preview-total': {
         "cls": WekoFileStatsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='file-preview',
             copy_fields=dict(),
             main_fields=['bucket_id', 'file_key', 'root_file_id'],
@@ -699,7 +699,7 @@ STATS_QUERIES = {
     'get-file-download-per-user-report': {
         "cls": TermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='file-download',
             group_fields=['cur_user_id', 'count'],
         )
@@ -708,7 +708,7 @@ STATS_QUERIES = {
     'get-file-preview-per-user-report': {
         "cls": TermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='file-preview',
             group_fields=['cur_user_id', 'count'],
         )
@@ -717,7 +717,7 @@ STATS_QUERIES = {
     'get-record-view-report': {
         "cls": WekoTermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='record-view',
             group_fields=['record_id', 'record_index_names',
                         'cur_user_id', 'pid_value', 'record_name', 'count'],
@@ -727,7 +727,7 @@ STATS_QUERIES = {
     'bucket-record-view-histogram': {
         "cls": DateHistogramQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='record-view',
             copy_fields=dict(
                 record_id='record_id',
@@ -741,7 +741,7 @@ STATS_QUERIES = {
     'bucket-record-view-total': {
         "cls": TermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='record-view',
             copy_fields=dict(
                 record_id='record_id',
@@ -760,7 +760,7 @@ STATS_QUERIES = {
     'item-create-total': {
         "cls": WekoTermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='item-create',
             metric_fields=dict(
                 count=('sum', 'count', {}),
@@ -772,7 +772,7 @@ STATS_QUERIES = {
     'item-create-per-date': {
         "cls": WekoTermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='item-create',
             metric_fields=dict(
                 count=('sum', 'count', {}),
@@ -784,7 +784,7 @@ STATS_QUERIES = {
     'item-create-histogram': {
         "cls": DateHistogramQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='item-create',
             aggregated_fields=['timestamp'],
         )
@@ -793,7 +793,7 @@ STATS_QUERIES = {
     'item-detail-total': {
         "cls": TermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='record-view',
             metric_fields=dict(
                 count=('sum', 'count', {}),
@@ -805,7 +805,7 @@ STATS_QUERIES = {
     'item-detail-item-total': {
         "cls": TermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='record-view',
             metric_fields=dict(
                 count=('sum', 'count', {}),
@@ -817,7 +817,7 @@ STATS_QUERIES = {
     'bucket-item-detail-view-histogram': {
         "cls": DateHistogramQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='record-view',
             aggregated_fields=['timestamp'],
         )
@@ -826,7 +826,7 @@ STATS_QUERIES = {
     'get-file-download-per-host-report': {
         "cls": TermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='file-download',
             metric_fields=dict(
                 count=('sum', 'count', {}),
@@ -838,7 +838,7 @@ STATS_QUERIES = {
     'get-file-download-per-item-report': {
         "cls": WekoTermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='file-download',
             metric_fields=dict(
                 count=('sum', 'count', {}),
@@ -850,7 +850,7 @@ STATS_QUERIES = {
     'get-file-download-per-time-report': {
         "cls": DateHistogramQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='file-download',
             aggregated_fields=['timestamp'],
         )
@@ -859,7 +859,7 @@ STATS_QUERIES = {
     'top-view-total': {
         "cls": DateHistogramQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='top-view',
             aggregated_fields=['remote_addr', 'hostname']
         )
@@ -868,7 +868,7 @@ STATS_QUERIES = {
     'top-view-total-per-host': {
         "cls": TermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='top-view',
             group_fields=['remote_addr', 'hostname', 'count']
         )
@@ -877,7 +877,7 @@ STATS_QUERIES = {
     'get-top-view-per-site-license': {
         "cls": TermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='top-view',
             group_fields=['site_license_name', 'count'],
         )
@@ -886,7 +886,7 @@ STATS_QUERIES = {
     'get-record-view-per-site-license': {
         "cls": TermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='record-view',
             group_fields=['site_license_name', 'count'],
         )
@@ -895,7 +895,7 @@ STATS_QUERIES = {
     'get-search-per-site-license': {
         "cls": TermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='search',
             group_fields=['site_license_name', 'count'],
         )
@@ -904,7 +904,7 @@ STATS_QUERIES = {
     'get-file-download-per-site-license': {
         "cls": TermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='file-download',
             group_fields=['site_license_name', 'count'],
         )
@@ -913,7 +913,7 @@ STATS_QUERIES = {
     'get-file-preview-per-site-license': {
         "cls": TermsQuery,
         "params": dict(
-            idnex='stats-index',
+            index='stats-index',
             event_type='file-preview',
             group_fields=['site_license_name', 'count'],
         )
@@ -1015,7 +1015,7 @@ STATS_QUERIES = {
     'item-file-download-aggs': {
         "cls": WekoFileRankingQuery,
         "params": dict(
-            idnex='events-stats-index',
+            index='events-stats-index',
             event_type='file-download',
             copy_fields=dict(),
             metric_fields=dict(

@@ -543,7 +543,7 @@ class QueryCommonReportsHelper(object):
             for query in all_query_name:
                 all_query_cfg = current_stats.queries[query]
                 all_query = all_query_cfg.\
-                    cls(name=all_query.name, **all_query_cfg.params)
+                    cls(name=query, **all_query_cfg.params)
                 all_res[query] = all_query.run(**params)
 
             Calculation(all_res, all_list)

@@ -35,7 +35,7 @@ from invenio_stats.processors import (
 )
 from invenio_stats.proxies import current_stats
 from invenio_stats.tasks import process_events
-
+from .helpers import mock_date
 
 @pytest.mark.parametrize(
     [
@@ -433,7 +433,7 @@ def test_failing_processors(app, es, event_queues, caplog):
     assert search_obj.index("events-stats-file-download").count() == 3
     assert search_obj.index("events-stats-file-download-2018-01").count() == 3
 
-
+# .tox/c1/bin/pytest --cov=invenio_stats tests/test_processors.py::test_events_indexer_actionsiter -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
 def test_events_indexer_actionsiter(app, mock_event_queue, caplog):
     def preprocessor_1(msg):
         msg['preprocessed_1'] = True
@@ -511,7 +511,7 @@ def test_events_indexer_actionsiter(app, mock_event_queue, caplog):
     # Check action properties
     for action in actions_with_window:
         assert action['_op_type'] == 'index', "Operation type should be 'index'"
-        assert action['_index'].endswith('file-download'), "Index should be related to 'file-download'"
+        assert action['_index'] == "test-stats-index", "Index should be 'test-stats-index'"
         assert 'file_id' in action['_source'], "Source should contain 'file_id'"
         assert action['_source']['event_type'] == 'file-download', "Event type should match the routing key"
 
@@ -524,7 +524,7 @@ def test_events_indexer_actionsiter(app, mock_event_queue, caplog):
 
     print("All assertions passed. EventsIndexer actionsiter functionality verified.")
 
-
+# .tox/c1/bin/pytest --cov=invenio_stats tests/test_processors.py::test_events_indexer_run -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
 def test_events_indexer_run(app, es):
     """
     Test the EventsIndexer run functionality,
@@ -574,7 +574,16 @@ def test_events_indexer_run(app, es):
             es_client.indices.refresh(index=indexer.index)
 
             # Check total document count in the index
-            total_docs = es_client.count(index=indexer.index)['count']
+            total_docs = es_client.count(
+                index=indexer.index,
+                body={
+                    "query": {
+                        "term": {
+                            "event_type": event_type
+                        }
+                    }
+                }
+            )['count']
             print(f"Total documents in {event_type} index {indexer.index}: {total_docs}")
 
             # Assert document count (4 due to double click window setting)
