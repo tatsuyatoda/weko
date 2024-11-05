@@ -176,7 +176,7 @@ class EventsIndexer(object):
         """
         self.queue = queue
         self.client = client or current_search_client
-        self.index = prefix_index(f"stats-index")
+        self.index = prefix_index(f"{prefix}-stats-index")
         self.event_type = self.queue.routing_key.replace("stats-", "")
         self.suffix = suffix
 

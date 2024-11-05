@@ -511,7 +511,7 @@ def test_events_indexer_actionsiter(app, mock_event_queue, caplog):
     # Check action properties
     for action in actions_with_window:
         assert action['_op_type'] == 'index', "Operation type should be 'index'"
-        assert action['_index'] == "test-stats-index", "Index should be 'test-stats-index'"
+        assert action['_index'] == "test-events-stats-index", "Index should be 'test-events-stats-index'"
         assert 'file_id' in action['_source'], "Source should contain 'file_id'"
         assert action['_source']['event_type'] == 'file-download', "Event type should match the routing key"
 
