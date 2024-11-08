@@ -291,17 +291,6 @@ def create_stats_index(index_name, stats_prefix, stats_types):
             }
         }
     )
-    for stats_type in stats_types:
-        event_type = stats_type.replace(f"{stats_prefix}-","")
-        alias_info = {
-            "index": new_index_name,
-            "alias": f"{prefix}-{stats_prefix}-{event_type}",
-            "is_write_index": True,
-            "filter":{
-                "term":{"event_type":event_type}
-            }
-        }
-        alias_actions.append({"add":alias_info})
     return alias_actions
 
 def stats_reindex(stats_types, stats_prefix):
