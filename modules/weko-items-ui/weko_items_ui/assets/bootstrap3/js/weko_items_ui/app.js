@@ -515,6 +515,8 @@ function handleSharePermission(value) {
     }
 }
 
+window.handleSharePermission = handleSharePermission;
+
 function toObject(arr) {
     var rv = {};
     for (var i = 0; i < arr.length; ++i)
@@ -2222,7 +2224,7 @@ function toObject(arr) {
                     let subVal = subProperties[subKey];
                     hasItem = val.hasOwnProperty("items");
                     subProperties = hasItem ? val.items : [];
-                    if (subProperties) {
+                    if (subProperties.length > 0) {
                         let result = $scope.updateTitleMap(key, subVal, enumData);
                     }
                 }
@@ -4967,7 +4969,7 @@ function toObject(arr) {
             'mgcrea.ngStrap.modal', 'pascalprecht.translate', 'ui.sortable',
             'ui.select', 'mgcrea.ngStrap.select', 'mgcrea.ngStrap.datepicker',
             'mgcrea.ngStrap.helpers.dateParser', 'mgcrea.ngStrap.tooltip',
-            'invenioFiles', 'uploadThumbnail'
+            'invenioFiles', 'uploadThumbnail', 'ngSanitize'
         ]
         );
     });
