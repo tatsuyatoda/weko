@@ -2898,7 +2898,7 @@ function toObject(arr) {
             $scope.fileNameSelect = function (event, form, modelValue) {
                 let filesObject = $scope.getFilesObject();
                 //Check to disable「本文URL」element.
-                let curElement = event.target;
+                let curElement = $("select[name$='filename']");
                 let parForm = $(curElement).parents('.schema-form-section')[0];
                 let curTextUrl = $(parForm).find('.file-text-url')[0];
                 let disableFlag = !!filesObject[modelValue];
@@ -2988,7 +2988,7 @@ function toObject(arr) {
 
             // This is callback function - Please do NOT change function name
             $scope.changedVersionType = function (event, modelValue) {
-                let curElement = event.target;
+                let curElement = $("select[name$='subitem_version_type']");
                 let parForm = $(curElement).parents('.schema-form-fieldset ')[0];
                 let txtVersionResource = $(parForm).find('.txt-version-resource')[0];
                 let dictionaries = {
@@ -3007,7 +3007,7 @@ function toObject(arr) {
 
             // This is callback function - Please do NOT change function name
             $scope.changedAccessRights = function (event, modelValue) {
-                let curElement = event.target;
+                let curElement = $("select[name$='subitem_access_right']");
                 let parForm = $(curElement).parents('.schema-form-fieldset ')[0];
                 let txtAccessRightsUri = $(parForm).find('.txt-access-rights-uri')[0];
                 let dictionaries = {
