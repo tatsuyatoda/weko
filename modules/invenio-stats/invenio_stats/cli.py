@@ -18,6 +18,7 @@ from flask import current_app
 from flask.cli import with_appcontext
 from werkzeug.local import LocalProxy
 from invenio_db import db
+import json
 
 from .proxies import current_stats
 from .tasks import aggregate_events, process_events
@@ -290,7 +291,7 @@ def _aggregations_list_bookmarks(
         bookmarks = aggregator.list_bookmarks(start_date, end_date, limit)
         click.echo("{}:".format(a))
         for b in bookmarks:
-            click.echo(" - {}".format(b.date))
+            click.echo(" - {}".format(json.loads(b.source)['date']))
 
 @aggregations.command('delete-index')
 @aggregation_arg
