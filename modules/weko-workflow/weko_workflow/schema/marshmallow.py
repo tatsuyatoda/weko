@@ -39,7 +39,6 @@ class NextIdentifierSchema(NextSchema):
     identifier_grant_jalc_dc_doi_link = fields.String(allow_none=True)
     identifier_grant_ndl_jalc_doi_suffix = fields.String(required=True)
     identifier_grant_ndl_jalc_doi_link = fields.String(allow_none=True)
-    identifier_grant_crni_link = fields.String(allow_none=True)
 
 class NextOAPolicySchema(NextSchema):
     journal = fields.Dict(allow_none=True)
