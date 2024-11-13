@@ -3527,9 +3527,9 @@ class WekoQueryRankingHelper(QueryRankingHelper):
                 'new_items': False
             }
             query_config = current_app.config["WEKO_ITEMS_UI_RANKING_QUERY"][kwargs.get("ranking_type")]
-            query_class = query_config["query_class"]
-            cfg  =json.loads(json.dumps(query_config["query_config"]))
-            cfg.update(query_name=kwargs.get("ranking_type"))
+            query_class = query_config["cls"]
+            cfg  =json.loads(json.dumps(query_config["params"]))
+            cfg.update(name=kwargs.get("ranking_type"))
             all_query = query_class(**cfg)
             all_res = all_query.run(**params)
             cls.Calculation(all_res, result)
@@ -3572,6 +3572,7 @@ def get_ranking(settings):
     end_date = end_date_original.strftime('%Y-%m-%d')
     # most_reviewed_items
     current_app.logger.debug("get most_reviewed_items start")
+    print(f"most_view:{settings.rankings['most_reviewed_items']}")
     if settings.rankings['most_reviewed_items']:
         result = WekoQueryRankingHelper.get(
             start_date=start_date,
@@ -3595,7 +3596,8 @@ def get_ranking(settings):
             event_type='file-download',
             group_field='item_id',
             count_field='count',
-            must_not=json.dumps([{"wildcard": {"item_id": "*.*"}}])
+            must_not=json.dumps([{"wildcard": {"item_id": "*.*"}}]),
+            item_id="123231321"
         )
 
         current_app.logger.debug("finished getting most_downloaded_items data from ES")

@@ -922,7 +922,7 @@ STATS_QUERIES = {
     'get-ranking-data': {
         "cls": WekoRankingQuery,
         "params": dict(
-            index='{}-stats-{}',
+            index='stats-index',
             main_fields=['start_date', 'end_date', 'group_field', 'agg_size', 'count_field'],
             metric_fields=dict(),
             main_query={
@@ -968,7 +968,7 @@ STATS_QUERIES = {
     'get-new-items-data': {
         "cls": WekoRankingQuery,
         "params": dict(
-            index='{}-weko',
+            index='weko',
             main_fields=['start_date', 'end_date', 'agg_size'],
             metric_fields=dict(),
             main_query={
