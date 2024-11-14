@@ -2,7 +2,7 @@
 //  "jquery",
 //  "bootstrap"
 //], function () {
-import "bootstrap";
+import "bootstrap/dist/js/bootstrap.min.js";
 import $ from "jquery";
 $(document).ready(function () {
     setDatePickerFormSearch();
