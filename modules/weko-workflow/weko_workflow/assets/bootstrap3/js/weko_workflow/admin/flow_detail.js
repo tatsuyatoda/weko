@@ -44,7 +44,7 @@ $(document).ready(function () {
       $(this).prop('disabled', true);
     }
     $('#btn_unusable_' + actionId).addClass('btn-primary');
-    $('#btn_unusable_' + actionId).removeProp('disabled');
+    $('#btn_unusable_' + actionId).prop('disabled', false);
     init_action_list(apply_action);
     $('#myModal').modal('hide');
   });
@@ -65,7 +65,7 @@ $(document).ready(function () {
       $(this).removeClass('btn-primary');
       $(this).prop('disabled', true);
       $('#btn_apply_' + actionId).addClass('btn-primary');
-      $('#btn_apply_' + actionId).removeProp('disabled');
+      $('#btn_apply_' + actionId).prop('disabled', false);
     }
     else {
       if (count == 1) {
@@ -247,11 +247,11 @@ $(document).ready(function () {
       $('#btn_apply_' + actionId).addClass('btn-default');
       $('#btn_apply_' + actionId).prop('disabled', true);
       $('#btn_unusable_' + actionId).addClass('btn-primary');
-      $('#btn_unusable_' + actionId).removeProp('disabled');
+      $('#btn_unusable_' + actionId).prop('disabled', false);
     }
     else {
       $('#btn_unusable_' + actionId).addClass('btn-primary');
-      $('#btn_unusable_' + actionId).removeProp('disabled');
+      $('#btn_unusable_' + actionId).prop('disabled', false);
     }
     $('#flow_action_ver_' + actionId).text($('#td_action_ver_' + actionId).text());
     $('#flow_action_date_' + actionId).text($('#td_action_date_' + actionId).text());
@@ -303,7 +303,7 @@ $(document).ready(function () {
     initSortedBtn();
   }
   function initSortedBtn() {
-    $('.sortable').removeProp('disabled');
+    $('.sortable').prop('disabled', false);
     $('.sortable_up:first').prop('disabled', true);
     $('.sortable_down:last').prop('disabled', true);
     initOrderNum();
