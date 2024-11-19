@@ -860,7 +860,7 @@ def parent_view_method(pid_value=0):
     return abort(404)
 
 
-@blueprint.route('/admin/pdfcoverpage', methods=['GET', 'POST'])
+@blueprint.route('/admin/pdfcoverpage', methods=['POST'])
 def set_pdfcoverpage_header():
     """Set pdfcoverage header."""
     @blueprint.errorhandler(werkzeug.exceptions.RequestEntityTooLarge)
