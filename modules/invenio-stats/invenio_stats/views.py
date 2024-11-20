@@ -147,15 +147,12 @@ class QueryRecordViewCount(WekoQuery):
                           "start_date": query_date + "-01",
                           "end_date": query_date + "-" + str(lastday).zfill(2)
                           + "T23:59:59"}
-            query_period_cfg = current_stats.queries[
-                "bucket-record-view-histogram"]
-            query_period = query_period_cfg.query_class(
-                **query_period_cfg.query_config)
+            query_period_cfg = current_stats.queries["bucket-record-view-histogram"]
+            query_period = query_period_cfg.cls(**query_period_cfg.params)
 
             # total
             query_total_cfg = current_stats.queries["bucket-record-view-total"]
-            query_total = query_total_cfg.query_class(
-                **query_total_cfg.query_config)
+            query_total = query_total_cfg.cls(**query_total_cfg.params)
             res_total = query_total.run(**params)
 
             result["total"] = res_total["count"]
