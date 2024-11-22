@@ -176,7 +176,6 @@ def test_events_restore(app, script_info, es, db, event_queues):
             }
         ]
 
-        db.create_all()
         test_data = new_version_data + old_version_data
         for data in test_data:
             if isinstance(data["_source"], str):
