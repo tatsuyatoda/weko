@@ -82,7 +82,7 @@ class _StataModelBase(Timestamp):
     
     @classmethod
     def get_by_event_type(
-        cls, _index: str, event_type, start_date: datetime = None, end_date: datetime = None
+        cls, _index, event_type, start_date = None, end_date = None
     ):
         """
         Get stats data by event type, supporting both old and new versions of data.
@@ -92,7 +92,7 @@ class _StataModelBase(Timestamp):
         :param end_date: end date for filtering.
         :return: List of filtered data.
         """
-        from sqlalchemy import func,or_
+        from sqlalchemy import func, or_, and_
         
         # _index = 'tenant1-stats-index'/'tenant1-stats-events-index'
         # beforeindex = 'tenant1-stats-[event-type]'/'tenant1-events-stats-[event-type]'
