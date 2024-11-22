@@ -226,7 +226,7 @@ def test_events_restore(app, script_info, es, db, event_queues):
 
         for i, case in enumerate(test_cases):
             cmd = ["events", "restore"] + case["params"] + ["--force", "--verbose"]
-            result = runner.invoke(stats, cmd, obj=script_info)
+            runner.invoke(stats, cmd, obj=script_info)
 
             time.sleep(15)
 
@@ -244,8 +244,14 @@ def test_events_restore(app, script_info, es, db, event_queues):
             delete_cmd = ["events", "delete", "--force", "--verbose", "--yes-i-know"]
             runner.invoke(stats, delete_cmd, obj=script_info)
             
-            print(f"Test progress: {i+1}/4")
             time.sleep(5)
+            
+            # delete結果検証
+            query_1 = dsl.Search(using=es, index="test-events-stats-index")
+            res_1 = query_1.execute()
+            assert res_1.hits.total.value == 0
+            
+            print(f"Test progress: {i+1}/4")
 
 # def _aggregations_process(aggregation_types=None, start_date=None, end_date=None, update_bookmark=False, eager=False):
 # .tox/c1/bin/pytest --cov=invenio_stats tests/test_cli.py::test_aggregations_process -v -s -vv --cov-branch --cov-report=term --cov-config=tox.ini --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
