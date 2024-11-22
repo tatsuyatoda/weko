@@ -119,12 +119,20 @@ def test_events_restore(app, script_info, es, db, event_queues):
     import json
     import time
 
-    # 以下のSQLを先に実行する必要がある
-    # CREATE TABLE stats_events_2024_12_31 PARTITION OF stats_events
-    # FOR VALUES FROM ('2020-01-01 00:00:00') TO ('2024-12-31 00:00:00');
-
     with app.app_context():
         runner = CliRunner()
+        
+        # 以下のSQLを先に実行する必要がある
+        # CREATE TABLE stats_events_2024_12_31 PARTITION OF stats_events
+        # FOR VALUES FROM ('2020-01-01 00:00:00') TO ('2024-12-31 00:00:00');
+
+        sql = """
+            CREATE TABLE stats_events_2024_12_31 PARTITION OF stats_events
+            FOR VALUES FROM ('2020-01-01 00:00:00') TO ('2024-12-31 00:00:00');
+        """
+        with db.engine.connect() as connection:
+            connection.execute(str(sql))
+            print("Partation table created successfully.")
 
         new_version_data = [
             {
@@ -151,7 +159,7 @@ def test_events_restore(app, script_info, es, db, event_queues):
                 "updated": "2024-09-13 09:36:45.524261",
                 "_id": "2024-09-13T09:36:30-b26d305f1c7d2bc280e50df53fe9bd548b9b4251",
                 "_index": "test-events-stats-top-view",
-                # "type": "stats-top-view", バージョンアップにより削除された
+                "type": "stats-top-view",
                 "timestamp": "2024-09-13T09:36:31",
                 "_source": "{\"timestamp\": \"2024-09-13T09:36:31\", \"unique_id\": \"a3a4c4e0-032e-3d08-beee-b4f79681e21c\", \"remote_addr\": \"192.168.56.1\", \"visitor_id\": \"a2c4a00903fce259a64795b27087a6afa7921e8927facdd3011602d9\"}",
                 "date": datetime.strptime("2024-09-13 09:36:31", "%Y-%m-%d %H:%M:%S")
@@ -161,7 +169,7 @@ def test_events_restore(app, script_info, es, db, event_queues):
                 "updated": "2024-11-15 07:01:06.441358",
                 "_id": "2024-11-15T07:00:00-840dab21ad2035be553bce285cca8108154dfb62",
                 "_index": "test-events-stats-file-download",
-                # "type": "stats-file-download", バージョンアップにより削除された
+                "type": "stats-file-download",
                 "timestamp": "2024-11-15T07:00:17",
                 "_source": "{\"timestamp\": \"2024-11-15T07:00:17\", \"unique_id\": \"0327ab05-39cc-38da-8dcf-ed4e26f6eaef\", \"remote_addr\": \"192.168.56.1\", \"visitor_id\": \"66aad2366fc18433f2c279affa6771e8cee2c63aaa0604e163e51901\", \"file_id\": \"55641917-719f-4068-96e8-3f9178fce963\", \"item_id\": \"2000005\", \"file_key\": \"data.zip\"}",
                 "date": datetime.strptime("2024-11-15 07:00:17", "%Y-%m-%d %H:%M:%S")
