@@ -180,36 +180,6 @@ curl -ku ${INVENIO_OPENSEARCH_USER}:${INVENIO_OPENSEARCH_PASS} -XPUT 'https://'$
     }
   }
 }'
-
-event_list=('celery-task' 'item-create' 'top-view' 'record-view' 'file-download' 'file-preview' 'search')
-for event_name in ${event_list[@]}
-do
-  curl -ku ${INVENIO_OPENSEARCH_USER}:${INVENIO_OPENSEARCH_PASS} -XPOST 'https://'${INVENIO_ELASTICSEARCH_HOST}':9200/_aliases' -H 'Content-Type: application/json' -d '
-  {
-    "actions": [
-      {
-        "add": {
-          "index": "'${SEARCH_INDEX_PREFIX}'-stats-index-000001",
-          "alias": "'${SEARCH_INDEX_PREFIX}'-stats-'${event_name}'",
-          "filter": {
-            "term": {"event_type": "'${event_name}'"}
-          },
-          "is_write_index": true
-        }
-      },
-      {
-        "add": {
-          "index": "'${SEARCH_INDEX_PREFIX}'-events-stats-index-000001",
-          "alias": "'${SEARCH_INDEX_PREFIX}'-events-stats-'${event_name}'",
-          "filter": {
-            "term": {"event_type": "'${event_name}'"}
-          },
-          "is_write_index": true
-        }
-      }
-    ]
-  }'
-done
 # elasticsearch-ilm-setting-end
 
 # sphinxdoc-populate-with-demo-records-begin

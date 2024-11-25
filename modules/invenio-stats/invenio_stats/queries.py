@@ -25,7 +25,7 @@ from .errors import InvalidRequestInputError
 class Query(object):
     """Search query."""
 
-    def __init__(self, name, index, client=None, *args, **kwargs):
+    def __init__(self, name, index, event_type=None, client=None, *args, **kwargs):
         """Constructor.
 
         :param index: queried index.
@@ -33,6 +33,7 @@ class Query(object):
         """
         self.name = name
         self.index = build_alias_name(index)
+        self.event_type = event_type
         self.client = client or current_search_client
 
     def extract_date(self, date):
@@ -48,6 +49,9 @@ class Query(object):
         if not isinstance(date, datetime):
             raise TypeError(f"Invalid date type for statistic {self.name}.")
         return date
+    
+    def set_filter_event_type(self,query):
+        return query.filter("term",event_type=self.event_type)
 
     def run(self, *args, **kwargs):
         """Run the query."""
@@ -137,6 +141,8 @@ class DateHistogramQuery(Query):
             if end_date is not None:
                 time_range["lte"] = end_date.isoformat()
             agg_query = agg_query.filter("range", **{self.time_field: time_range})
+        
+        agg_query = self.set_filter_event_type(agg_query)
 
         for modifier in self.query_modifiers:
             agg_query = modifier(agg_query, **kwargs)
@@ -268,6 +274,8 @@ class TermsQuery(Query):
             time_range["time_zone"] = str(
                 current_app.config["STATS_WEKO_DEFAULT_TIMEZONE"]())
             agg_query = agg_query.filter("range", **{self.time_field: time_range})
+        
+        agg_query = self.set_filter_event_type(agg_query)
 
         for modifier in self.query_modifiers:
             agg_query = modifier(agg_query, **kwargs)
@@ -456,6 +464,8 @@ class WekoFileStatsQuery(TermsQuery):
             time_range["time_zone"] = str(
                 current_app.config["STATS_WEKO_DEFAULT_TIMEZONE"]())
             agg_query = agg_query.filter("range", **{self.time_field: time_range})
+        
+        agg_query = self.set_filter_event_type(agg_query)
 
         for modifier in self.query_modifiers:
             agg_query = modifier(agg_query, **kwargs)
@@ -516,6 +526,8 @@ class WekoTermsQuery(TermsQuery):
                 time_range["lte"] = end_date.isoformat()
             time_range["time_zone"] = str(current_app.config['STATS_WEKO_DEFAULT_TIMEZONE']())
             agg_query = agg_query.filter("range", **{self.time_field: time_range})
+        
+        agg_query = self.set_filter_event_type(agg_query)
 
         for modifier in self.query_modifiers:
             agg_query = modifier(agg_query, **kwargs)
@@ -587,11 +599,9 @@ class WekoRankingQuery(TermsQuery):
 
     def build_query(self, **kwargs):
         """Build the search engine query."""
-        search_index_prefix = current_app.config["SEARCH_INDEX_PREFIX"].strip("-")
-        es_index = self.index.format(search_index_prefix, kwargs.get("event_type"))
         agg_query = dsl.Search(
             using=self.client,
-            index=es_index)[0:0]
+            index=self.index)[0:0]
         query_q = json.dumps(self.main_query)
         for _field in self.main_fields:
             query_q = query_q.replace(f"@{_field}", kwargs.get(_field, ""))
@@ -605,6 +615,9 @@ class WekoRankingQuery(TermsQuery):
         else:
             del query_q["query"]["bool"]["must_not"]
         agg_query.update_from_dict(query_q)
+        if "event_type" in kwargs:
+            self.event_type = kwargs.get("event_type")
+            agg_query = self.set_filter_event_type(agg_query)
         return agg_query
 
     def run(self, start_date=None, end_date=None, **kwargs):
@@ -665,6 +678,8 @@ class WekoFileRankingQuery(TermsQuery):
             time_range['time_zone'] = str(
                 current_app.config['STATS_WEKO_DEFAULT_TIMEZONE']())
             agg_query = agg_query.filter('range', **{self.time_field: time_range})
+            
+        agg_query = self.set_filter_event_type(agg_query)
 
         for dst, (metric, field, opts) in self.metric_fields.items():
             agg_query.aggs.metric(dst, metric, field=field, **opts)

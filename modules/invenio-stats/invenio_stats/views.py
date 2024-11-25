@@ -147,12 +147,15 @@ class QueryRecordViewCount(WekoQuery):
                           "start_date": query_date + "-01",
                           "end_date": query_date + "-" + str(lastday).zfill(2)
                           + "T23:59:59"}
-            query_period_cfg = current_stats.queries["bucket-record-view-histogram"]
-            query_period = query_period_cfg.cls(**query_period_cfg.params)
+            query_period_cfg = current_stats.queries[
+                "bucket-record-view-histogram"]
+            query_period = query_period_cfg.cls(
+                name=query_period_cfg.name, **query_period_cfg.params)
 
             # total
             query_total_cfg = current_stats.queries["bucket-record-view-total"]
-            query_total = query_total_cfg.cls(**query_total_cfg.params)
+            query_total = query_total_cfg.cls(
+                name=query_total_cfg.name, **query_total_cfg.params)
             res_total = query_total.run(**params)
 
             result["total"] = res_total["count"]
@@ -321,8 +324,8 @@ class QueryFileStatsCount(WekoQuery):
                 # file download
                 query_download_total_cfg = current_stats.queries[
                     "bucket-file-download-total"]
-                query_download_total = query_download_total_cfg.query_class(
-                    **query_download_total_cfg.query_config)
+                query_download_total = query_download_total_cfg.cls(
+                    name=query_download_total_cfg.name, **query_download_total_cfg.params)
                 res_download_total = query_download_total.run(**params)
             except Exception as e:
                 res_download_total = {"value": 0, "buckets": []}
@@ -330,8 +333,8 @@ class QueryFileStatsCount(WekoQuery):
                 # file preview
                 query_preview_total_cfg = current_stats.queries[
                     "bucket-file-preview-total"]
-                query_preview_total = query_preview_total_cfg.query_class(
-                    **query_preview_total_cfg.query_config)
+                query_preview_total = query_preview_total_cfg.cls(
+                    name=query_preview_total_cfg.name, **query_preview_total_cfg.params)
                 res_preview_total = query_preview_total.run(**params)
             except Exception as e:
                 res_preview_total = {"value": 0, "buckets": []}
@@ -514,7 +517,7 @@ class QueryCeleryTaskReport(WekoQuery):
 
             # Get exec logs in certain time frame
             query_cfg = current_stats.queries["get-celery-task-report"]
-            query = query_cfg.query_class(**query_cfg.query_config)
+            query = query_cfg.cls(name=query_cfg.name, **query_cfg.params)
             result = query.run(**params)
 
             pretty_result = []

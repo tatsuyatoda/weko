@@ -61,64 +61,72 @@ class TestBookmarkAPI:
         assert bookmark.agg_type == agg_type
         assert bookmark.agg_interval == agg_interval
 
-
-    def test_set_bookmark(self, db):
+    # .tox/c1/bin/pytest --cov=invenio_stats tests/test_bookmark.py::TestBookmarkAPI::test_set_bookmark -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
+    def test_set_bookmark(self, app, db):
         """Test BookmarkAPI.set_bookmark."""
-        agg_type, agg_interval = "test", "day"
-        date = "2024-01-01T07:00:00"
-        bookmark = BookmarkAPI(agg_type, agg_interval)
+        with app.app_context():
+            agg_type, agg_interval = "test", "day"
+            date = "2024-01-01T07:00:00"
+            bookmark = BookmarkAPI(agg_type, agg_interval)
 
-        bookmark.set_bookmark(date)
+            bookmark.set_bookmark(date)
 
-        latest_bookmark = (
-            StatsBookmark.query.filter_by(source_id=agg_type)
-            .order_by(StatsBookmark.date.desc()).first()
-        )
+            latest_bookmark = (
+                StatsBookmark.query.filter_by(source_id=agg_type)
+                .order_by(StatsBookmark.date.desc()).first()
+            )
 
-        assert latest_bookmark is not None
-        assert latest_bookmark.source_id == agg_type
-        assert latest_bookmark.index == f"{SEARCH_INDEX_PREFIX}stats-bookmarks"
-        assert json.loads(latest_bookmark.source)["date"] == date
-        assert json.loads(latest_bookmark.source)["aggregation_type"] == agg_type
-        assert latest_bookmark.date == datetime.fromisoformat(date)
+            assert latest_bookmark is not None
+            assert latest_bookmark.source_id == agg_type
+            assert latest_bookmark.index == f"{SEARCH_INDEX_PREFIX}stats-bookmarks"
+            assert json.loads(latest_bookmark.source)["date"] == date
+            assert json.loads(latest_bookmark.source)["type"] == agg_type
+            assert latest_bookmark.date == datetime.fromisoformat(date)
 
-
-    def test_get_bookmark(self, db):
+    # .tox/c1/bin/pytest --cov=invenio_stats tests/test_bookmark.py::TestBookmarkAPI::test_get_bookmark -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
+    def test_get_bookmark(self, app, db):
         """Test BookmarkAPI.get_bookmark."""
-        agg_type, agg_interval = "test", "day"
-        bookmark = BookmarkAPI(agg_type, agg_interval)
+        with app.app_context():
+            agg_type, agg_interval = "test", "day"
+            bookmark = BookmarkAPI(agg_type, agg_interval)
 
-        # when there is no bookmark
-        result = bookmark.get_bookmark()
+            # when there is no bookmark
+            result = bookmark.get_bookmark()
 
-        assert result is None
+            assert result is None
 
-        # when there is a bookmark
-        index = f"{SEARCH_INDEX_PREFIX}stats-bookmarks"
-        date = "2024-01-01T07:00:00"
-        StatsBookmark.save({
-            "_id": agg_type,
-            "_index": index,
-            "_source": {"date": date, "aggregation_type": agg_type},
-        })
+            # when there is a bookmark
+            index = f"{SEARCH_INDEX_PREFIX}stats-bookmarks"
+            date = "2024-01-01T07:00:00"
+            StatsBookmark.save({
+                "_id": agg_type,
+                "_index": index,
+                "_source": {"date": date, "aggregation_type": agg_type},
+            })
 
-        result = bookmark.get_bookmark(0)
-
-        assert result == datetime.fromisoformat(date)
-
-        # when raising ValueError
-        with patch('invenio_stats.bookmark.datetime') as mock_datetime:
-            mock_datetime.fromisoformat.side_effect = ValueError
-            mock_datetime.strptime = datetime.strptime
             result = bookmark.get_bookmark(0)
 
-        # when refresh_time is defualt
-        date = "2024-01-01T07:00:00"
+            assert result == datetime.fromisoformat(date)
 
-        result = bookmark.get_bookmark()
+            # when raising ValueError
+            with patch('invenio_stats.bookmark.datetime') as mock_datetime:
+                mock_datetime.fromisoformat.side_effect = ValueError
+                mock_datetime.strptime = datetime.strptime
+                result = bookmark.get_bookmark(0)
 
-        assert result == datetime.fromisoformat(date) - timedelta(seconds=60)
+            # when refresh_time is defualt
+            date = "2024-01-01T07:00:00"
 
+            result = bookmark.get_bookmark()
+
+            assert result == datetime.fromisoformat(date) - timedelta(seconds=60)
+            
+            for interval, expected_format in [("day", "%Y-%m-%d"), ("month", "%Y-%m"), ("year", "%Y")]:
+                bookmark = BookmarkAPI(agg_type, interval)
+                result = bookmark.get_bookmark()
+                result_str = result.strftime(expected_format)
+                expected_date_str = datetime.fromisoformat(date).strftime(expected_format)
+                assert result_str == expected_date_str, f"Expected {expected_date_str} for interval {interval}, but got {result_str}"
 
     def test_list_bookmarks(self, db):
         """Test BookmarkAPI.list_bookmarks."""

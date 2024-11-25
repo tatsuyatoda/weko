@@ -3527,9 +3527,9 @@ class WekoQueryRankingHelper(QueryRankingHelper):
                 'new_items': False
             }
             query_config = current_app.config["WEKO_ITEMS_UI_RANKING_QUERY"][kwargs.get("ranking_type")]
-            query_class = query_config["query_class"]
-            cfg  =json.loads(json.dumps(query_config["query_config"]))
-            cfg.update(query_name=kwargs.get("ranking_type"))
+            query_class = query_config["cls"]
+            cfg  =json.loads(json.dumps(query_config["params"]))
+            cfg.update(name=kwargs.get("ranking_type"))
             all_query = query_class(**cfg)
             all_res = all_query.run(**params)
             cls.Calculation(all_res, result)
@@ -3595,7 +3595,7 @@ def get_ranking(settings):
             event_type='file-download',
             group_field='item_id',
             count_field='count',
-            must_not=json.dumps([{"wildcard": {"item_id": "*.*"}}])
+            must_not=json.dumps([{"wildcard": {"item_id": "*.*"}}]),
         )
 
         current_app.logger.debug("finished getting most_downloaded_items data from ES")
@@ -4517,7 +4517,8 @@ def get_file_download_data(item_id, record, filenames, query_date=None, size=Non
             from invenio_stats.proxies import current_stats
             # file download query
             query_download_total_cfg = current_stats.queries['item-file-download-aggs']
-            query_download_total = query_download_total_cfg.query_class(**query_download_total_cfg.query_config)
+            query_download_total = query_download_total_cfg.\
+                cls(name=query_download_total_cfg.name, **query_download_total_cfg.params)
             res_download_total = query_download_total.run(**params)
         except Exception as e:
             current_app.logger.error(traceback.print_exc())
