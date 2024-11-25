@@ -59,8 +59,5 @@
         "type": "date"
       }
     }
-  },
-  "aliases": {
-    "__SEARCH_INDEX_PREFIX__events-stats-file-download": {}
   }
 }

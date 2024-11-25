@@ -386,6 +386,9 @@ class StatAggregator(object):
         aggs_query = dsl.Search(
             using=self.client,
             index=self.index,
+        ).filter(
+                "term",
+                event_type=self.event
         ).extra(_source=False)
 
         range_args = {}

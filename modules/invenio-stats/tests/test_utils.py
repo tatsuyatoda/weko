@@ -387,77 +387,78 @@ def test_query_search_report_helper_error(app):
 # .tox/c1/bin/pytest --cov=invenio_stats tests/test_utils.py::test_query_common_reports_helper -v -s -vv --cov-branch --cov-report=term --cov-config=tox.ini --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
 def test_query_common_reports_helper(app):
     # get
-    _res = {
-        'buckets': [
-            {
-                'hostname': 'name1',
-                'remote_addr': 'localhost',
-                'count': 3
-            },
-            {
-                'hostname': 'name2',
-                'remote_addr': 'localhost',
-                'count': 2
-            }
-        ]
-    }
-    with patch('invenio_stats.queries.ESTermsQuery.run', return_value=_res):
-        res = QueryCommonReportsHelper.get(event='top_page_access', year=2022, month=10, start_date='2022-10-01', end_date='2022-10-10')
-        assert res=={'date': '2022-10-01-2022-10-10', 'all': {'localhost': {'host': 'name2', 'ip': 'localhost', 'count': 2}}}
+    with app.app_context():
+        _res = {
+            'buckets': [
+                {
+                    'hostname': 'name1',
+                    'remote_addr': 'localhost',
+                    'count': 3
+                },
+                {
+                    'hostname': 'name2',
+                    'remote_addr': 'localhost',
+                    'count': 2
+                }
+            ]
+        }
+        with patch('invenio_stats.queries.ESTermsQuery.run', return_value=_res):
+            res = QueryCommonReportsHelper.get(event='top_page_access', year=2022, month=10, start_date='2022-10-01', end_date='2022-10-10')
+            assert res=={'date': '2022-10-01-2022-10-10', 'all': {'localhost': {'host': 'name2', 'ip': 'localhost', 'count': 2}}}
 
-    _res = {
-        'buckets': [
-            {
-                'value': 2
-            }
-        ]
-    }
-    with patch('invenio_stats.queries.ESDateHistogramQuery.run', return_value=_res):
-        res = QueryCommonReportsHelper.get(event='top_page_access', year=2022, month=-1)
-        assert res=={'date': 'all', 'all': {'count': 2}}
+        _res = {
+            'buckets': [
+                {
+                    'value': 2
+                }
+            ]
+        }
+        with patch('invenio_stats.queries.ESDateHistogramQuery.run', return_value=_res):
+            res = QueryCommonReportsHelper.get(event='top_page_access', year=2022, month=-1)
+            assert res=={'date': 'all', 'all': {'count': 2}}
 
-    _res = {
-        'buckets': [
-            {
-                'site_license_name': '',
-                'count': 1
-            },
-            {
-                'site_license_name': 'name1',
-                'count': 2
-            }
-        ]
-    }
-    with patch('invenio_stats.queries.ESTermsQuery.run', return_value=_res):
-        res = QueryCommonReportsHelper.get(event='site_access', year=2022, month=10)
-        assert res=={'date': '2022-10', 'site_license': [{'top_view': 2, 'search': 2, 'record_view': 2, 'file_download': 2, 'file_preview': 2}], 'other': [{'top_view': 1, 'search': 1, 'record_view': 1, 'file_download': 1, 'file_preview': 1}], 'institution_name': [{'name': 'name1', 'top_view': 2, 'search': 2, 'record_view': 2, 'file_download': 2, 'file_preview': 2}]}
+        _res = {
+            'buckets': [
+                {
+                    'site_license_name': '',
+                    'count': 1
+                },
+                {
+                    'site_license_name': 'name1',
+                    'count': 2
+                }
+            ]
+        }
+        with patch('invenio_stats.queries.ESTermsQuery.run', return_value=_res):
+            res = QueryCommonReportsHelper.get(event='site_access', year=2022, month=10)
+            assert res=={'date': '2022-10', 'site_license': [{'top_view': 2, 'search': 2, 'record_view': 2, 'file_download': 2, 'file_preview': 2}], 'other': [{'top_view': 1, 'search': 1, 'record_view': 1, 'file_download': 1, 'file_preview': 1}], 'institution_name': [{'name': 'name1', 'top_view': 2, 'search': 2, 'record_view': 2, 'file_download': 2, 'file_preview': 2}]}
 
-    _res = {
-        'buckets': [
-            {
-                'key': 1640995200,
-                'buckets': [
-                    {
-                        'key': 'key1.1',
-                    },
-                    {
-                        'key': 'key1.2',
-                        'buckets': [
-                            {
-                                'key': 'key1.2.1'
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    }
-    with patch('invenio_stats.queries.ESWekoTermsQuery.run', return_value=_res):
-        res = QueryCommonReportsHelper.get(event='item_create', year=2022, month=-1)
-        assert res=={'date': 'all', 'all': [{'create_date': 1640995.2, 'pid_value': 'key1.1', 'record_name': ''}, {'create_date': 1640995.2, 'pid_value': 'key1.2', 'record_name': 'key1.2.1'}]}
+        _res = {
+            'buckets': [
+                {
+                    'key': 1640995200,
+                    'buckets': [
+                        {
+                            'key': 'key1.1',
+                        },
+                        {
+                            'key': 'key1.2',
+                            'buckets': [
+                                {
+                                    'key': 'key1.2.1'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        with patch('invenio_stats.queries.ESWekoTermsQuery.run', return_value=_res):
+            res = QueryCommonReportsHelper.get(event='item_create', year=2022, month=-1)
+            assert res=={'date': 'all', 'all': [{'create_date': 1640995.2, 'pid_value': 'key1.1', 'record_name': ''}, {'create_date': 1640995.2, 'pid_value': 'key1.2', 'record_name': 'key1.2.1'}]}
 
-    res = QueryCommonReportsHelper.get(event='')
-    assert res==[]
+        res = QueryCommonReportsHelper.get(event='')
+        assert res==[]
 
 def test_query_common_reports_helper_error(app):
     with app.app_context():
@@ -549,7 +550,7 @@ def test_query_record_view_report_helper(app, db, records):
                 'cur_user_id': 1
             },
             {
-                'record_id': _id2,
+                'record_id': {'id': 'invalid'},
                 'record_name': 'test name2',
                 'record_index_names': 'test index1',
                 'count': 1,
@@ -562,7 +563,7 @@ def test_query_record_view_report_helper(app, db, records):
     # Calculation
     with pytest.raises(Exception) as e:
         QueryRecordViewReportHelper.Calculation(_res, _data_list)
-    assert e.type==UnsupportedCompilationError
+    assert e.type==TypeError
 
     # correct_record_title
     _res = [['2', ['name2old']]]
@@ -832,46 +833,47 @@ def test_query_item_reg_report_helper_error(i18n_app):
 # .tox/c1/bin/pytest --cov=invenio_stats tests/test_utils.py::test_query_ranking_helper -v -s -vv --cov-branch --cov-report=term --cov-config=tox.ini --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
 def test_query_ranking_helper(app, db):
     # Calculation
-    _res = {
-        'aggregations': {
-            'my_buckets': {
-                'buckets': [
-                    {
-                        'key': 'key1',
-                        'my_sum': {
-                            'value': 1
+    with app.app_context():
+        _res = {
+            'aggregations': {
+                'my_buckets': {
+                    'buckets': [
+                        {
+                            'key': 'key1',
+                            'my_sum': {
+                                'value': 1
+                            }
                         }
+                    ]
+                }
+            }
+        }
+        data_list = []
+        QueryRankingHelper.Calculation(_res, data_list)
+        assert data_list==[{'key': 'key1', 'count': 1}]
+
+        # get
+        res = QueryRankingHelper.get(event_type='record-view', group_field='pid_value', count_field='count', start_date='2022-09-01', end_date='2022-09-15')
+        assert res==[]
+
+        # get_new_items
+        _res = {
+            'hits': {
+                'hits': [
+                    {
+                        '_source': {
+                            'path': 'path1'
+                        }
+                    },
+                    {
+                        '_source': {}
                     }
                 ]
             }
         }
-    }
-    data_list = []
-    QueryRankingHelper.Calculation(_res, data_list)
-    assert data_list==[{'key': 'key1', 'count': 1}]
-
-    # get
-    res = QueryRankingHelper.get(event_type='record-view', group_field='pid_value', count_field='count', start_date='2022-09-01', end_date='2022-09-15')
-    assert res==[]
-
-    # get_new_items
-    _res = {
-        'hits': {
-            'hits': [
-                {
-                    '_source': {
-                        'path': 'path1'
-                    }
-                },
-                {
-                     '_source': {}
-                }
-            ]
-        }
-    }
-    with patch('invenio_stats.queries.ESWekoRankingQuery.run', return_value=_res):
-        res = QueryRankingHelper.get_new_items(must_not=json.dumps([{"wildcard": {"control_number": "*.*"}}]), start_date='2022-09-01', end_date='2022-09-15')
-        assert res==[{'path': 'path1'}]
+        with patch('invenio_stats.queries.ESWekoRankingQuery.run', return_value=_res):
+            res = QueryRankingHelper.get_new_items(must_not=json.dumps([{"wildcard": {"control_number": "*.*"}}]), start_date='2022-09-01', end_date='2022-09-15')
+            assert res==[{'path': 'path1'}]
 
 # .tox/c1/bin/pytest --cov=invenio_stats tests/test_utils.py::test_query_ranking_helper_error -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
 def test_query_ranking_helper_error(app, db):

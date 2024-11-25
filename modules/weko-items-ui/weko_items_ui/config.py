@@ -207,11 +207,11 @@ WEKO_ITEMS_UI_RANKING_BUFFER = 100
 
 WEKO_ITEMS_UI_SEARCH_RANK_KEY_FILTER = ['']
 
-WEKO_ITEMS_UI_RANKING_QUERY = dict(
-    most_view_ranking = dict(
-        query_class = ESWekoRankingQuery,
-        query_config = dict(
-            index='{}-stats-{}',
+WEKO_ITEMS_UI_RANKING_QUERY = {
+    'most_view_ranking': {
+        "cls": ESWekoRankingQuery,
+        "params": dict(
+            index='stats-index',
             main_fields=['start_date', 'end_date', 'group_field', 'agg_size', 'count_field'],
             metric_fields=dict(),
             main_query={
@@ -254,8 +254,8 @@ WEKO_ITEMS_UI_RANKING_QUERY = dict(
                 }
             }
         )
-    )
-)
+    }
+}
 
 WEKO_ITEMS_UI_REST_ENDPOINTS = {
     'ranking': {

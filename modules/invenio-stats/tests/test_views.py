@@ -107,23 +107,27 @@ def test_stats_query_resource_error(client, db, query_entrypoints,
         assert resp.status_code==400
 
 
-class mockPIDVersioning:
-    class mockChild:
-        def __init__(self, child):
-            self.child = child
-            pass
-
+class MockPIDNodeVersioning:
+    class MockChild:
+        def __init__(self, object_uuid):
+            self.object_uuid = object_uuid
+            
         def all(self):
-            return [self.child]
-
-    def __init__(self, child):
-        self.exists = True
-        self.children = self.mockChild(child)
-        pass
+            return [self]
+    
+    class MockParents:
+        def one_or_none(self):
+            return None
+            
+    def __init__(self, pid):
+        self.pid = pid
+        self.children = self.MockChild(pid.object_uuid)
+        self.parents = self.MockParents()
 
 # class QueryRecordViewCount(WekoQuery):
 # .tox/c1/bin/pytest --cov=invenio_stats tests/test_views.py::test_query_record_view_count -v -s -vv --cov-branch --cov-report=term --cov-config=tox.ini --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
-def test_query_record_view_count(client, db, es, records):
+def test_query_record_view_count(client_1, db, es, records):
+    client = client_1
     _uuid = str(records[0][0].object_uuid)
     
     # get
@@ -158,11 +162,14 @@ def test_query_record_view_count(client, db, es, records):
             }
         ]
     }
-    with patch("invenio_stats.views.PIDVersioning", side_effect=mockPIDVersioning):
-        with patch("invenio_stats.queries.ESTermsQuery.run", return_value=_res_data):
+
+    with patch("invenio_stats.views.PIDNodeVersioning", 
+              side_effect=MockPIDNodeVersioning) as mock_versioning:
+        with patch("invenio_stats.queries.ESTermsQuery.run", 
+                  return_value=_res_data):
             res = client.get(
                 url_for("invenio_stats.get_record_view_count", record_id=_uuid))
-            assert res.status_code==200
+            assert res.status_code == 200
 
 # .tox/c1/bin/pytest --cov=invenio_stats tests/test_views.py::test_query_record_view_count_error -v -s -vv --cov-branch --cov-report=term --cov-config=tox.ini --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
 def test_query_record_view_count_error(client, db, records):
@@ -179,7 +186,8 @@ def test_query_record_view_count_error(client, db, records):
 
 # class QueryFileStatsCount(WekoQuery):
 # .tox/c1/bin/pytest --cov=invenio_stats tests/test_views.py::test_query_file_stats_count -v -s -vv --cov-branch --cov-report=term --cov-config=tox.ini --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
-def test_query_file_stats_count(client, db):
+def test_query_file_stats_count(client_1, db):
+    client=client_1
     _uuid = uuid.uuid4()
 
     # get_data
@@ -349,30 +357,31 @@ def test_query_common_reports(client, app):
 )
 def test_query_celery_task_report(client, role_users, id, status_code):
     # get
-    login_user_via_session(client=client, email=role_users[id]["email"])
+    with patch("weko_items_ui.views.db.session.remove"):
+        login_user_via_session(client=client, email=role_users[id]["email"])
 
-    res = client.get(
-        url_for("invenio_stats.get_celery_task_report", task_name="harvest"))
-    assert res.status_code==status_code
-
-    _res_data = {
-        "buckets": [
-            {
-                "key": "task1",
-                "field": "test_field1",
-                "buckets": [
-                    {
-                        "key": "task1-1",
-                        "field": "test_field1-1"
-                    }
-                ]
-            }
-        ]
-    }
-    with patch("invenio_stats.queries.ESTermsQuery.run", return_value=_res_data):
         res = client.get(
             url_for("invenio_stats.get_celery_task_report", task_name="harvest"))
         assert res.status_code==status_code
+
+        _res_data = {
+            "buckets": [
+                {
+                    "key": "task1",
+                    "field": "test_field1",
+                    "buckets": [
+                        {
+                            "key": "task1-1",
+                            "field": "test_field1-1"
+                        }
+                    ]
+                }
+            ]
+        }
+        with patch("invenio_stats.queries.ESTermsQuery.run", return_value=_res_data):
+            res = client.get(
+                url_for("invenio_stats.get_celery_task_report", task_name="harvest"))
+            assert res.status_code==status_code
 
 
 # class QuerySearchReport(ContentNegotiatedMethodView):

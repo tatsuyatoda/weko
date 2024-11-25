@@ -5,8 +5,7 @@
   "settings": {
     "index": {
       "refresh_interval": "5s",
-      "lifecycle.name": "weko_stats_policy",
-      "lifecycle.rollover_alias": "__SEARCH_INDEX_PREFIX__stats-index"
+      "opendistro.index_state_management.policy_id": "weko_stats_policy"
     }
   },
   "mappings": {
@@ -32,7 +31,6 @@
       "event_type": {
         "type": "keyword"
       },
-
       "count": {
         "type": "integer"
       },
@@ -82,7 +80,6 @@
         "type": "keyword",
         "index": true
       },
-
       "file_id": {
         "type": "keyword",
         "index": true
@@ -102,7 +99,6 @@
       "updated_timestamp": {
         "type": "date"
       },
-
       "item_id": {
         "type": "keyword",
         "index": true
@@ -138,6 +134,26 @@
         "type": "keyword",
         "index": true
       },
+      "record_index_names": {
+        "type": "keyword",
+        "index": true
+      },
+      "record_index_list": {
+        "type": "nested",
+        "properties": {
+          "index_id": {
+            "type": "keyword"
+          },
+          "index_name_en": {
+            "type": "keyword",
+            "index": true
+          },
+          "index_name": {
+            "type": "keyword",
+            "index": true
+          }
+        }
+      },
       "is_billing_item": {
         "type": "boolean"
       },
@@ -169,7 +185,6 @@
         "type": "keyword",
         "index": true
       },
-
       "pid_value": {
         "type": "keyword",
         "index": true
@@ -178,14 +193,12 @@
         "type": "keyword",
         "index": true
       },
-
       "record_id": {
         "type": "keyword"
       },
       "pid_type": {
         "type": "keyword"
       },
-
       "referrer": {
         "type": "keyword",
         "index": true
@@ -197,57 +210,6 @@
       "search_type": {
         "type": "keyword",
         "index": true
-      }
-    }
-  },
-  "aliases": {
-    "__SEARCH_INDEX_PREFIX__stats-celery-task": {
-      "filter": {
-        "term": {
-          "event_type": "celery-task"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__stats-file-download": {
-      "filter": {
-        "term": {
-          "event_type": "file-download"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__stats-file-preview": {
-      "filter": {
-        "term": {
-          "event_type": "file-preview"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__stats-item-create": {
-      "filter": {
-        "term": {
-          "event_type": "item-create"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__stats-record-view": {
-      "filter": {
-        "term": {
-          "event_type": "record-view"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__stats-search": {
-      "filter": {
-        "term": {
-          "event_type": "search"
-        }
-      }
-    },
-    "__SEARCH_INDEX_PREFIX__stats-top-view": {
-      "filter": {
-        "term": {
-          "event_type": "top-view"
-        }
       }
     }
   }
