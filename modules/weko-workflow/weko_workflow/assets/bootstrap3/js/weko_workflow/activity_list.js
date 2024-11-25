@@ -2,7 +2,7 @@
 //  "jquery",
 //  "bootstrap"
 //], function () {
-import "bootstrap";
+import "bootstrap/dist/js/bootstrap.min.js";
 import $ from "jquery";
 $(document).ready(function () {
     setDatePickerFormSearch();
@@ -52,23 +52,23 @@ function changeParamPages() {
         let result = [];
         if (window.location.search != '') {
             let locationParam = window.location.search.split('?')[1].split('&');
-            for (let key in locationParam) {
+            for (let key of locationParam) {
                 let param = {};
-                param.name = locationParam[key].split('=')[0];
+                param.name = key.split('=')[0];
                 if (param.name == $("#change_page_param").val()) {
                     param.value = 1;
                 }
                 else {
-                    param.value = locationParam[key].split('=')[1];
+                    param.value = key.split('=')[1];
                 }
                 result.push(param);
             }
         }
         let urlEncodedDataPairs = [];
-        for (let key in result) {
-            result[key].name = decodeURIComponent(result[key].name.replace(/\+/g, ' '));
-            result[key].value = decodeURIComponent(result[key].value.toString().replace(/\+/g, ' '));
-            urlEncodedDataPairs.push(encodeURIComponent(result[key].name) + '=' + encodeURIComponent(result[key].value));
+        for (let key of result) {
+            key.name = decodeURIComponent(key.name.replace(/\+/g, ' '));
+            key.value = decodeURIComponent(key.value.toString().replace(/\+/g, ' '));
+            urlEncodedDataPairs.push(encodeURIComponent(key.name) + '=' + encodeURIComponent(key.value));
         }
         window.history.pushState("", "", '?' + urlEncodedDataPairs.join('&').replace(/%20/g, '+'));
     }
@@ -98,18 +98,18 @@ function getSizeAndPagesName(type) {
     let result = '';
     if (window.location.search != '') {
         let locationParam = window.location.search.split('?')[1].split('&');
-        for (let key in locationParam) {
-            let name = locationParam[key].split('=')[0];
+        for (let key of locationParam) {
+            let name = key.split('=')[0];
             if (name === 'tab') {
-                if (locationParam[key].split('=')[1] === 'todo') {
+                if (key.split('=')[1] === 'todo') {
                     checkExists = true;
                     result = type + 'todo';
                 }
-                else if (locationParam[key].split('=')[1] === 'wait') {
+                else if (key.split('=')[1] === 'wait') {
                     checkExists = true;
                     result = type + 'wait';
                 }
-                else if (locationParam[key].split('=')[1] === 'all') {
+                else if (key.split('=')[1] === 'all') {
                     checkExists = true;
                     result = type + 'all';
                 }
@@ -134,12 +134,12 @@ function submitFilterSearch() {
     if (window.location.search != '') {
         let locationParam = window.location.search.split('?')[1].split('&');
         let listParamName = ['tab', 'sizetodo', 'sizeall', 'sizewait'];
-        for (let key in locationParam) {
-            let paramName = locationParam[key].split('=')[0];
+        for (let key of locationParam) {
+            let paramName = key.split('=')[0];
             if (listParamName.indexOf(paramName) >= 0) {
                 let param = {};
                 param.name = paramName;
-                param.value = locationParam[key].split('=')[1];
+                param.value = key.split('=')[1];
                 paramsAfterFilter.push(param);
             }
         }
@@ -149,10 +149,10 @@ function submitFilterSearch() {
 
 function creatURL(data) {
     let urlEncodedDataPairs = [];
-    for (let key in data) {
-        data[key].name = decodeURIComponent(data[key].name.replace(/\+/g, ' '));
-        data[key].value = decodeURIComponent(data[key].value.toString().replace(/\+/g, ' '));
-        urlEncodedDataPairs.push(encodeURIComponent(data[key].name) + '=' + encodeURIComponent(data[key].value));
+    for (let key of data) {
+        key.name = decodeURIComponent(key.name.replace(/\+/g, ' '));
+        key.value = decodeURIComponent(key.value.toString().replace(/\+/g, ' '));
+        urlEncodedDataPairs.push(encodeURIComponent(key.name) + '=' + encodeURIComponent(key.value));
     }
     return window.location.origin + window.location.pathname + '?' + urlEncodedDataPairs.join('&').replace(/%20/g, '+');
 }
@@ -189,15 +189,15 @@ function createParamArray(value, name) {
     let result = [];
     if (window.location.search != '') {
         let locationParam = window.location.search.split('?')[1].split('&');
-        for (let key in locationParam) {
+        for (let key of locationParam) {
             let param = {};
-            param.name = locationParam[key].split('=')[0];
+            param.name = key.split('=')[0];
             if (param.name == name) {
                 param.value = value;
                 checkExists = true;
             }
             else {
-                param.value = locationParam[key].split('=')[1];
+                param.value = key.split('=')[1];
             }
             result.push(param);
         }
@@ -215,10 +215,10 @@ function createParamArray(value, name) {
 function autoFilterSearch() {
     if (window.location.search != '') {
         let locationParam = window.location.search.split('?')[1].split('&');
-        for (let key in locationParam) {
+        for (let key of locationParam) {
             let param = {};
             let listParamName = ['createdfrom', 'createdto', 'workflow', 'user', 'item', 'status'];
-            param = locationParam[key].split('=');
+            param = key.split('=');
             if (param[0].split('_')[1] >= 0) {
                 let paramName = param[0].split('_')[0];
                 if (listParamName.indexOf(paramName) >= 0) {
@@ -634,20 +634,20 @@ async function downloadActivities(activity_id = '') {
         if (window.location.search != '') {
             let locationParam = window.location.search.split('?')[1].split('&');
             let listParamName = ['tab', 'sizetodo', 'sizeall', 'sizewait'];
-            for (let key in locationParam) {
-                let paramName = locationParam[key].split('=')[0];
+            for (let key of locationParam) {
+                let paramName = key.split('=')[0];
                 if (listParamName.indexOf(paramName) >= 0) {
                     let param = {};
                     param.name = paramName;
-                    param.value = locationParam[key].split('=')[1];
+                    param.value = key.split('=')[1];
                     paramsAfterFilter.push(param);
                 }
             }
         }
 
-        for (let key in paramsAfterFilter) {
-            paramsAfterFilter[key].name = decodeURIComponent(paramsAfterFilter[key].name.replace(/\+/g, ' '));
-            paramsAfterFilter[key].value = decodeURIComponent(paramsAfterFilter[key].value.toString().replace(/\+/g, ' '));
+        for (let key of paramsAfterFilter) {
+            key.name = decodeURIComponent(key.name.replace(/\+/g, ' '));
+            key.value = decodeURIComponent(key.value.toString().replace(/\+/g, ' '));
         }
     }
     return setActivitylogSubmit(paramsAfterFilter);
@@ -671,22 +671,22 @@ function clearActivities() {
         if (window.location.search != '') {
             let locationParam = window.location.search.split('?')[1].split('&');
             let listParamName = ['tab', 'sizetodo', 'sizeall', 'sizewait'];
-            for (let key in locationParam) {
-                let paramName = locationParam[key].split('=')[0];
+            for (let key of locationParam) {
+                let paramName = key.split('=')[0];
                 if (listParamName.indexOf(paramName) >= 0) {
                     let param = {};
                     param.name = paramName;
-                    param.value = locationParam[key].split('=')[1];
+                    param.value = key.split('=')[1];
                     paramsAfterFilter.push(param);
                 }
             }
         }
 
         let urlEncodedDataPairs = [];
-        for (let key in paramsAfterFilter) {
-            paramsAfterFilter[key].name = decodeURIComponent(paramsAfterFilter[key].name.replace(/\+/g, ' '));
-            paramsAfterFilter[key].value = decodeURIComponent(paramsAfterFilter[key].value.toString().replace(/\+/g, ' '));
-            urlEncodedDataPairs.push(encodeURIComponent(paramsAfterFilter[key].name) + '=' + encodeURIComponent(paramsAfterFilter[key].value));
+        for (let key of paramsAfterFilter) {
+            key.name = decodeURIComponent(key.name.replace(/\+/g, ' '));
+            key.value = decodeURIComponent(key.value.toString().replace(/\+/g, ' '));
+            urlEncodedDataPairs.push(encodeURIComponent(key.name) + '=' + encodeURIComponent(key.value));
         }
         let clearURL = window.location.pathname + 'clear_activitylog/?' + urlEncodedDataPairs.join('&').replace(/%20/g, '+');
 
