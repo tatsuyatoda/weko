@@ -712,20 +712,21 @@ STATS_QUERIES = {
     'bucket-record-view-histogram': {
         "cls": DateHistogramQuery,
         "params": dict(
-            index='{}-stats-record-view'.format(search_index_prefix),
+            index='stats-record-view',
             copy_fields=dict(
                 record_id='record_id',
             ),
             required_filters=dict(
                 record_id='record_id',
             ),
+            name='bucket-record-view-histogram',
         )
     },
 
     'bucket-record-view-total': {
         "cls": TermsQuery,
         "params": dict(
-            index='{}-stats-record-view'.format(search_index_prefix),
+            index='stats-record-view',
             copy_fields=dict(
                 record_id='record_id',
             ),
@@ -737,6 +738,7 @@ STATS_QUERIES = {
                 unique_count=('sum', 'unique_count', {}),
             ),
             aggregated_fields=['country'],
+            name='bucket-record-view-total',
         )
     },
 

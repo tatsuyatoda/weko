@@ -17,6 +17,7 @@ class ActivitySchema(Schema):
 class ActionSchema(Schema):
     action_version = fields.String(allow_none=True)
     commond = fields.String(allow_none=True)
+    temporary_save= fields.Integer(allow_none=True)
     class Meta:
         strict = True
 

@@ -13,8 +13,8 @@ $(document).ready(function () {
                 // period
                 let ddl = document.getElementById("record_view_period");
                 let ddlHtml = ddl.innerHTML;
-                for (let i in data.period) {
-                    ddlHtml += '<option value=' + data.period[i] + '>' + data.period[i] + '</option>';
+                for (let period of data.period) {
+                    ddlHtml += '<option value=' + period + '>' + period + '</option>';
                 }
                 ddl.innerHTML = ddlHtml;
                 // country
