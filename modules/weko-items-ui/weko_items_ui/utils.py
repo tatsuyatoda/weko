@@ -3596,7 +3596,6 @@ def get_ranking(settings):
             group_field='item_id',
             count_field='count',
             must_not=json.dumps([{"wildcard": {"item_id": "*.*"}}]),
-            item_id="123231321"
         )
 
         current_app.logger.debug("finished getting most_downloaded_items data from ES")
