@@ -88,7 +88,7 @@ def is_reindex_running():
     if not check_celery_is_run():
         return False
 
-    inspect = current_app.extensions['celery'].control.inspect()
+    inspect = current_app.extensions['invenio-celery'].celery.control.inspect()
     
     active = inspect.active()
 
