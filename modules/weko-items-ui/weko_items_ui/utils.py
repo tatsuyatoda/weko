@@ -3572,7 +3572,6 @@ def get_ranking(settings):
     end_date = end_date_original.strftime('%Y-%m-%d')
     # most_reviewed_items
     current_app.logger.debug("get most_reviewed_items start")
-    print(f"most_view:{settings.rankings['most_reviewed_items']}")
     if settings.rankings['most_reviewed_items']:
         result = WekoQueryRankingHelper.get(
             start_date=start_date,
