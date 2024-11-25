@@ -404,7 +404,6 @@ def test_query_common_reports_helper(app):
         }
         with patch('invenio_stats.queries.ESTermsQuery.run', return_value=_res):
             res = QueryCommonReportsHelper.get(event='top_page_access', year=2022, month=10, start_date='2022-10-01', end_date='2022-10-10')
-            print(res)
             assert res=={'date': '2022-10-01-2022-10-10', 'all': {'localhost': {'host': 'name2', 'ip': 'localhost', 'count': 2}}}
 
         _res = {
