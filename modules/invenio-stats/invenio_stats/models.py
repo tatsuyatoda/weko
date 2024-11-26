@@ -181,7 +181,7 @@ class _StataModelBase(Timestamp):
                     'source_id': data_object.get("_id"),
                     'index': data_object.get("_index"),
                     'type': data_object.get("_type"),
-                    'source': json.dumps(data_object.get("_source")),
+                    'source': data_object.get("_source"),
                     'date': date
                 }
             else:
