@@ -202,7 +202,6 @@ class _StataModelBase(Timestamp):
             db.session.commit()
             return True
         except SQLAlchemyError as err:
-            print("Unexpected error: {}".format(err))
             current_app.logger.error("Unexpected error: {}".format(err))
             db.session.rollback()
             return False
