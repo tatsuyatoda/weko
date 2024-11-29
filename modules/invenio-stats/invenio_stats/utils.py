@@ -1367,7 +1367,7 @@ class StatsCliUtil:
         modified_data = self.__modify_restore_data(data)    
         self.__cli_restore_es_data_from_db(modified_data)
         
-    def __modify_restore_data(self, data: Generator) -> Generator:
+    def __modify_restore_data(self, data) -> Generator:
         """Modify restore data to meet the new requirements.
         :param data: Original restore data from DB.
         :return: Modified data generator.
@@ -1391,11 +1391,11 @@ class StatsCliUtil:
             
             event_type = document.get("event_type", None)
             if not event_type:
-                if self.cli_type==0:
+                if self.cli_type==self.EVENTS_TYPE:
                     # tenant1-events-stats-file-download
                     event_type = "-".join(index.split("-")[3:])
                     doc["_index"] = event_stats_index
-                elif self.cli_type==1:
+                elif self.cli_type==self.AGGREGATIONS_TYPE:
                     # tenant1-stats-file-download
                     event_type = "-".join(index.split("-")[2:])
                     doc["_index"] = stats_index
