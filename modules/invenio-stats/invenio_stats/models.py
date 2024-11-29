@@ -102,14 +102,19 @@ class _StataModelBase(Timestamp):
         query = cls.get_by_date(query, start_date, end_date)
         
         # index ILIKE 'tenant1-events-stats-[event-type]'
-        condition_1 = cls.index.ilike(beforeindex)
+        condition_1 = cls.index.ilike(beforeindex + "%")
         
         # source->>'event_type' = '[event-type]'
-        condition_2 = cls.index.ilike(_index + "%") & (func.jsonb_extract_path_text(cls.source, "event_type") == event_type)
+        condition_2_1 = cls.index.ilike(_index + "%") 
+        condition_2_2 = func.jsonb_extract_path_text(cls.source, "event_type") == event_type
+        
         query = query.filter(
             or_(
                 condition_1,
-                condition_2
+                and_(
+                    condition_2_1,
+                    condition_2_2
+                )
             )
         )
         
