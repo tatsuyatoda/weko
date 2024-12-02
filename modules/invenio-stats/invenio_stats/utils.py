@@ -1393,11 +1393,11 @@ class StatsCliUtil:
             if not event_type:
                 if self.cli_type==self.EVENTS_TYPE:
                     # tenant1-events-stats-file-download
-                    event_type = "-".join(index.split("-")[3:])
+                    event_type = index.replace(search_index_prefix + "-stats-", "")
                     doc["_index"] = event_stats_index
                 elif self.cli_type==self.AGGREGATIONS_TYPE:
                     # tenant1-stats-file-download
-                    event_type = "-".join(index.split("-")[2:])
+                    event_type = index.replace(search_index_prefix + "-events-stats-", "")
                     doc["_index"] = stats_index
                 if event_type in {"file-download", "file-preview"}:
                     doc["_id"] = f"{doc['_id']}-{event_type}"
