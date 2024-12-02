@@ -83,7 +83,7 @@ class _StataModelBase(Timestamp):
     @classmethod
     def get_by_event_type(
         cls, _index: str, event_type, start_date: datetime = None, end_date: datetime = None
-    ) -> List:
+    ):
         """
         Get stats data by event type, supporting both old and new versions of data.
         :param _index: event index for filtering.
