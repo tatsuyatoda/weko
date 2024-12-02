@@ -136,48 +136,48 @@ import $ from 'jquery';
 
             // detail search
             $rootScope.getSettingDefault = function () {
-                let data = null;
-
-                $.ajax({
+                return $.ajax({
                     async: false,
                     method: 'GET',
                     url: '/get_search_setting',
                     headers: { 'Content-Type': 'application/json' },
-                }).then(function successCallback(response) {
-
-                    if (response.status === 1) {
-                        data = response.data;
-                    }
-
-                }, function errorCallback(error) {
-                    console.log(error);
-                    return null;
-                });
-
-                if (data.dlt_keyword_sort_selected !== null
-                    && data.dlt_keyword_sort_selected !== undefined) {
-                    let key_sort = data.dlt_keyword_sort_selected;
-                    let descOrEsc = "";
-
-                    if (key_sort.includes("_asc")) {
-                        key_sort = key_sort.replace("_asc", "");
-                    }
-
-                    if (key_sort.includes("_desc")) {
-                        descOrEsc = "-";
-                        key_sort = descOrEsc + key_sort.replace("_desc", "");
-                    }
-
-                    return {
-                        key: "sort",
-                        value: key_sort
-                    };
-                }
+                })
             }
 
             $scope.detail_search = function () {
                 let query_str = "";
-                let data = $rootScope.getSettingDefault();
+                let data = null;
+                $rootScope.getSettingDefault()
+                    .then(function successCallback(response) {
+
+                        if (response.status === 1) {
+                            data = response.data;
+                        }
+
+                    }, function errorCallback(error) {
+                        console.log(error);
+                        return null;
+                    });
+
+                    if (data.dlt_keyword_sort_selected !== null
+                        && data.dlt_keyword_sort_selected !== undefined) {
+                        let key_sort = data.dlt_keyword_sort_selected;
+                        let descOrEsc = "";
+
+                        if (key_sort.includes("_asc")) {
+                            key_sort = key_sort.replace("_asc", "");
+                        }
+
+                        if (key_sort.includes("_desc")) {
+                            descOrEsc = "-";
+                            key_sort = descOrEsc + key_sort.replace("_desc", "");
+                        }
+
+                        data = {
+                            key: "sort",
+                            value: key_sort
+                        };
+                    }
 
                 // Add simple search query to detail search one
                 $scope.search_q = document.getElementById('q').value;
