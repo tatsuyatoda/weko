@@ -1421,7 +1421,6 @@ class StatsCliUtil:
             if not _type:
                 continue
             prefix = "stats-index"
-            search_type = prefix.format(_type)
 
             if self.index_prefix:
                 _index = f"{search_index_prefix}-{self.index_prefix}-{prefix}"
