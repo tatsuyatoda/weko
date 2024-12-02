@@ -29,13 +29,11 @@
 {%- endblock css %}
 
 {%- block javascript %}
-  {{ webpack['js-dependencies.js']}}
   {{ super() }}
   <script src="{{ url_for('static', filename='js/weko_theme/inline.bundle.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/weko_theme/polyfills.bundle.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/weko_theme/main.bundle.js') }}" defer></script>
   {{ webpack['theme-js-top-page.js']}}
-  <!-- {% assets "weko_records_ui_cites_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %} -->
   {{ webpack['theme-search-detail.js']}}
   {{ webpack['records_ui_js_dependecies.js']}}
   {{ webpack['records_ui_js.js']}}
@@ -48,7 +46,7 @@
 {%- set addthis_user_id = site_info.get("addthis_user_id",config.ADDTHIS_USER_ID) %}  
 <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid={{ addthis_user_id }}"></script>
 <!-- end demo block -->
-  {{ webpack['theme-js-widget.js']}}
+  {{ webpack['theme-widget.js']}}
 {%- endblock javascript %}
 
 {%- block page_body_tabs %}
