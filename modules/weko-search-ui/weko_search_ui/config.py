@@ -732,3 +732,7 @@ CELERY_TASK_TRACK_STARTED=True
 WEKO_SEARCH_UI_API_LIMIT_RATE_DEFAULT = ['100 per minute']
 
 WEKO_SEARCH_UI_RESULT_TMP_PREFIX = 'weko_search_result_list_'
+
+from .views import search
+
+SEARCH_UI_SEARCH_VIEW = search
