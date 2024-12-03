@@ -4751,7 +4751,7 @@ function toObject(arr) {
         ]);
 
         angular.module('uploadThumbnail', ['schemaForm', 'invenioFiles'])
-            .controller('UploadController', function ($scope, $rootScope, InvenioFilesAPI) {
+            .controller('UploadController', ['$scope', '$rootScope', 'InvenioFilesAPI', function ($scope, $rootScope, InvenioFilesAPI) {
                 'use strict';
                 $scope.schema = {
                     type: 'object',
@@ -4957,7 +4957,7 @@ function toObject(arr) {
                         $("#allModal").modal("show");
                     }
                 };
-            }).$inject = [
+            }]).$inject = [
                 '$scope',
                 '$rootScope',
                 'InvenioFilesAPI',
