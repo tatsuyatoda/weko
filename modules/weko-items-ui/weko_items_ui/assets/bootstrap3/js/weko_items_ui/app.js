@@ -440,6 +440,8 @@ const get_search_data = function (keyword) {
     });
 }
 
+window.get_search_data = get_search_data;
+
 const get_autofill_data = function (keyword, data, mode) {
     // If autofill, "keyword" = email or username, and username, email have to fill to "data"
     // If validate, keyword = username, data = email
