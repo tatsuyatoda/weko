@@ -1368,9 +1368,14 @@ class StatsCliUtil:
         self.__cli_restore_es_data_from_db(modified_data)
         
     def __modify_restore_data(self, data):
-        """Modify restore data to meet the new requirements.
-        :param data: Original restore data from DB.
-        :return: Modified data generator.
+        """
+        Modify restore data to meet the new requirements.
+
+        Args:
+            data (dict): Original restore data from the database.
+
+        Returns:
+            generator: Modified data generator.
         """
         search_index_prefix = current_app.config["SEARCH_INDEX_PREFIX"].strip("-")
         stats_index = search_index_prefix + "-stats-index"

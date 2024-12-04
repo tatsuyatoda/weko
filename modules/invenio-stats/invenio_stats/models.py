@@ -86,11 +86,15 @@ class _StataModelBase(Timestamp):
     ):
         """
         Get stats data by event type, supporting both old and new versions of data.
-        :param _index: event index for filtering.
-        :param event_type: the target event type (e.g., 'file-download').
-        :param start_date: start date for filtering.
-        :param end_date: end date for filtering.
-        :return: List of filtered data.
+
+        Args:
+            _index (str): Event index for filtering.
+            event_type (str): The target event type (e.g., 'file-download').
+            start_date (str): Start date for filtering.
+            end_date (str): End date for filtering.
+
+        Returns:
+            list: List of filtered data.
         """
         from sqlalchemy import func, or_, and_
         
