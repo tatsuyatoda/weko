@@ -316,7 +316,7 @@ class StatAggregator(object):
                         index_name = res.hits.hits[0]['_index']
 
                 rtn_data = {
-                    "_id": aggregation["key"],
+                    "_id": '{0}'.format(aggregation['key']),
                     "_index": index_name,
                     "_source": aggregation_data,
                 }
