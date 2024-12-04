@@ -499,7 +499,7 @@ $("#share_email").focusout(function () {
     $("#share_username").prop('readonly', true);
 })
 
-function handleSharePermission(value) {
+global.handleSharePermission = function handleSharePermission(value) {
     if (value == 'this_user') {
         $(".form_share_permission").css('display', 'none');
         $("#share_username").val("");
