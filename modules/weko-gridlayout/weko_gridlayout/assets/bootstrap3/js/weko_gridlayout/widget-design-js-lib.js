@@ -1,3 +1,5 @@
-import './react.production.min.js';
-import './react-dom.production.min.js';
-import './browser.min.js';
+import $ from 'jquery';
+import 'jquery-ui';
+import './lodash.min.js';
+import './gridstack.js';
+import './gridstack.jQueryUI.js';

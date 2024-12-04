@@ -41,6 +41,9 @@
 
 {%- block javascript %}
   {{ super() }}
+  <script src="/assets/js/weko_gridlayout/react.production.min.js"></script>
+  <script src="/assets/js/weko_gridlayout/react-dom.production.min.js"></script>
+  <script src="/assets/js/weko_gridlayout/browser.min.js"></script>
   {{ webpack['gridlayout_js_widget_design_reactjs_lib.js']}}
   {{ webpack['gridlayout_js_prop_types_js.js']}}
   {{ webpack['gridlayout_js_widget_setting_js.js']}}
