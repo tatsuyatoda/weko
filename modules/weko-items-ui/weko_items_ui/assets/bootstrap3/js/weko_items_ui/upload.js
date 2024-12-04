@@ -315,7 +315,7 @@ angular.element(document).ready(function () {
                     'directives/decorators/bootstrap/fileUpload/file-upload.html'
                 );
             }]);
-    angular.module('schemaForm').directive('onReadFile', function ($parse, $rootScope) {
+    angular.module('schemaForm').directive('onReadFile', ['$parse', '$rootScope', function ($parse, $rootScope) {
         return {
             restrict: 'A',
             require: ['ngModel'],
@@ -344,6 +344,6 @@ angular.element(document).ready(function () {
                 });
             }
         };
-    });
+    }]);
 });
 

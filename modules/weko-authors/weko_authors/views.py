@@ -258,7 +258,7 @@ def get():
             temp_str = json.dumps(query_item).replace(
                 "@author_id", author_id)
             result_itemCnt = indexer.client.search(
-                index=current_app.config['SEARCH_UI_SEARCH_INDEX'],
+                index=current_app.config["SEARCH_INDEX_PREFIX"] + current_app.config["SEARCH_UI_SEARCH_INDEX"],
                 body=json.loads(temp_str)
             )
             if result_itemCnt \
