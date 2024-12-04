@@ -148,16 +148,16 @@ import $ from 'jquery';
                 let query_str = "";
                 let data = null;
                 $rootScope.getSettingDefault()
-                    .then(function successCallback(response) {
+                .done(function successCallback(response) {
 
-                        if (response.status === 1) {
-                            data = response.data;
-                        }
+                    if (response.status === 1) {
+                        data = response.data;
+                    }
 
-                    }, function errorCallback(error) {
-                        console.log(error);
-                        return null;
-                    });
+                }).fail(function errorCallback(error) {
+                    console.log(error);
+                    return null;
+                }).always(function alwaysCallback() {
 
                     if (data.dlt_keyword_sort_selected !== null
                         && data.dlt_keyword_sort_selected !== undefined) {
@@ -176,8 +176,9 @@ import $ from 'jquery';
                         data = {
                             key: "sort",
                             value: key_sort
-                        };
+                        }
                     }
+                });
 
                 // Add simple search query to detail search one
                 $scope.search_q = document.getElementById('q').value;
