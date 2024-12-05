@@ -591,14 +591,14 @@ def get_avatar():
     import base64
     import io
 
-    from werkzeug.wsgi import wrap_file
+    from werkzeug.wsgi import FileWrapper
     site_info = SiteInfo.get()
     if not site_info:
         return jsonify({})
     favicon = site_info.favicon.split(',')[1]
     favicon = base64.b64decode(favicon)
     b = io.BytesIO(favicon)
-    w = wrap_file(request.environ, b)
+    w = FileWrapper(b)
     return Response(b, mimetype="image/x-icon", direct_passthrough=True)
 
 
