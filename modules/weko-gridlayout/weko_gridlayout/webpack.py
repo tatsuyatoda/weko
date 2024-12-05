@@ -25,6 +25,7 @@ weko_gridlayout = WebpackThemeBundle(
                 'react-dom': '0.14.8',
                 'react-quilljs': '1.3.0',
                 'react-trumbowyg': '1.1.0',
+                'quill': '1.3.0',
                 'jquery': '~2.1.3',
                 'lodash': '~3.10.1',
                 "globalize": "^0.1.1",
