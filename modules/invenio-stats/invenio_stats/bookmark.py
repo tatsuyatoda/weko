@@ -70,7 +70,10 @@ class BookmarkAPI(object):
         )
 
         if db_bookmark:
-            source_date = json.loads(db_bookmark.source)['date']
+            source = db_bookmark.source
+            if isinstance(source, str):
+                source = json.loads(source)            
+            source_date = source['date']
             try:
                 my_date = datetime.fromisoformat(source_date)
             except ValueError:
