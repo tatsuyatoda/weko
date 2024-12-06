@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import $ from "jquery";
+import Trumbowyg from 'react-trumbowyg';
 const {useState, useEffect} = React;
-const Trumbowyg = window['react-trumbowyg'];
 
 const FREE_DESCRIPTION_TYPE = "Free description";
 const NOTICE_TYPE = "Notice";
@@ -728,7 +728,7 @@ const TrumbowygWrapper = props => {
 
   return (
     <div>
-      <Trumbowyg.default
+      <Trumbowyg
         id={props.id}
         autogrow={true}
         onChange={handleChange}
