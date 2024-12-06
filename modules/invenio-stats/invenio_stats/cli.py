@@ -291,7 +291,10 @@ def _aggregations_list_bookmarks(
         bookmarks = aggregator.list_bookmarks(start_date, end_date, limit)
         click.echo("{}:".format(a))
         for b in bookmarks:
-            click.echo(" - {}".format(json.loads(b.source)['date']))
+            source = b.source
+            if isinstance(source, str):
+                source = json.loads(source)
+            click.echo(" - {}".format(source['date']))
 
 @aggregations.command('delete-index')
 @aggregation_arg
