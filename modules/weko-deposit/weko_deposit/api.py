@@ -219,8 +219,10 @@ class WekoIndexer(RecordIndexer):
 
         Returns:
             None
-        """
-        self.es_index = current_app.config['SEARCH_UI_SEARCH_INDEX']
+        """ 
+        from invenio_search.utils import build_alias_name
+        index = current_app.config['SEARCH_UI_SEARCH_INDEX']
+        self.es_index = build_alias_name(index)
 
     def upload_metadata(self, jrc, item_id, revision_id, skip_files=False):
         """Upload the item metadata to ElasticSearch.
