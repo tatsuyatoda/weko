@@ -381,7 +381,7 @@ def setup_elasticsearch_events(es, event_type, base_time, count=3):
     for i in range(count):
         event = {
             "_op_type": "index",
-            "_index": f"test-events-stats-{event_type}",
+            "_index": "test-events-stats-index",
             "_source": {
                 "timestamp": (base_time + timedelta(seconds=i*10)).replace(microsecond=0).replace(tzinfo=None).isoformat(),
                 "event_type": event_type,
@@ -403,7 +403,7 @@ def setup_elasticsearch_events(es, event_type, base_time, count=3):
             
         events.append(event)
     search.helpers.bulk(es, events)
-    es.indices.refresh(index=f"test-events-stats-{event_type}")
+    es.indices.refresh(index="test-events-stats-index")
 
 def setup_elasticsearch_aggregations(es, event_type="file-download", count=10):
     """Insert test data into the specified Elasticsearch index for testing the branch logic of 'if res.hits.total.value > 0'."""
@@ -411,7 +411,7 @@ def setup_elasticsearch_aggregations(es, event_type="file-download", count=10):
     for i in range(count):
         event = {
                 "_op_type": "index",
-                "_index": f"test-stats-{event_type}",
+                "_index": "test-stats-index",
                 "_id": f"test_doc_{i}",
                 "_source": {
                     "timestamp": datetime.datetime.now().isoformat(),
@@ -425,7 +425,7 @@ def setup_elasticsearch_aggregations(es, event_type="file-download", count=10):
         }
         events.append(event)
     search.helpers.bulk(es, events)
-    es.indices.refresh(index=f"test-stats-{event_type}")
+    es.indices.refresh(index="test-stats-index")
 
 def run_aggregation_test(es, event_type, base_time, previous_bookmark, manual, metric_fields):
     """Run the aggregation test for the given event_type and bookmark."""
@@ -461,6 +461,7 @@ def run_aggregation_test(es, event_type, base_time, previous_bookmark, manual, m
             else:
                 print(f"empty fields result length: {len(results)}")
 
+# .tox/c1/bin/pytest --cov=invenio_stats tests/test_aggregations.py::test_agg_iter -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
 def test_agg_iter(app, es, caplog):
     """Test agg_iter with multiple event types."""
     import logging
@@ -542,7 +543,7 @@ def print_specific_tables_data(db_, tables_to_print):
         else:
             print(f"No data in table '{table_name}'")
             
-    
+# .tox/c1/bin/pytest --cov=invenio_stats tests/test_aggregations.py::test_aggregator_run -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
 def test_aggregator_run(app, es, db, setup_test_data):
     """Comprehensive test for StatAggregator run method across multiple event types."""
     event_types = ['celery-task', 'item-create', 'top-view', 'record-view', 'file-download', 'file-preview', 'search']
@@ -611,7 +612,7 @@ def test_aggregator_run(app, es, db, setup_test_data):
             assert all(field in hit for field in ['timestamp', 'count', 'total_size', 'unique_users']), f"Missing fields in aggregation result for {event_type}"
             assert hit.event_type == event_type, f"Incorrect event_type in aggregation result for {event_type}"
             
-
+# .tox/c1/bin/pytest --cov=invenio_stats tests/test_aggregations.py::test_aggregator_delete -vv -s --cov-branch --cov-report=term --basetemp=/code/modules/invenio-stats/.tox/c1/tmp
 def test_aggregator_delete(app, es, db, setup_test_data):
     """Test the delete functionality of StatAggregator."""
     event_type = 'file-download'

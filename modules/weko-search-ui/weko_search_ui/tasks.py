@@ -149,13 +149,13 @@ def delete_exported_task(uri, cache_key, task_key):
 
 def is_import_running():
     """Check import is running."""
-    celery_app = current_app.extensions.get('celery')
+    celery_app = current_app.extensions.get('invenio-celery')
     
-    if celery_app is None:
+    if celery_app is None or not celery_app.celery.control.inspect().ping():
         current_app.logger.error("Celery app is not initialized.")
         return False
 
-    inspect = celery_app.control.inspect()
+    inspect = celery_app.celery.control.inspect()
     active = inspect.active()
 
     for tasks in active.values():
@@ -173,9 +173,8 @@ def is_import_running():
 
 def check_celery_is_run():
     """Check celery is running, or not."""
-    try:
-        inspect = current_celery_app.control.inspect()
-        return bool(inspect.ping())
-    except Exception as e:
-        current_app.logger.error(e)
+    inspect = current_app.extensions.get('invenio-celery').celery.control.inspect()
+    if inspect is None or not inspect.ping():
         return False
+    else:
+        return True

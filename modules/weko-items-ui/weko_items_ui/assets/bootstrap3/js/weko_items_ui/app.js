@@ -440,6 +440,8 @@ const get_search_data = function (keyword) {
     });
 }
 
+window.get_search_data = get_search_data;
+
 const get_autofill_data = function (keyword, data, mode) {
     // If autofill, "keyword" = email or username, and username, email have to fill to "data"
     // If validate, keyword = username, data = email
@@ -514,6 +516,8 @@ function handleSharePermission(value) {
         }
     }
 }
+
+window.handleSharePermission = handleSharePermission;
 
 function toObject(arr) {
     var rv = {};
@@ -2222,7 +2226,7 @@ function toObject(arr) {
                     let subVal = subProperties[subKey];
                     hasItem = val.hasOwnProperty("items");
                     subProperties = hasItem ? val.items : [];
-                    if (subProperties) {
+                    if (subProperties.length > 0) {
                         let result = $scope.updateTitleMap(key, subVal, enumData);
                     }
                 }
@@ -2896,7 +2900,7 @@ function toObject(arr) {
             $scope.fileNameSelect = function (event, form, modelValue) {
                 let filesObject = $scope.getFilesObject();
                 //Check to disable「本文URL」element.
-                let curElement = event.target;
+                let curElement = $("select[name$='filename']");
                 let parForm = $(curElement).parents('.schema-form-section')[0];
                 let curTextUrl = $(parForm).find('.file-text-url')[0];
                 let disableFlag = !!filesObject[modelValue];
@@ -2986,7 +2990,7 @@ function toObject(arr) {
 
             // This is callback function - Please do NOT change function name
             $scope.changedVersionType = function (event, modelValue) {
-                let curElement = event.target;
+                let curElement = $("select[name$='subitem_version_type']");
                 let parForm = $(curElement).parents('.schema-form-fieldset ')[0];
                 let txtVersionResource = $(parForm).find('.txt-version-resource')[0];
                 let dictionaries = {
@@ -3005,7 +3009,7 @@ function toObject(arr) {
 
             // This is callback function - Please do NOT change function name
             $scope.changedAccessRights = function (event, modelValue) {
-                let curElement = event.target;
+                let curElement = $("select[name$='subitem_access_right']");
                 let parForm = $(curElement).parents('.schema-form-fieldset ')[0];
                 let txtAccessRightsUri = $(parForm).find('.txt-access-rights-uri')[0];
                 let dictionaries = {
@@ -4749,7 +4753,7 @@ function toObject(arr) {
         ]);
 
         angular.module('uploadThumbnail', ['schemaForm', 'invenioFiles'])
-            .controller('UploadController', function ($scope, $rootScope, InvenioFilesAPI) {
+            .controller('UploadController', ['$scope', '$rootScope', 'InvenioFilesAPI', function ($scope, $rootScope, InvenioFilesAPI) {
                 'use strict';
                 $scope.schema = {
                     type: 'object',
@@ -4955,7 +4959,7 @@ function toObject(arr) {
                         $("#allModal").modal("show");
                     }
                 };
-            }).$inject = [
+            }]).$inject = [
                 '$scope',
                 '$rootScope',
                 'InvenioFilesAPI',
@@ -4967,7 +4971,7 @@ function toObject(arr) {
             'mgcrea.ngStrap.modal', 'pascalprecht.translate', 'ui.sortable',
             'ui.select', 'mgcrea.ngStrap.select', 'mgcrea.ngStrap.datepicker',
             'mgcrea.ngStrap.helpers.dateParser', 'mgcrea.ngStrap.tooltip',
-            'invenioFiles', 'uploadThumbnail'
+            'invenioFiles', 'uploadThumbnail', 'ngSanitize'
         ]
         );
     });
