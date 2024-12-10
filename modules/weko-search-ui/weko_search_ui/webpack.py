@@ -15,8 +15,6 @@ weko_search_ui = WebpackThemeBundle(
                 'search-ui-js-moment': './js/weko_search_ui/moment.min.js',
                 'search-ui-less-import': './css/weko_search_ui/import.less',
                 'search-ui-less-export': './css/weko_search_ui/export.less',
-                'search-ui-js-facet-search': './js/weko_search_ui/facet_search_bundle.js',
-                'search-ui-less-theme-facet-search': './css/weko_search_ui/facet_search_bundle.less'
             },
             dependencies={
                 'angular': "~1.4.9",
