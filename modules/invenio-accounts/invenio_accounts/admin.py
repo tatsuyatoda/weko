@@ -86,7 +86,10 @@ class UserView(ModelView):
 
     column_labels = {
         'login_info.current_login_ip': _('Current Login IP'),
-        'login_info.last_login_ip': _('Last Login IP')
+        'login_info.last_login_ip': _('Last Login IP'),
+        'login_info.last_login_at': _('Last Login At'),
+        'login_info.current_login_at': _('Current Login At'),
+        'login_info.login_count': _('Login Count')
     }
 
     def on_model_change(self, form, User, is_created):
