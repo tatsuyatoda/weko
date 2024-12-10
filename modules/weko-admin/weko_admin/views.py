@@ -591,7 +591,7 @@ def get_avatar():
     import base64
     import io
 
-    from werkzeug import FileWrapper
+    from werkzeug.wsgi import FileWrapper
     site_info = SiteInfo.get()
     if not site_info:
         return jsonify({})

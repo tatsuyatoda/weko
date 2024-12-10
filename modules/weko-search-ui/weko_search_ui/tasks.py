@@ -23,6 +23,7 @@ import shutil
 from datetime import datetime, timedelta
 
 from celery import shared_task
+from celery import current_app as current_celery_app
 from celery.result import AsyncResult
 from celery.app.control import Inspect
 from flask import current_app
@@ -172,8 +173,8 @@ def is_import_running():
 
 def check_celery_is_run():
     """Check celery is running, or not."""
-    inspect = current_app.extensions.get('invenio-celery')
-    if inspect is None or not inspect.celery.control.inspect().ping():
+    inspect = current_app.extensions.get('invenio-celery').celery.control.inspect()
+    if inspect is None or not inspect.ping():
         return False
     else:
         return True

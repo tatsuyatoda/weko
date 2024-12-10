@@ -978,7 +978,7 @@ class ExtendComponent extends React.Component {
 
     let options = newDates.map((value) => {
       return (
-        <option>{value}</option>
+        <option key={value} value={value}>{value}</option>
       )
     });
 
