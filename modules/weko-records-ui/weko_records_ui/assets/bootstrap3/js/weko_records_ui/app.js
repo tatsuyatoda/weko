@@ -421,7 +421,7 @@ if (Number($('#preview_count').val()) == 0) {
     $('#preview_carousel_panel').addClass('hide')
 }
 
-function OnLinkClick(uri, pid_value, accessrole) {
+window.OnLinkClick = function OnLinkClick(uri, pid_value, accessrole) {
     let data = {
         uri: uri,
         pid_value: pid_value,
