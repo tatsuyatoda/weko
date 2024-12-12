@@ -16,8 +16,9 @@ weko_gridlayout = WebpackThemeBundle(
                 "gridlayout_css_katex_min_css": "./node_modules/katex/dist/katex.min.css",
                 "gridlayout_css_trumbowyg_css": "./css/weko_gridlayout/trumbowyg-css.css",
                 "gridlayout_js_katex_min_js": "./node_modules/katex/dist/katex.min.js",
+                "gridlayout_js_prop_types_js": "./js/weko_gridlayout/prop.types.js",
+                "gridlayout_js_react_quill_js": "./js/weko_gridlayout/react.quill.js",
                 "gridlayout_js_trumbowyg_js_plugin": "./js/weko_gridlayout/react-trumbowyg-js.js",
-                "gridlayout_js_prop_types_react_quill_js": "./js/weko_gridlayout/prop-type-react-quill.js",
             },
             dependencies={
                 'react': '0.14.8',
@@ -26,9 +27,6 @@ weko_gridlayout = WebpackThemeBundle(
                 'react-trumbowyg': '1.1.0',
                 'quill': '1.3.0',
                 'jquery': '~2.1.3',
-                'jquery-ui': '~1.14.0',
-                "react-quill": "~2.0.0",
-                "prop-types": "~15.8.1",
                 'lodash': '~3.10.1',
                 "globalize": "^0.1.1",
                 "katex":"0.7.1"
