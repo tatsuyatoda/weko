@@ -2544,7 +2544,7 @@ def export_items(post_data):
     resp = send_file(
         zip_path+".zip",
         as_attachment=True,
-        attachment_filename='export.zip'
+        download_name='export.zip'
     )
     os.remove(zip_path+".zip")
     return resp
