@@ -76,7 +76,7 @@ try:
                 "actions": [
                 {
                     "rollover": {
-                    "min_size": "10mb"
+                    "min_size": "50gb"
                     }
                 }
                 ]
