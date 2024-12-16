@@ -709,7 +709,7 @@ def make_combined_pdf(pid, fileobj, obj, lang_user):
     return send_file(
         combined_filepath,
         as_attachment=True,
-        attachment_filename=combined_filename,
+        download_name=combined_filename,
         mimetype='application/pdf',
         cache_timeout=-1
     )
