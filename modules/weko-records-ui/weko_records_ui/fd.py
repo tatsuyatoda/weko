@@ -643,5 +643,5 @@ def file_list_ui(record, files):
     return send_file(
         export_path + '.zip',
         as_attachment=True,
-        attachment_filename=item_title + '.zip'
+        download_name=item_title + '.zip'
     )
