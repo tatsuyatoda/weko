@@ -78,9 +78,7 @@ var webpackConfig = {
             // https://github.com/terser-js/terser/issues/120
             inline: 2,
           },
-          mangle: {
-            safari10: true,
-          },
+          mangle: false,
           output: {
             ecma: 5,
             comments: false,
