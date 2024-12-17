@@ -138,7 +138,7 @@ def run(version_type=None, raise_on_error=True,raise_on_exception=True,chunk_siz
 
     try:
        RecordIndexer(version_type=version_type).process_bulk_queue(
-                es_bulk_kwargs={'raise_on_error': raise_on_error,
+                search_bulk_kwargs={'raise_on_error': raise_on_error,
                             'raise_on_exception': raise_on_exception,
                             'chunk_size':chunk_size,
                             'max_chunk_bytes':max_chunk_bytes,

@@ -85,7 +85,7 @@ class MockRecordIndexer:
     def bulk_index(self, query):
         pass
 
-    def process_bulk_queue(self, es_bulk_kwargs):
+    def process_bulk_queue(self, search_bulk_kwargs):
         pass
 
 # .tox/c1/bin/pytest --cov=weko_deposit tests/test_tasks.py::test_update_authorInfo -v -s -vv --cov-branch --cov-report=term --cov-config=tox.ini --basetemp=/code/modules/weko-deposit/.tox/c1/tmp
