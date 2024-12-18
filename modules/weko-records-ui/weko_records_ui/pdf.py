@@ -711,5 +711,5 @@ def make_combined_pdf(pid, fileobj, obj, lang_user):
         as_attachment=True,
         download_name=combined_filename,
         mimetype='application/pdf',
-        cache_timeout=-1
+        max_age=-1
     )
