@@ -165,10 +165,11 @@ function searchResCtrl($scope, $rootScope, $http, $location) {
                         param['search_type'] = "0";
                         param['q'] = "0";
                     }
-                    $rootScope.vm.invenioSearchCurrentArgs = {
-                        method: "GET",
-                        params: param
-                    };
+                    $rootScope.vm.invenioSearchCurrentArgs = angular.merge(
+                        { method: "GET" }, 
+                        $rootScope.vm.invenioSearchCurrentArgs || {}, 
+                        param
+                    );
                 }
             }
         }, function errorCallback(error) {
