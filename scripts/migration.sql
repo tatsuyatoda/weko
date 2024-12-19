@@ -202,15 +202,25 @@ CREATE TABLE accounts_domain_category (
     updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE accounts_domain (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    org_id INTEGER,
-    category_id INTEGER,
+CREATE TABLE accounts_domains (
     created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id SERIAL PRIMARY KEY,
+    domain VARCHAR(255) NOT NULL,
+    tld VARCHAR(255) NOT NULL,
+    status INTEGER NOT NULL,
+    flagged BOOLEAN NOT NULL,
+    flagged_source VARCHAR(255) NOT NULL,
+    org_id INTEGER,
+    category INTEGER,
+    num_users INTEGER NOT NULL,
+    num_active INTEGER NOT NULL,
+    num_inactive INTEGER NOT NULL,
+    num_confirmed INTEGER NOT NULL,
+    num_verified INTEGER NOT NULL,
+    num_blocked INTEGER NOT NULL,
     FOREIGN KEY (org_id) REFERENCES accounts_domain_org(id),
-    FOREIGN KEY (category_id) REFERENCES accounts_domain_category(id)
+    FOREIGN KEY (category) REFERENCES accounts_domain_category(id)
 );
 
 -- テーブルバックアップの削除
