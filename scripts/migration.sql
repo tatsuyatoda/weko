@@ -225,8 +225,6 @@ CREATE TABLE accounts_domains (
     FOREIGN KEY (category) REFERENCES accounts_domain_category(id)
 );
 
-drop table accounts_domains;
-
 -- テーブルバックアップの削除
 drop table oaiserver_set_bk cascade;
   
