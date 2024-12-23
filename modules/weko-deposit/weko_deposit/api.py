@@ -1670,7 +1670,7 @@ class WekoDeposit(Deposit):
                 relation = PIDRelation.query. \
                     filter_by(parent=parent_pid,
                             child=recid).one_or_none()
-                relation.relation_type = 1
+                relation.relation_type = 3
             db.session.merge(relation)
 
         snapshot = (

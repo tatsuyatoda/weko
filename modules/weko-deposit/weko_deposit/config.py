@@ -209,3 +209,20 @@ WEKO_DEPOSIT_ES_PARSING_ERROR_PROCESS_ENABLE = True
 
 WEKO_DEPOSIT_ES_PARSING_ERROR_KEYWORD = 'ElasticsearchParseException'
 """Parsing error's Keyword in search engine exception info."""
+
+from invenio_pidrelations.config import RelationType
+
+PIDRELATIONS_RELATION_TYPES = [
+    RelationType(0, 'ordered', 'Ordered',
+                 'invenio_pidrelations.api:PIDNodeOrdered1',
+                 'invenio_pidrelations.serializers.schemas.RelationSchema'),
+    RelationType(1, 'unordered', 'Unordered',
+                 'invenio_pidrelations.api:PIDNode1',
+                 'invenio_pidrelations.serializers.schemas.RelationSchema'),
+    RelationType(2, 'version', 'Version',
+                 'invenio_pidrelations.contrib.versioning:PIDNodeVersioning',
+                 'invenio_pidrelations.serializers.schemas.RelationSchema'),
+    RelationType(3, 'record_draft', 'Record Draft',
+                 'invenio_pidrelations.contrib.draft:PIDNodeDraft',
+                 'invenio_pidrelations.serializers.schemas.RelationSchema'),
+]
