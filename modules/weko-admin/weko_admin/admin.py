@@ -209,6 +209,11 @@ class StyleSettingView(BaseView):
             current_app.instance_path,
             current_app.config['WEKO_THEME_INSTANCE_DATA_DIR'],
             '_variables.scss')
+        css_file = os.path.join(
+            current_app.static_folder,
+            'dist','css',
+            'theme-css-color.css'
+        )
 
         try:
             with open(scss_file, 'r', encoding='utf-8') as fp:
@@ -248,6 +253,25 @@ class StyleSettingView(BaseView):
 
                     with open(scss_file, 'w', encoding='utf-8') as fp:
                         fp.writelines('\n'.join(form_lines))
+
+                    css_content = f"""
+                    body {{
+                        background-color: {body_bg};
+                    }}
+                    .panel {{
+                        background-color: {panel_bg};
+                        border-color: {panel_default_border};
+                    }}
+                    .footer {{
+                        background-color: {footer_default_bg};
+                    }}
+                    .navbar {{
+                        background-color: {navbar_default_bg};
+                    }}
+                    """
+                    with open(css_file, 'w', encoding='utf-8') as fp:
+                        fp.write(css_content)
+
                     flash(_('Successfully update color.'), category="success")
         except BaseException:
             current_app.logger.error(
