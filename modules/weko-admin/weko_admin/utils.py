@@ -43,6 +43,7 @@ from invenio_mail.admin import MailSettingView
 from invenio_mail.models import MailConfig
 from invenio_records.models import RecordMetadata
 from invenio_records_rest.facets import terms_filter
+from invenio_search.utils import build_alias_name
 
 from jinja2 import Template
 from simplekv.memory.redisstore import RedisStore
@@ -2195,7 +2196,8 @@ def get_query_key_by_permission(has_permission):
 
 def get_facet_search_query(has_permission=True):
     """Get facet search query in redis."""
-    search_index = current_app.config['SEARCH_INDEX_PREFIX'] + current_app.config['SEARCH_UI_SEARCH_INDEX']
+    # search_index = current_app.config['SEARCH_INDEX_PREFIX'] + current_app.config['SEARCH_UI_SEARCH_INDEX']
+    search_index = build_alias_name(current_app.config["SEARCH_UI_SEARCH_INDEX"], prefix=current_app.config["SEARCH_INDEX_PREFIX"])
     key = get_query_key_by_permission(has_permission)
     # Check query exists in redis.
     query = json.loads(get_redis_cache(key) or '{}')
