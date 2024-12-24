@@ -37,6 +37,7 @@ from invenio_db import db
 from invenio_i18n.ext import current_i18n
 from invenio_pidstore.models import PersistentIdentifier
 from invenio_search import RecordsSearch
+from invenio_search.utils import build_alias_name
 from simplekv.memory.redisstore import RedisStore
 from weko_admin.utils import is_exists_key_in_redis
 from weko_groups.models import Group
@@ -458,7 +459,7 @@ def get_elasticsearch_records_data_by_indexes(index_ids, start_date, end_date):
     records_search = RecordsSearch()
     records_search = records_search.with_preference_param().\
         params(version=False)
-    records_search._index[0] = current_app.config["SEARCH_INDEX_PREFIX"] + current_app.config["SEARCH_UI_SEARCH_INDEX"]
+    records_search._index[0] = build_alias_name(current_app.config["SEARCH_UI_SEARCH_INDEX"], prefix=current_app.config["SEARCH_INDEX_PREFIX"])
     result = None
     try:
         from weko_search_ui.query import item_search_factory
