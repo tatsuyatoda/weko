@@ -192,9 +192,9 @@ DROP COLUMN login_count;
 -- テーブル作成
 CREATE TABLE accounts_domain_org (
     id SERIAL PRIMARY KEY,
-    pid VARCHAR(255),
+    pid VARCHAR(255) UNIQUE,
     name VARCHAR(255) NOT NULL,
-    json JSONB NOT NULL,
+    json JSONB DEFAULT '{}'::jsonb NOT NULL,
     parent_id INTEGER,
     CONSTRAINT fk_accounts_domain_org_parent_id FOREIGN KEY (parent_id) REFERENCES accounts_domain_org(id)
 );
@@ -208,19 +208,19 @@ CREATE TABLE accounts_domains (
     created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     id SERIAL PRIMARY KEY,
-    domain VARCHAR(255) NOT NULL,
+    domain VARCHAR(255) UNIQUE NOT NULL,
     tld VARCHAR(255) NOT NULL,
-    status INTEGER NOT NULL,
-    flagged BOOLEAN NOT NULL,
-    flagged_source VARCHAR(255) NOT NULL,
+    status INTEGER DEFAULT 1 NOT NULL,
+    flagged BOOLEAN DEFAULT FALSE NOT NULL,
+    flagged_source VARCHAR(255) DEFAULT '' NOT NULL,
     org_id INTEGER,
     category INTEGER,
-    num_users INTEGER NOT NULL,
-    num_active INTEGER NOT NULL,
-    num_inactive INTEGER NOT NULL,
-    num_confirmed INTEGER NOT NULL,
-    num_verified INTEGER NOT NULL,
-    num_blocked INTEGER NOT NULL,
+    num_users INTEGER DEFAULT 0 NOT NULL,
+    num_active INTEGER DEFAULT 0 NOT NULL,
+    num_inactive INTEGER DEFAULT 0 NOT NULL,
+    num_confirmed INTEGER DEFAULT 0 NOT NULL,
+    num_verified INTEGER DEFAULT 0 NOT NULL,
+    num_blocked INTEGER DEFAULT 0 NOT NULL,
     FOREIGN KEY (org_id) REFERENCES accounts_domain_org(id),
     FOREIGN KEY (category) REFERENCES accounts_domain_category(id)
 );
