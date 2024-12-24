@@ -1,3 +1,4 @@
+-- Active: 1734410072859@@172.18.0.1@25401
 -- カラム追加時に初期値で設定が必要
 -- 既存データへのsystem_created設定
 -- oaiserver_set
@@ -119,18 +120,19 @@ CREATE TABLE accounts_user_login_information (
     user_id INTEGER PRIMARY KEY,
     last_login_at TIMESTAMP,
     current_login_at TIMESTAMP,
-    last_login_ip character varying,
+    last_login_ip character varying(50),
     current_login_ip character varying(50),
-    login_count character varying(50),
+    login_count INTEGER,
     CONSTRAINT fk_accounts_login_information_user_id FOREIGN KEY (user_id) REFERENCES accounts_user(id)
 );
 -- 
 CREATE TABLE accounts_useridentity (
-    id VARCHAR(255) PRIMARY KEY,
-    id_user INTEGER NOT NULL,
+    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    id VARCHAR(255) NOT NULL,
     method VARCHAR(255) NOT NULL,
-    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_user INTEGER NOT NULL,
+    PRIMARY KEY (id, method),
     FOREIGN KEY (id_user) REFERENCES accounts_user(id)
 );
 
@@ -140,18 +142,18 @@ CREATE INDEX accounts_useridentity_id_user_method ON accounts_useridentity (id, 
 -- ←oauthclient_useridentity_bk
 insert into accounts_useridentity
 (
-    id
+    created
+    ,updated
+    ,id
     ,method
     ,id_user
-    ,created
-    ,updated
 )
 select
-    id
+    created
+    ,updated
+    ,id
     ,method
     ,id_user
-    ,created
-    ,updated
 from
     oauthclient_useridentity_bk;
     
@@ -190,27 +192,37 @@ DROP COLUMN login_count;
 -- テーブル作成
 CREATE TABLE accounts_domain_org (
     id SERIAL PRIMARY KEY,
+    pid VARCHAR(255) UNIQUE,
     name VARCHAR(255) NOT NULL,
-    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    json JSONB DEFAULT '{}'::jsonb NOT NULL,
+    parent_id INTEGER,
+    CONSTRAINT fk_accounts_domain_org_parent_id FOREIGN KEY (parent_id) REFERENCES accounts_domain_org(id)
 );
 
 CREATE TABLE accounts_domain_category (
     id SERIAL PRIMARY KEY,
-    label VARCHAR(255),
-    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    label VARCHAR(255)
 );
 
-CREATE TABLE accounts_domain (
+CREATE TABLE accounts_domains (
+    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    domain VARCHAR(255) UNIQUE NOT NULL,
+    tld VARCHAR(255) NOT NULL,
+    status INTEGER DEFAULT 1 NOT NULL,
+    flagged BOOLEAN DEFAULT FALSE NOT NULL,
+    flagged_source VARCHAR(255) DEFAULT '' NOT NULL,
     org_id INTEGER,
-    category_id INTEGER,
-    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    category INTEGER,
+    num_users INTEGER DEFAULT 0 NOT NULL,
+    num_active INTEGER DEFAULT 0 NOT NULL,
+    num_inactive INTEGER DEFAULT 0 NOT NULL,
+    num_confirmed INTEGER DEFAULT 0 NOT NULL,
+    num_verified INTEGER DEFAULT 0 NOT NULL,
+    num_blocked INTEGER DEFAULT 0 NOT NULL,
     FOREIGN KEY (org_id) REFERENCES accounts_domain_org(id),
-    FOREIGN KEY (category_id) REFERENCES accounts_domain_category(id)
+    FOREIGN KEY (category) REFERENCES accounts_domain_category(id)
 );
 
 -- テーブルバックアップの削除
