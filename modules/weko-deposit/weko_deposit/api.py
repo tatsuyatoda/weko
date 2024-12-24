@@ -53,7 +53,7 @@ from invenio_records_files.models import RecordsBuckets
 from invenio_records_rest.errors import PIDResolveRESTError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.attributes import flag_modified
-
+from invenio_stats.config import SEARCH_INDEX_PREFIX as index_prefix
 
 from weko_admin.models import AdminSettings
 from weko_index_tree.api import Indexes
@@ -523,7 +523,7 @@ class WekoIndexer(RecordIndexer):
 
         ind = self.record_to_index({})
 
-        search_result = self.client.search(index=ind,
+        search_result = self.client.search(index=index_prefix + "-" + ind,
                                             body=search_query, scroll='1m')
         if search_result:
             weko_logger(key='WEKO_COMMON_IF_ENTER',

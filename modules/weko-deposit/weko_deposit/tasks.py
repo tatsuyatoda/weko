@@ -440,7 +440,7 @@ def update_items_by_authorInfo(user_id, target, origin_pkid_list=[],
             "track_total_hits": True
         }
         search = RecordsSearch(
-            index=current_app.config['WEKO_ITEM_INDEX'],). \
+            index=current_app.config['INDEXER_DEFAULT_INDEX'],). \
                   update_from_dict(query_q).execute().to_dict()
 
         record_ids = []

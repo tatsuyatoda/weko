@@ -2306,16 +2306,19 @@ def elasticsearch_reindex( is_db_to_es ):
     req_args = {"auth": auth, "verify": False}
 
     # "{}-weko-item-v1.0.0".format(prefix)
-    index = os.environ.get('SEARCH_INDEX_PREFIX') + '-' + current_app.config['WEKO_ITEM_INDEX']
-    tmpindex = "{}-tmp".format(current_app.config['WEKO_ITEM_INDEX'])
+    index = os.environ.get('SEARCH_INDEX_PREFIX') + '-' + current_app.config['INDEXER_DEFAULT_INDEX']
+    tmpindex = "{}-tmp".format(index)
     
+    # "weko-item-v1.0.0"
+    indexNoPrefix = current_app.config['INDEXER_DEFAULT_INDEX']
+
     # "{}-weko".format(prefix)
-    alias_name = "{}-weko".format(os.environ.get('SEARCH_INDEX_PREFIX'))
+    alias_name = os.environ.get('SEARCH_INDEX_PREFIX') + "-" + current_app.config['SEARCH_UI_SEARCH_INDEX']
 
     # get base_index_definition (mappings and settings)
     import weko_schema_ui
     current_path = os.path.dirname(os.path.abspath(weko_schema_ui.__file__))
-    file_path = os.path.join(current_path, 'mappings', 'v6', 'weko', 'item-v1.0.0.json')
+    file_path = os.path.join(current_path, 'mappings', 'os-v2', 'weko', 'item-v1.0.0.json')
     with open(file_path,mode='r') as json_file:
         json_data = json_file.read()
         base_index_definition = json.loads(json_data)
@@ -2377,9 +2380,7 @@ def elasticsearch_reindex( is_db_to_es ):
     assert response.status_code == 200 ,response.text
     current_app.logger.info("add setting percolator") 
 
-    percolator_body = {"properties": {"query": {"type": "percolator"}}}
-    res = requests.put(base_url + tmpindex+"/_mapping/", json=percolator_body, **req_args)
-    current_app.logger.info(response.text)
+    _create_percolator_mapping(indexNoPrefix)
     current_app.logger.info("END create tmpindex") 
     
     # 高速化を期待してインデックスの設定を変更。
@@ -2423,9 +2424,7 @@ def elasticsearch_reindex( is_db_to_es ):
     current_app.logger.info(response.text)
     assert response.status_code == 200 ,response.text
     current_app.logger.info("add setting percolator") 
-    res = requests.put(base_url + tmpindex+"/_mapping/", json=percolator_body, **req_args)
-    current_app.logger.info(response.text)
-    assert response.status_code == 200 ,response.text
+    _create_percolator_mapping(indexNoPrefix)
     current_app.logger.info("END create index") 
 
     # 高速化を期待してインデックスの設定を変更。
@@ -2446,7 +2445,7 @@ def elasticsearch_reindex( is_db_to_es ):
     current_app.logger.info("START reindex")
     if is_db_to_es :
         current_app.logger.info("reindex es from db")
-        response = _elasticsearch_remake_item_index(index_name=current_app.config['WEKO_ITEM_INDEX'])
+        response = _elasticsearch_remake_item_index(index_name=indexNoPrefix)
         current_app.logger.info(response) # array
 
         response = requests.post(url=base_url + "_refresh", **req_args)

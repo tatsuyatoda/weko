@@ -87,6 +87,7 @@ from weko_workflow.models import ActionStatusPolicy as ASP
 from weko_workflow.models import Activity, FlowAction, FlowActionRole, \
     FlowDefine
 from weko_workflow.utils import IdentifierHandle
+from invenio_stats.config import SEARCH_INDEX_PREFIX as index_prefix
 
 
 def get_list_username():
@@ -2374,7 +2375,7 @@ def get_list_file_by_record_id(recid):
     }
     indexer = RecordIndexer()
     result = indexer.client.search(
-        index=current_app.config['INDEXER_DEFAULT_INDEX'],
+        index=index_prefix + "-" + current_app.config['INDEXER_DEFAULT_INDEX'],
         body=body
     )
     list_file_name = []
