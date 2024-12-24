@@ -412,7 +412,7 @@ def getrecord(**kwargs):
     record_dumper = serializer(kwargs["metadataPrefix"])
 
     pid_object = OAIIDProvider.get(pid_value=kwargs["identifier"]).pid
-    record = current_oaiserver.record_fetcher(pid_object.object_uuid)
+    record = WekoRecord.get_record_by_uuid(pid_object.object_uuid)
     set_identifier(record, record)
 
     e_tree, e_getrecord = verb(**kwargs)
