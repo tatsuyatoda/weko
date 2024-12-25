@@ -22,8 +22,9 @@
 {%- from "invenio_communities/macros.html" import community_header %}
 
 {%- block css %}
-  {{ super() }}
+  {{ webpack['theme-scss-bootstrap.css']}}
   {{ webpack['records_ui_css_style.css'] }}
+  {{ super() }}
   {{ webpack['workflow-css-workflow.css'] }}
   {{ webpack['theme-css-buttons.css'] }}
   {{ webpack['records_ui_bootstrap_popover_css.css'] }}
