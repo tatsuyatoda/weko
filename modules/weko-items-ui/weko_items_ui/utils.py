@@ -38,6 +38,7 @@ import bagit
 import redis
 from redis import sentinel
 from invenio_search.engine import search
+from invenio_search.utils import build_alias_name
 from flask import abort, current_app, flash, redirect, request, send_file, \
     url_for,jsonify, Flask
 from flask_babel import gettext as _
@@ -168,10 +169,11 @@ def get_user_info_by_username(username):
         data = record.all()
 
         for item in data:
-            if item[0] == user_id:
+            item_dict = dict(item)
+            if item_dict['id'] == user_id:
                 result['username'] = username
                 result['user_id'] = user_id
-                result['email'] = item[1]
+                result['email'] = item_dict['email']
                 return result
         return None
     except Exception as e:
@@ -213,8 +215,9 @@ def validate_user(username, email):
         data = record.all()
 
         for item in data:
-            if item[1] == email:
-                user_id = item[0]
+            item_dict = dict(item)
+            if item_dict['email'] == email:
+                user_id = item_dict['id']
                 break
 
         if user.user_id == user_id:
@@ -254,13 +257,14 @@ def get_user_info_by_email(email):
 
         data = record.all()
         for item in data:
-            if item[1] == email:
-                user = UserProfile.get_by_userid(item[0])
+            item_dict = dict(item)
+            if item_dict['email'] == email:
+                user = UserProfile.get_by_userid(item_dict['id'])
                 if user is None:
                     result['username'] = ""
                 else:
                     result['username'] = user.get_username
-                result['user_id'] = item[0]
+                result['user_id'] = item_dict['id']
                 result['email'] = email
                 return result
         return None
@@ -300,8 +304,9 @@ def get_user_information(user_id):
     data = record.all()
 
     for item in data:
-        if item[0] == user_id:
-            result['email'] = item[1]
+        item_dict = dict(item)
+        if item_dict['id'] == user_id:
+            result['email'] = item_dict['email']
             return result
 
     return result
@@ -2370,7 +2375,7 @@ def get_list_file_by_record_id(recid):
     }
     indexer = RecordIndexer()
     result = indexer.client.search(
-        index=current_app.config['INDEXER_DEFAULT_INDEX'],
+        index=build_alias_name(current_app.config['INDEXER_DEFAULT_INDEX']),
         body=body
     )
     list_file_name = []

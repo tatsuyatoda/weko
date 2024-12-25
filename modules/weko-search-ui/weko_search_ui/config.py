@@ -128,8 +128,7 @@ RECORDS_REST_ENDPOINTS["recid"]["record_serializers"] = {
 
 # RECORDS_REST_ENDPOINTS['recid']['read_permission_factory_imp'] = allow_all
 
-from invenio_stats.config import SEARCH_INDEX_PREFIX as index_prefix
-INDEXER_DEFAULT_INDEX = "{}-weko-item-v1.0.0".format(index_prefix)  # Use direct index
+INDEXER_DEFAULT_INDEX = "weko-item-v1.0.0"  # Use direct index
 INDEXER_FILE_DOC_TYPE = "content"
 
 SEARCH_UI_SEARCH_INDEX = "weko"
