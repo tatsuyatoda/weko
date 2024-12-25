@@ -23,6 +23,7 @@ import six
 from flask import current_app, request
 
 from .config import RECORDS_REST_DEFAULT_SORT
+from weko_search_ui.config import SEARCH_UI_SEARCH_INDEX
 
 
 def geolocation_sort(field_name, argument, unit, mode=None, distance_type=None):
@@ -149,7 +150,7 @@ def default_sorter_factory(search, index):
 
     # Get sort options
     sort_options = (
-        current_app.config["RECORDS_REST_SORT_OPTIONS"].get(index, {}).get(key)
+        current_app.config["RECORDS_REST_SORT_OPTIONS"][SEARCH_UI_SEARCH_INDEX].get(key)
     )
     if sort_options is None:
         return (search, {})
