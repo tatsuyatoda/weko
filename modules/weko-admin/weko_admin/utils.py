@@ -19,6 +19,7 @@
 # MA 02111-1307, USA.
 
 """Utilities for convert response json."""
+import copy
 import csv
 import json
 import math
@@ -44,6 +45,7 @@ from invenio_mail.admin import MailSettingView
 from invenio_mail.models import MailConfig
 from invenio_records.models import RecordMetadata
 from invenio_records_rest.facets import terms_filter
+from invenio_search.utils import build_alias_name
 
 from jinja2 import Template
 from simplekv.memory.redisstore import RedisStore
@@ -2306,14 +2308,17 @@ def elasticsearch_reindex( is_db_to_es ):
     req_args = {"auth": auth, "verify": False}
 
     # "{}-weko-item-v1.0.0".format(prefix)
-    index = os.environ.get('SEARCH_INDEX_PREFIX') + '-' + current_app.config['INDEXER_DEFAULT_INDEX']
+    index = build_alias_name(current_app.config['INDEXER_DEFAULT_INDEX'])
     tmpindex = "{}-tmp".format(index)
+    
+    indexPercolators = "{}-percolators".format(index)
+    tmpPercolators = "{}-percolators-tmp".format(index)
     
     # "weko-item-v1.0.0"
     indexNoPrefix = current_app.config['INDEXER_DEFAULT_INDEX']
 
     # "{}-weko".format(prefix)
-    alias_name = os.environ.get('SEARCH_INDEX_PREFIX') + "-" + current_app.config['SEARCH_UI_SEARCH_INDEX']
+    alias_name = build_alias_name(current_app.config['SEARCH_UI_SEARCH_INDEX'])
 
     # get base_index_definition (mappings and settings)
     import weko_schema_ui
@@ -2345,6 +2350,22 @@ def elasticsearch_reindex( is_db_to_es ):
             'index': index,
         },
     }
+    json_data_to_tmp_percolator = {
+        'source': {
+            'index': indexPercolators,
+        },
+        'dest': {
+            'index': tmpPercolators,
+        },
+    }
+    json_data_to_dest_percolator = {
+        'source': {
+            'index': tmpPercolators,
+        },
+        'dest': {
+            'index': indexPercolators,
+        },
+    }
     json_data_set_alias = {
         "actions" : [
             { "add" : { "index" : index, "alias" : alias_name } }
@@ -2369,7 +2390,17 @@ def elasticsearch_reindex( is_db_to_es ):
         assert response.status_code == 200, response.text
         current_app.logger.info("END delete tmpindex")
     else:
-        current_app.logger.info("tmpindex does not exist, no need to delete")   
+        current_app.logger.info("tmpindex does not exist, no need to delete")
+
+    current_app.logger.info("START delete tmpPercolators if exists") 
+    response = requests.head(base_url + tmpPercolators, **req_args)
+    if response.status_code == 200:
+        response = requests.delete(base_url + tmpPercolators, **req_args)
+        current_app.logger.info(response.text)
+        assert response.status_code == 200, response.text
+        current_app.logger.info("END delete tmpPercolators")
+    else:
+        current_app.logger.info("tmpPercolators does not exist, no need to delete")
 
     # 一時保管用のインデックスを作成
     # create tmp index
@@ -2378,14 +2409,28 @@ def elasticsearch_reindex( is_db_to_es ):
     response = requests.put(base_url + tmpindex + "?pretty", headers=headers , json=base_index_definition, **req_args)
     current_app.logger.info(response.text)
     assert response.status_code == 200 ,response.text
-    current_app.logger.info("add setting percolator") 
+    current_app.logger.info("END create tmpindex")
 
-    _create_percolator_mapping(indexNoPrefix)
-    current_app.logger.info("END create tmpindex") 
-    
     # 高速化を期待してインデックスの設定を変更。
     current_app.logger.info("START change setting for faster") 
     response = requests.put(base_url + tmpindex + "/_settings?pretty", headers=headers , json={ "index" : {"number_of_replicas" : 0, "refresh_interval": -1 }}, **req_args)
+    current_app.logger.info(response.text)
+    assert response.status_code == 200 ,response.text #
+    current_app.logger.info("END change setting for faster") 
+
+    # 一時保管用のpercolatorsを作成
+    current_app.logger.info("START create tmpPercolators") 
+    PERCOLATOR_MAPPING = {"properties": {"query": {"type": "percolator"}}}
+    percolator_definition = copy.deepcopy(base_index_definition)
+    percolator_definition["mappings"]["properties"].update(PERCOLATOR_MAPPING["properties"])
+    response = requests.put(base_url + tmpPercolators + "?pretty", headers=headers , json=percolator_definition, **req_args)
+    current_app.logger.info(response.text)
+    assert response.status_code == 200 ,response.text
+    current_app.logger.info("END create tmpPercolators")
+    
+    # 高速化を期待してインデックスの設定を変更。
+    current_app.logger.info("START change setting for faster") 
+    response = requests.put(base_url + tmpPercolators + "/_settings?pretty", headers=headers , json={ "index" : {"number_of_replicas" : 0, "refresh_interval": -1 }}, **req_args)
     current_app.logger.info(response.text)
     assert response.status_code == 200 ,response.text #
     current_app.logger.info("END change setting for faster") 
@@ -2402,6 +2447,12 @@ def elasticsearch_reindex( is_db_to_es ):
     assert response.status_code == 200 ,response.text
     current_app.logger.info("END reindex")
 
+    current_app.logger.info("START reindex percolators")
+    response = requests.post(url=reindex_url, headers=headers, json=json_data_to_tmp_percolator, **req_args)
+    current_app.logger.info(response.text)
+    assert response.status_code == 200 ,response.text
+    current_app.logger.info("END reindex percolators")
+
     # document count
     index_cnt = requests.get(base_url + "_cat/count/"+ index + "?h=count", **req_args).text
     tmpindex_cnt = requests.get(base_url + "_cat/count/"+ tmpindex + "?h=count", **req_args).text
@@ -2415,6 +2466,12 @@ def elasticsearch_reindex( is_db_to_es ):
     current_app.logger.info(response.text)
     assert response.status_code == 200 ,response.text
     current_app.logger.info("END delete index") 
+
+    current_app.logger.info("START delete index percolators") 
+    response = requests.delete(base_url + indexPercolators, **req_args)
+    current_app.logger.info(response.text)
+    assert response.status_code == 200 ,response.text
+    current_app.logger.info("END delete index percolators") 
 
     # 新しくインデックスを作成する
     #create index
@@ -2456,6 +2513,7 @@ def elasticsearch_reindex( is_db_to_es ):
         # 一時保管用のインデックスから、新しく作成したインデックスに再インデックスを行う
         # reindex from tmpindex to index
         response = requests.post(url=reindex_url , headers=headers, json=json_data_to_dest, **req_args)
+        response = requests.post(url=reindex_url , headers=headers, json=json_data_to_dest_percolator, **req_args)
         current_app.logger.info(response.text)
         assert response.status_code == 200 ,response.text
     current_app.logger.info("END reindex")
@@ -2463,6 +2521,12 @@ def elasticsearch_reindex( is_db_to_es ):
     # 高速化を期待して変更したインデックスの設定を元に戻す。
     current_app.logger.info("START revert setting for faster") 
     response = requests.put(base_url + index + "/_settings?pretty", headers=headers ,json={ "index" : {"number_of_replicas" : number_of_replicas, "refresh_interval": refresh_interval }}, **req_args)
+    current_app.logger.info(response.text)
+    assert response.status_code == 200 ,response.text 
+    current_app.logger.info("END revert setting for faster") 
+
+    current_app.logger.info("START revert setting for faster") 
+    response = requests.put(base_url + indexPercolators + "/_settings?pretty", headers=headers ,json={ "index" : {"number_of_replicas" : number_of_replicas, "refresh_interval": refresh_interval }}, **req_args)
     current_app.logger.info(response.text)
     assert response.status_code == 200 ,response.text 
     current_app.logger.info("END revert setting for faster") 
@@ -2483,6 +2547,13 @@ def elasticsearch_reindex( is_db_to_es ):
     assert response.status_code == 200 ,response.text
     current_app.logger.info("END delete tmpindex") 
 
+    # delete tmpPercolators
+    current_app.logger.info("START delete tmpPercolators") 
+    response = requests.delete(base_url + tmpPercolators, **req_args)
+    current_app.logger.info(response.text)
+    assert response.status_code == 200 ,response.text
+    current_app.logger.info("END delete tmpPercolators") 
+
     current_app.logger.info(' END search engine reindex: {}.'.format(index))
     
     return 'completed'
@@ -2492,10 +2563,6 @@ def _elasticsearch_remake_item_index(index_name):
     from invenio_oaiserver.models import OAISet
     from invenio_oaiserver.percolator import _new_percolator
     from invenio_pidstore.models import PersistentIdentifier, PIDStatus
-
-    def custom_record_to_index(record):
-        """Custom record_to_index function to return the specified index name."""
-        return index_name
 
     returnlist = []
     # インデックスを登録
@@ -2517,7 +2584,7 @@ def _elasticsearch_remake_item_index(index_name):
     ).values(
         PersistentIdentifier.object_uuid
     ))
-    indexer = RecordIndexer(record_to_index=custom_record_to_index)
+    indexer = RecordIndexer()
     for x in uuids:
         res = indexer.index_by_id(x)
         assert res != None ,'Index class is None.'

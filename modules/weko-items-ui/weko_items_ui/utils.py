@@ -38,6 +38,7 @@ import bagit
 import redis
 from redis import sentinel
 from invenio_search.engine import search
+from invenio_search.utils import build_alias_name
 from flask import abort, current_app, flash, redirect, request, send_file, \
     url_for,jsonify, Flask
 from flask_babel import gettext as _
@@ -87,7 +88,6 @@ from weko_workflow.models import ActionStatusPolicy as ASP
 from weko_workflow.models import Activity, FlowAction, FlowActionRole, \
     FlowDefine
 from weko_workflow.utils import IdentifierHandle
-from invenio_stats.config import SEARCH_INDEX_PREFIX as index_prefix
 
 
 def get_list_username():
@@ -2375,7 +2375,7 @@ def get_list_file_by_record_id(recid):
     }
     indexer = RecordIndexer()
     result = indexer.client.search(
-        index=index_prefix + "-" + current_app.config['INDEXER_DEFAULT_INDEX'],
+        index=build_alias_name(current_app.config['INDEXER_DEFAULT_INDEX']),
         body=body
     )
     list_file_name = []
