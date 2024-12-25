@@ -150,7 +150,7 @@ def default_sorter_factory(search, index):
 
     # Get sort options
     sort_options = (
-        current_app.config["RECORDS_REST_SORT_OPTIONS"][SEARCH_UI_SEARCH_INDEX].get(key)
+        current_app.config["RECORDS_REST_SORT_OPTIONS"].get(SEARCH_UI_SEARCH_INDEX, {}).get(key)
     )
     if sort_options is None:
         return (search, {})
