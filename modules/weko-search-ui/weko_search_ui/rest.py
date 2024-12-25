@@ -249,7 +249,7 @@ class IndexSearchResource(ContentNegotiatedMethodView):
         community_id = request.values.get("community")
         params = {}
         facets = get_facet_search_query()
-        search_index = build_alias_name(current_app.config["SEARCH_UI_SEARCH_INDEX"], prefix=current_app.config["SEARCH_INDEX_PREFIX"])
+        search_index = build_alias_name(current_app.config["SEARCH_UI_SEARCH_INDEX"])
         if facets and search_index and "post_filters" in facets[search_index]:
             post_filters = facets[search_index]["post_filters"]
             for param in post_filters:
