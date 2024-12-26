@@ -124,6 +124,7 @@ def default_sorter_factory(search, index):
     :param index: Index to search in.
     :returns: Tuple of (query, URL arguments).
     """
+    index = index.replace(current_app.config.get("SEARCH_INDEX_PREFIX"),"")
     sort_arg_name = "sort"
     urlfield = request.values.get(sort_arg_name, "", type=str)
 
