@@ -33,7 +33,7 @@ class SitemapSettingView(BaseView):
     @expose('/', methods=['GET'])
     def index(self):
         """Update sitemap page."""
-        form = Form()
+        form = FlaskForm()
         return self.render(current_app.config["WEKO_SITEMAP_ADMIN_TEMPLATE"],form=form)
 
     @expose('/update_sitemap', methods=['POST'])
