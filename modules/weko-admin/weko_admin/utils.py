@@ -2198,7 +2198,7 @@ def get_query_key_by_permission(has_permission):
 
 def get_facet_search_query(has_permission=True):
     """Get facet search query in redis."""
-    search_index = current_app.config['SEARCH_INDEX_PREFIX'] + current_app.config['SEARCH_UI_SEARCH_INDEX']
+    search_index = build_alias_name(current_app.config["SEARCH_UI_SEARCH_INDEX"])
     key = get_query_key_by_permission(has_permission)
     # Check query exists in redis.
     query = json.loads(get_redis_cache(key) or '{}')
