@@ -39,8 +39,7 @@
   {{ webpack['records_ui_preview_carousel.js']}}
   {{ webpack['workflow-js-workflow.js']}}
   <script src="./node_modules/bootstrap/dist/js/bootstrap.js"></script>
-  <script src="{{ url_for('static', filename='js/weko_records_ui/bootstrap-popover-x.min.js') }}"></script>
-  <!-- This library js must always import at the end. -->
+  <script src="/assets/js/weko_records_ui/bootstrap-popover-x.min.js"></script>
   {{ webpack['theme-widget.js']}}
 {%- endblock javascript %}
 
