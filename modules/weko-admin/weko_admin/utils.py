@@ -24,6 +24,7 @@ import csv
 import json
 import math
 import os
+import re
 import zipfile
 from datetime import datetime, timedelta
 from io import BytesIO, StringIO
@@ -2462,10 +2463,21 @@ def elasticsearch_reindex( is_db_to_es ):
 
     # 再インデックス前のインデックスを削除する
     current_app.logger.info("START delete index") 
-    response = requests.delete(base_url + index, **req_args)
-    current_app.logger.info(response.text)
-    assert response.status_code == 200 ,response.text
-    current_app.logger.info("END delete index") 
+    response = requests.get(base_url + '_cat/indices/' + index + '*?h=index', **req_args)
+    indices = response.text.split()
+    pattern = re.compile(r"tenant1-weko-item-v1.0.0-\d+")
+    filtered_indices = [idx for idx in indices if pattern.match(idx)]
+
+    if filtered_indices:
+        actual_index = filtered_indices[0]
+        response = requests.delete(base_url + actual_index, **req_args)
+        current_app.logger.info(response.text)
+        assert response.status_code == 200 ,response.text
+    else:
+        response = requests.delete(base_url + index, **req_args)
+        current_app.logger.info(response.text)
+        assert response.status_code == 200 ,response.text
+    current_app.logger.info("END delete index")
 
     current_app.logger.info("START delete index percolators") 
     response = requests.delete(base_url + indexPercolators, **req_args)
