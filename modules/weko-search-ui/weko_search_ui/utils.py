@@ -3640,7 +3640,8 @@ def cancel_export_all():
         export_status, _, _, _, _ = get_export_status()
 
         if export_status:
-            revoke(task_id, terminate=True)
+            from celery import current_app as current_celery_app
+            current_celery_app.control.revoke(task_id, terminate=True)
             delete_task_id_cache.apply_async(
                 args=(
                     task_id,
