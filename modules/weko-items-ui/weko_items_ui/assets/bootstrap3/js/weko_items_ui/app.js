@@ -9,7 +9,7 @@ import { validateSession } from "../weko_workflow/quit_confirmation"
 const ITEM_SAVE_URL = $("#item_save_uri").val();
 const ITEM_SAVE_FREQUENCY = $("#item_save_frequency").val();
 
-window.jQuery = $;
+global.jQuery = $;
 global.$ = $;
 
 $(function () {
