@@ -9,6 +9,9 @@ import { validateSession } from "../weko_workflow/quit_confirmation"
 const ITEM_SAVE_URL = $("#item_save_uri").val();
 const ITEM_SAVE_FREQUENCY = $("#item_save_frequency").val();
 
+window.jQuery = $;
+global.$ = $;
+
 $(function () {
     $('#weko_id_hidden').hide();
     $("#item-type-lists").change(function (ev) {
