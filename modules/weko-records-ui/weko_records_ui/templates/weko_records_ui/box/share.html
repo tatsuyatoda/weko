@@ -59,14 +59,14 @@
        endpoint="{{ config.CSL_RECORDS_API_ENDPOINT ~ pid.pid_value }}"
        template="{{ url_for('static', filename=config.CSL_JSTEMPLATE_CITEPROC) }}"></invenio-csl-citeproc>
       <invenio-csl-error
-       template="{{ url_for('static', filename=config.CSL_JSTEMPLATE_ERROR) }}"></invenio-csl-error>
+       template="{{ config.CSL_JSTEMPLATE_ERROR }}"></invenio-csl-error>
       <invenio-csl-loading
-       template="{{ url_for('static', filename=config.CSL_JSTEMPLATE_LOADING) }}"></invenio-csl-loading>
+       template="{{ config.CSL_JSTEMPLATE_LOADING }}"></invenio-csl-loading>
       <invenio-csl-typeahead
        lazy="true"
        placeholder="Start typing a citation style..."
        remote="{{ config.CSL_STYLES_API_ENDPOINT }}"
-       template="{{ url_for('static', filename=config.CSL_JSTEMPLATE_TYPEAHEAD) }}"
+       template="{{ config.CSL_JSTEMPLATE_TYPEAHEAD }}"
        item-template="{{ url_for('static', filename=config.CSL_JSTEMPLATE_LIST_ITEM) }}">
       </invenio-csl-typeahead>
     </invenio-csl>
