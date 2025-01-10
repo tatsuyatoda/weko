@@ -638,10 +638,17 @@ msgstr ""
 msgid "Resend"
 msgstr ""
 
+#: weko_admin/template/weko_admin/admin/feedback_mail.html:51
+msgid "Search result Mail address"
+msgstr "Mail address"
+
 #: weko_admin/template/weko_admin/admin/feedback_mail.html:59
 msgid "There is no data."
 msgstr "No search result"
 
+#: weko_admin/templates/weko_admin/admin/feedback_mail.html:64
+msgid "Search result Feedback Mail Import"
+msgstr "Import"
 
 #: weko_admin/template/weko_admin/admin/site_info.html:59
 msgid "Log in Instructions"
