@@ -1,6 +1,4 @@
-import angular from 'angular';
-import $ from 'jquery';
-
+/* eslint-disable */
 // Bootstrap it!
 angular.element(document).ready(function () {
     angular.module('wekoRecords.controllers', []);
