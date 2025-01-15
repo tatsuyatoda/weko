@@ -507,8 +507,8 @@ class Pagination extends React.Component {
                 <li key={i.toString()} className={this.state.currentPage == i ? 'active' : ''}>
                     {/* FIXME: apply CSS to the button-tag same as the a-tag */}
                     <button
-                        onClick={() => this.locatePageResult(i)}>
-                        onKeyDown={() => { }}
+                        onClick={() => this.locatePageResult(i)}
+                        onKeyDown={() => { }}>
                         {i}
                     </button>
                 </li>
@@ -840,8 +840,8 @@ const PaginationResendLogsTable = function (props) {
                 <li key={i.toString()} className={currentPage == i ? 'active' : ''}>
                     {/* FIXME: apply CSS to the button-tag same as the a-tag */}
                     <button
-                        onClick={(e) => handleChangePage(e, i)}>{i}
-                        onKeyDown={() => { }}
+                        onClick={(e) => handleChangePage(e, i)}
+                        onKeyDown={() => { }}>{i}
                     </button>
                 </li>
             )
@@ -989,8 +989,8 @@ class ComponentButtonLayout extends React.Component {
                 <div className="col-xs-5">
                     <button
                         className="btn btn-primary style-button"
-                        onClick={this.saveCommand}>
-                        onKeyDown={() => { }}
+                        onClick={this.saveCommand}
+                        onKeyDown={() => { }}>
                         <span className="glyphicon glyphicon-saved"></span>
                         &nbsp;
                         {SAVE_BUTTON_NAME}
