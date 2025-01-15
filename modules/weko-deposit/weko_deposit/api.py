@@ -4570,11 +4570,11 @@ class _FormatSysCreator:
                             count=i, element=parent_key)
                 self._format_creator_to_show_detail(_language,
                                                     parent_key, creator_names)
-            weko_logger(key='WEKO_COMMON_FOR_END')
-            if creator_names:
-                weko_logger(key='WEKO_COMMON_IF_ENTER',
-                            branch='creator_names is not empty')
-                return
+                if creator_names:
+                    weko_logger(key='WEKO_COMMON_IF_ENTER',
+                                branch='creator_names is not empty')
+                    return
+            weko_logger(key='WEKO_COMMON_FOR_END')            
 
         _get_creator(self.current_language)
         # if current language has no creator
