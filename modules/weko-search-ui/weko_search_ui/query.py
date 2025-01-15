@@ -116,7 +116,7 @@ def get_permission_filter(index_id: str = None):
             shuld.append(dsl.Q("bool", must=[user_terms, creator_user_match]))
             shuld.append(dsl.Q("bool", must=[user_terms, shared_user_match]))
             shuld.append(dsl.Q("bool", must=mst))
-            mut.append(dsl.Q("bool", should=shuld, must=[terms]))
+            mut.append(dsl.Q("bool", should=shuld, must=[terms], minimum_should_match="1"))
             mut.append(dsl.Q("bool", must=version))
     else:
         mut = mst
