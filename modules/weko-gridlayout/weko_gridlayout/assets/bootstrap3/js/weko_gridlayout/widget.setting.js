@@ -760,7 +760,7 @@ const ComponentFieldEditor = function (props) {
     ["strong", "em", "del", 'underline', "superscript", "subscript"],
     ['foreColor', 'backColor'],
     ["link"],
-    ["image"],
+    ["insertImage"],
     ['table'],
     ["justifyLeft", "justifyCenter", "justifyRight", "justifyFull"],
     ["unorderedList", "orderedList"],
