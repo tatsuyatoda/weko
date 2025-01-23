@@ -171,8 +171,6 @@ var Format = {
     yyyyMM: '^(' + Pattern.yyyy + Pattern.sep + Pattern.MM + ')$',
     yyyy: '^(' + Pattern.yyyy + ')$',
 }
-
-window.CustomBSDatePicker = CustomBSDatePicker;
 var CustomBSDatePicker = {
     option: {
         element: undefined,
