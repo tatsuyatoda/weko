@@ -4938,7 +4938,12 @@ function toObject(arr) {
                         if (!angular.isUndefined(files) && files.length > 0) {
                             if ($scope.model.allowMultiple != 'True') {
                                 files = Array.prototype.slice.call(files, 0, 1);
-                                let overwriteFiles = $.extend(true, {}, $scope.model.thumbnailsInfor);
+                                let overwriteFiles = {};
+                                Object.keys($scope.model.thumbnailsInfor).forEach(key => {
+                                    if ($scope.model.thumbnailsInfor[key] instanceof File) {
+                                        overwriteFiles[key] = $scope.model.thumbnailsInfor[key];
+                                    }
+                                });
 
                                 if (Object.keys(overwriteFiles).length > 0) {
                                     $scope.uploadingThumbnails = files;
