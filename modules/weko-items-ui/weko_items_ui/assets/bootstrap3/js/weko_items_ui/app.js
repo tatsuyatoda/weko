@@ -254,6 +254,8 @@ var CustomBSDatePicker = {
     }
 }
 
+window.CustomBSDatePicker = CustomBSDatePicker;
+
 // script for Contributor
 var username_arr = [];
 var email_arr = [];

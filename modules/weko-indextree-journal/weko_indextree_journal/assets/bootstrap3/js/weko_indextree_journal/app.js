@@ -1,4 +1,6 @@
-/* eslint-disable */
+import angular from 'angular';
+import $ from 'jquery';
+
 // Bootstrap it!
 angular.element(document).ready(function () {
     angular.module('wekoRecords.controllers', []);
@@ -169,6 +171,8 @@ var Format = {
     yyyyMM: '^(' + Pattern.yyyy + Pattern.sep + Pattern.MM + ')$',
     yyyy: '^(' + Pattern.yyyy + ')$',
 }
+
+window.CustomBSDatePicker = CustomBSDatePicker;
 var CustomBSDatePicker = {
     option: {
         element: undefined,
