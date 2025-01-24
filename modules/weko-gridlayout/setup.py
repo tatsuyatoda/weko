@@ -73,9 +73,12 @@ setup(
             'widget_type = weko_gridlayout.cli:widget_type',
             'widget = weko_gridlayout.cli:widget',
         ],
-        'invenio_base.finalize_app': [
+        'invenio_base.apps': [
             'weko_gridlayout = weko_gridlayout:WekoGridLayout',
             'weko_gridlayout_rss = weko_gridlayout:WekoGridLayout',
+        ],
+        'invenio_base.finalize_app': [
+            'weko_gridlayout = weko_gridlayout.ext:register_error_handle',
         ],
         'invenio_base.api_blueprints': [
             'weko_gridlayout = weko_gridlayout.views:blueprint_api',
