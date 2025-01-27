@@ -318,6 +318,9 @@ class WekoIndexer(RecordIndexer):
         pst = 'relation_version_is_last'
         id = str(version.get('id'))
         body = {'doc': {pst: version.get('is_last')}}
+        current_app.logger.info('weko_deposit/api.py l321')
+        current_app.logger.info('id: %s', id)
+        current_app.logger.info('body: %s', body)
 
         result = self.client.update(
             index=self.es_index,
@@ -325,6 +328,7 @@ class WekoIndexer(RecordIndexer):
             body=body, ignore=[400, 404]
         )
         weko_logger(key='WEKO_COMMON_RETURN_VALUE', value=result)
+        current_app.logger.info('weko_deposit/api.py l331')
         return result
 
 
@@ -443,8 +447,7 @@ class WekoIndexer(RecordIndexer):
         try:
             self.get_es_index()
             self.client.delete(id=str(uuid),
-                                index=self.es_index,
-                                doc_type=self.es_doc_type)
+                                index=self.es_index)
         except search.OpenSearchException as ex:
             weko_logger(key='WEKO_DEPOSIT_FAILED_DELETE_RECORD_BY_ID',
                         uuid=str(uuid), ex=ex)
@@ -1038,7 +1041,9 @@ class WekoDeposit(Deposit):
             dict: pubilshed deposit dict
         """
         deposit = None
+        current_app.logger.info('weko_deposit/api.py l1040')
         deposit = self.publish_without_commit(pid, id_)
+        current_app.logger.info('weko_deposit/api.py l1042')
         weko_logger(key='WEKO_COMMON_RETURN_VALUE', value=deposit)
         return deposit
 
@@ -1057,30 +1062,42 @@ class WekoDeposit(Deposit):
             dict: pubilshed deposit dict
         """
         if not self.data:
+            current_app.logger.info('weko_deposit/api.py l1065')
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='data is None')
             self.data = self.get('_deposit', {})
         if 'control_number' in self:
+            current_app.logger.info('weko_deposit/api.py l1070')
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='control_number is in self')
             self.pop('control_number')
         if '$schema' not in self:
+            current_app.logger.info('weko_deposit/api.py l1075')
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='$schema is not in self')
             self['$schema'] = (
                 current_app.extensions['invenio-jsonschemas']
                 .path_to_url(current_app.config['DEPOSIT_DEFAULT_JSONSCHEMA'])
             )
+        current_app.logger.info('weko_deposit/api.py l1082')
         self.is_edit = True
 
+        current_app.logger.info('weko_deposit/api.py l1085')
+        current_app.logger.info('pid: %s', pid)
+        current_app.logger.info('id_: %s', id_)
         deposit = super(WekoDeposit, self).publish(pid, id_)
+        current_app.logger.info('weko_deposit/api.py l1089')
         # update relation version current to ES
+        current_app.logger.info('weko_deposit/api.py l1091')
         recid = PersistentIdentifier.query.filter_by(
             pid_type='recid',
             object_uuid=self.id
         ).one_or_none()
+        current_app.logger.info('weko_deposit/api.py l1096')
         relations = self.serialize_relations(recid)
         if relations and 'version' in relations:
+            current_app.logger.info('weko_deposit/api.py l1099')
+            current_app.logger.info('relations: %s', relations)
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch="relations is not empty and "
                                 "`version` is in relations")
@@ -1088,7 +1105,8 @@ class WekoDeposit(Deposit):
             relations_ver['id'] = recid.object_uuid
             relations_ver['is_last'] = relations_ver.get('index') == 0
             self.indexer.update_relation_version_is_last(relations_ver)
-
+            current_app.logger.info('self.indexer: %s', self.indexer)
+        current_app.logger.info('weko_deposit/api.py l1109')
         weko_logger(key='WEKO_COMMON_RETURN_VALUE', value=deposit)
         return deposit
 
@@ -1191,6 +1209,7 @@ class WekoDeposit(Deposit):
         )
 
         RecordsBuckets.create(record=deposit.model, bucket=bucket)
+        db.session.commit()
 
         recid = PersistentIdentifier.get('recid', record_id)
         depid = PersistentIdentifier.get('depid', record_id)
@@ -1661,6 +1680,9 @@ class WekoDeposit(Deposit):
             pid=parent_pid).insert_draft_child(
             child_pid=recid)
         PIDNodeDraft(pid=recid).insert_child(depid)
+        recid.register()
+        depid.register()
+
         if is_draft:
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='is_draft is True')
@@ -1682,6 +1704,7 @@ class WekoDeposit(Deposit):
         RecordsBuckets.create(record=deposit.model,
                             bucket=snapshot)
 
+        db.session.commit()
         index = {'index': self.get('path', []),
                 'actions': self.get('publish_status')}
         if 'activity_info' in session:

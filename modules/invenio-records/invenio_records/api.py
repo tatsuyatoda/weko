@@ -646,9 +646,15 @@ class RevisionsIterator(object):
         diffcult to change - e.g. implies all indexed records in existing
         instances having to be updated.)
         """
+        current_app.logger.info('invenio_records/api.py l649')
+        current_app.logger.info('revision_id: ' + str(revision_id))
+        current_app.logger.info(self.model)
+        current_app.logger.info(self.model.versions)
         if revision_id < 0:
+            current_app.logger.info('invenio_records/api.py l653')
             return RecordRevision(self.model.versions[revision_id])
         try:
+            current_app.logger.info('invenio_records/api.py l656')
             return RecordRevision(
                 self.model.versions.filter_by(version_id=revision_id + 1).one()
             )

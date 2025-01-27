@@ -158,30 +158,40 @@ class Deposit(Record):
 
     def fetch_published(self):
         """Return a tuple with PID and published record."""
+        current_app.logger.info('invenio_deposit/api.py l161')
         pid_type = self['_deposit']['pid']['type']
         pid_value = self['_deposit']['pid']['value']
 
+        current_app.logger.info('invenio_deposit/api.py l165')
         resolver = Resolver(
             pid_type=pid_type, object_type='rec',
             getter=partial(self.published_record_class.get_record,
                            with_deleted=True)
         )
+        current_app.logger.info('invenio_deposit/api.py l171')
+        current_app.logger.info('pid_value: {}'.format(pid_value))
         return resolver.resolve(pid_value)
 
     @preserve(fields=('_deposit', '$schema'))
     def merge_with_published(self):
         """Merge changes with latest published version."""
+        current_app.logger.info('invenio_deposit/api.py l178')
         pid, first = self.fetch_published()
+        current_app.logger.info('invenio_deposit/api.py l180')
         lca = first.revisions[self['_deposit']['pid']['revision_id']]
         # ignore _deposit and $schema field
         args = [lca.dumps(), first.dumps(), self.dumps()]
+        current_app.logger.info('invenio_deposit/api.py l184')
         for arg in args:
             del arg['$schema'], arg['_deposit']
+        current_app.logger.info('invenio_deposit/api.py l187')
         args.append({})
         m = Merger(*args)
         try:
+            current_app.logger.info('invenio_deposit/api.py l191')
             m.run()
         except UnresolvedConflictsException:
+            current_app.logger.info('invenio_deposit/api.py l194')
             raise MergeConflict()
         return patch(m.unified_patches, lca)
 
@@ -277,15 +287,25 @@ class Deposit(Record):
 
     def _publish_edited(self):
         """Publish the deposit after for editing."""
+        current_app.logger.info('invenio_deposit/api.py l290')
         record_pid, record = self.fetch_published()
+        current_app.logger.info('invenio_deposit/api.py l292')
+        current_app.logger.info(record_pid)
         if record.revision_id == self['_deposit']['pid']['revision_id']:
+            current_app.logger.info('invenio_deposit/api.py l295')
             data = dict(self.dumps())
         else:
+            current_app.logger.info('invenio_deposit/api.py l298')
+            current_app.logger.info('record.revision_id: {}'.format(record.revision_id))
+            current_app.logger.info(self['_deposit']['pid']['revision_id'])
             data = self.merge_with_published()
 
+        current_app.logger.info('invenio_deposit/api.py l303')
         data['$schema'] = self.record_schema
         data['_deposit'] = self['_deposit']
         record = record.__class__(data, model=record.model)
+        current_app.logger.info('invenio_deposit/api.py l307')
+        current_app.logger.info(record)
         return record
 
     @has_status
@@ -325,21 +345,33 @@ class Deposit(Record):
         pid = pid or self.pid
 
         if not pid.is_registered():
+            current_app.logger.info('invenio_deposit/api.py l348')
             raise PIDInvalidAction()
 
+        current_app.logger.info('invenio_deposit/api.py l351')
         self['_deposit']['status'] = 'published'
 
         if self['_deposit'].get('pid') is None:  # First publishing
+            current_app.logger.info('invenio_deposit/api.py l355')
+            current_app.logger.info('pid.pid_type: {}'.format(pid.pid_type))
+            current_app.logger.info('pid.pid_value: {}'.format(pid.pid_value))
             # self._publish_new(id_=id_)
             self['_deposit']['pid'] = {
                 'type': pid.pid_type,
                 'value': pid.pid_value,
                 'revision_id': 0,
             }
+            current_app.logger.info('invenio_deposit/api.py l362')
         else:  # Update after edit
+            current_app.logger.info('invenio_deposit/api.py l364')
+            current_app.logger.info(self['_deposit'].get('pid'))
             record = self._publish_edited()
+            current_app.logger.info('invenio_deposit/api.py l367')
+            current_app.logger.info(record)
             record.commit()
+        current_app.logger.info('invenio_deposit/api.py l370')
         self.commit()
+        current_app.logger.info('invenio_deposit/api.py l372')
         return self
 
     def _prepare_edit(self, record):

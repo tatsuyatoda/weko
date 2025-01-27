@@ -1212,28 +1212,36 @@ def register_item_metadata(item, root_path, owner, is_gakuninrdm=False):
     """
 
     def clean_file_metadata(item_type_id, data):
+        current_app.logger.info('weko_search_ui/utils.py l1215')
         # clear metadata of file information
         is_cleaned = True
         file_key = None
         item_map = get_mapping(item_type_id, "jpcoar_mapping")
         key = item_map.get("file.URI.@value")
         if key:
+            current_app.logger.info('weko_search_ui/utils.py l1222')
             file_key = key.split(".")[0]
             if not data.get(file_key):
+                current_app.logger.info('weko_search_ui/utils.py l1225')
                 deleted_items = data.get("deleted_items") or []
                 deleted_items.append(file_key)
                 data["deleted_items"] = deleted_items
             else:
+                current_app.logger.info('weko_search_ui/utils.py l1230')
                 is_cleaned = False
+        current_app.logger.info('weko_search_ui/utils.py l1232')
         return data, is_cleaned, file_key
 
     def autofill_thumbnail_metadata(item_type_id, data):
+        current_app.logger.info('weko_search_ui/utils.py l1236')
         key = get_thumbnail_key(item_type_id)
         if key:
+            current_app.logger.info('weko_search_ui/utils.py l1239')
             thumbnail_item = {}
             subitem_thumbnail = []
             for file in deposit.files:
                 if file.is_thumbnail is True:
+                    current_app.logger.info('weko_search_ui/utils.py l244')
                     subitem_thumbnail.append(
                         {
                             "thumbnail_label": file.key,
@@ -1246,10 +1254,13 @@ def register_item_metadata(item, root_path, owner, is_gakuninrdm=False):
                         }
                     )
             if subitem_thumbnail:
+                current_app.logger.info('weko_search_ui/utils.py l1257')
                 thumbnail_item["subitem_thumbnail"] = subitem_thumbnail
             if thumbnail_item:
+                current_app.logger.info('weko_search_ui/utils.py l1260')
                 data[key] = thumbnail_item
             else:
+                current_app.logger.info('weko_search_ui/utils.py l1263')
                 deleted_items = data.get("deleted_items") or []
                 deleted_items.append(key)
                 data["deleted_items"] = deleted_items
@@ -1264,24 +1275,33 @@ def register_item_metadata(item, root_path, owner, is_gakuninrdm=False):
         :return
             obj      -- Obj after escaping
         """
+        current_app.logger.info('weko_search_ui/utils.py l1278')
         if isinstance(data,list):
+            current_app.logger.info('weko_search_ui/utils.py l1280')
             return [escape_newline(d) for d in data]
         elif isinstance(data,dict):
+            current_app.logger.info('weko_search_ui/utils.py l1283')
             return {d:escape_newline(data[d]) for d in data}
         elif isinstance(data,str):
+            current_app.logger.info('weko_search_ui/utils.py l1286')
             return data.replace("<br/>","\n")
         else:
+            current_app.logger.info('weko_search_ui/utils.py l1289')
             return data
 
+    current_app.logger.info('weko_search_ui/utils.py l1292')
     item_id = str(item.get("id"))
     pid = PersistentIdentifier.query.filter_by(
         pid_type="recid", pid_value=item_id
     ).first()
 
+    current_app.logger.info('weko_search_ui/utils.py l1298')
     record = WekoDeposit.get_record(pid.object_uuid)
 
+    current_app.logger.info('weko_search_ui/utils.py l1301')
     _deposit_data = record.dumps().get("_deposit")
     deposit = WekoDeposit(record, record.model)
+    current_app.logger.info('weko_search_ui/utils.py l1304')
     new_data = dict(
         **item.get("metadata"),
         **_deposit_data,
@@ -1296,13 +1316,16 @@ def register_item_metadata(item, root_path, owner, is_gakuninrdm=False):
         "actions": "publish",
     }
     if not new_data.get("pid"):
+        current_app.logger.info('weko_search_ui/utils.py l1319')
         new_data = dict(
             **new_data, **{"pid": {"revision_id": 0, "type": "recid", "value": item_id}}
         )
 
     # get old files in item with order.
     old_file_list = []
+    current_app.logger.info('weko_search_ui/utils.py l1326')
     if item["status"] != "new":
+        current_app.logger.info('weko_search_ui/utils.py l1328')
         for file_metadata in deposit.get_file_data():
             if file_metadata.get("version_id"):
                 f_filter = list(
@@ -1317,9 +1340,12 @@ def register_item_metadata(item, root_path, owner, is_gakuninrdm=False):
                 old_file_list.append(None)
 
     # set delete flag for file metadata if is empty.
+    current_app.logger.info('weko_search_ui/utils.py l1343')
     new_data, is_cleaned, file_key = clean_file_metadata(item["item_type_id"], new_data)
     # progress upload file, replace file contents.
+    current_app.logger.info('weko_search_ui/utils.py l1346')
     file_size_dict = up_load_file(item, root_path, deposit, not is_cleaned, old_file_list)
+    current_app.logger.info('weko_search_ui/utils.py l1348')
     new_data = autofill_thumbnail_metadata(item["item_type_id"], new_data)
 
     # check location file
@@ -1332,6 +1358,7 @@ def register_item_metadata(item, root_path, owner, is_gakuninrdm=False):
 
     # Clean item metadata
     if item["status"] != "new":
+        current_app.logger.info('weko_search_ui/utils.py l1361')
         item_type = ItemTypes.get_by_id(
             id_=item.get("item_type_id", 0), with_deleted=True
         ).render
@@ -1344,29 +1371,41 @@ def register_item_metadata(item, root_path, owner, is_gakuninrdm=False):
                 deleted_items.append(metadata_id)
                 new_data["deleted_items"] = deleted_items
 
+    current_app.logger.info('weko_search_ui/utils.py l1374')
     deposit.update(item_status, new_data)
+    current_app.logger.info('weko_search_ui/utils.py l1376')
     deposit['_deposit']['owners'] = [int(owner)]
     deposit['_deposit']['created_by'] = int(owner)
     deposit['owner'] = str(owner)
     deposit.commit()
+    current_app.logger.info('weko_search_ui/utils.py l1381')
 
     feedback_mail_list = item["metadata"].get("feedback_mail_list")
     if feedback_mail_list:
+        current_app.logger.info('weko_search_ui/utils.py l1385')
         FeedbackMailList.update(
             item_id=deposit.id, feedback_maillist=feedback_mail_list
         )
+        current_app.logger.info('weko_search_ui/utils.py l1389')
         deposit.update_feedback_mail()
+        current_app.logger.info('weko_search_ui/utils.py l1391')
     else:
+        current_app.logger.info('weko_search_ui/utils.py l1393')
         FeedbackMailList.delete_without_commit(deposit.id)
+        current_app.logger.info('weko_search_ui/utils.py l1395')
         deposit.remove_feedback_mail()
+        current_app.logger.info('weko_search_ui/utils.py l1397')
 
     if not is_gakuninrdm:
         deposit.publish_without_commit()
+        current_app.logger.info('weko_search_ui/utils.py l1401')
         with current_app.test_request_context(get_url_root()):
             if item["status"] in ["upgrade", "new"]:    # Create first version
+                current_app.logger.info('weko_search_ui/utils.py l1404')
                 _deposit = deposit.newversion(pid)
                 _deposit.publish_without_commit()
             else:    # Update last version
+                current_app.logger.info('weko_search_ui/utils.py l1408')
                 parent_pid = PIDNodeVersioning(pid=pid).parents.one_or_none()
                 _pid = PIDNodeVersioning(pid=parent_pid).last_child
                 _record = WekoDeposit.get_record(_pid.object_uuid)
@@ -1376,26 +1415,34 @@ def register_item_metadata(item, root_path, owner, is_gakuninrdm=False):
                     pid, keep_version=True, is_import=True
                 )
                 if not is_gakuninrdm:
+                    current_app.logger.info('weko_search_ui/utils.py l1418')
                     _deposit.publish_without_commit()
+            current_app.logger.info('weko_search_ui/utils.py l1420')
 
             if feedback_mail_list:
+                current_app.logger.info('weko_search_ui/utils.py l1423')
                 FeedbackMailList.update(
                     item_id=_deposit.id, feedback_maillist=feedback_mail_list
                 )
+                current_app.logger.info('weko_search_ui/utils.py l1427')
                 _deposit.update_feedback_mail()
+            current_app.logger.info('weko_search_ui/utils.py l1429')
 
             # Update draft version
             _draft_pid = PersistentIdentifier.query.filter_by(
                 pid_type='recid',
                 pid_value="{}.0".format(item_id)
             ).one_or_none()
+            current_app.logger.info('weko_search_ui/utils.py l1435')
             if _draft_pid:
+                current_app.logger.info('weko_search_ui/utils.py l1438')
                 _draft_record = WekoDeposit.get_record(_draft_pid.object_uuid)
                 _draft_record["path"] = new_data.get("path")
                 _draft_deposit = WekoDeposit(_draft_record, _draft_record.model)
                 _draft_deposit.merge_data_to_record_without_version(
                     pid, keep_version=True, is_import=True
                 )
+            current_app.logger.info('weko_search_ui/utils.py l1445')
 
 
 def update_publish_status(item_id, status):
@@ -1529,6 +1576,7 @@ def import_items_to_system(item: dict, request_info=None, is_gakuninrdm=False):
             status = item.get("status")
             root_path = item.get("root_path", "")
             if status == "new":
+                current_app.logger.info('weko_search_ui/utils.py l1579')
                 item_id = create_deposit(item.get("id"))
                 item["id"] = item_id["recid"]
                 item["pid"] = item_id.pid
@@ -1545,33 +1593,47 @@ def import_items_to_system(item: dict, request_info=None, is_gakuninrdm=False):
                     PIDNodeVersioning(pid=parent_pid).last_child.object_uuid
                 )
 
+            current_app.logger.info('weko_search_ui/utils.py l1596')
             register_item_metadata(item, root_path, owner, is_gakuninrdm)
+            current_app.logger.info('weko_search_ui/utils.py l1598')
             if not is_gakuninrdm:
+                current_app.logger.info('weko_search_ui/utils.py l1600')
                 if current_app.config.get("WEKO_HANDLE_ALLOW_REGISTER_CNRI"):
+                    current_app.logger.info('weko_search_ui/utils.py l1602')
                     register_item_handle(item)
+                    current_app.logger.info('weko_search_ui/utils.py l1604')
                 register_item_doi(item)
+                current_app.logger.info('weko_search_ui/utils.py l1606')
 
                 status_number = WEKO_IMPORT_PUBLISH_STATUS.index(
                     item.get("publish_status")
                 )
+                current_app.logger.info('status_number:{}'.format(status_number))
                 register_item_update_publish_status(item, str(status_number))
+                current_app.logger.info('weko_search_ui/utils.py l1613')
                 if item.get("status") == "new":
+                    current_app.logger.info('weko_search_ui/utils.py l1615')
                     # Send item_created event to ES.
                     send_item_created_event_to_es(item, request_info)
+                    current_app.logger.info('weko_search_ui/utils.py l1618')
             db.session.commit()
+            current_app.logger.info('weko_search_ui/utils.py l1620')
 
             # clean unuse file content in keep mode if import success
             cache_key = current_app.config[
                 "WEKO_SEARCH_UI_IMPORT_UNUSE_FILES_URI"
             ].format(item["id"])
             list_unuse_uri = get_cache_data(cache_key)
+            current_app.logger.info('weko_search_ui/utils.py l1627')
             if list_unuse_uri:
+                current_app.logger.info('weko_search_ui/utils.py l1629')
                 for uri in list_unuse_uri:
                     file = current_files_rest.storage_factory(fileurl=uri, size=1)
                     fs, path = file._get_fs()
                     if fs.exists(path):
                         file.delete()
                 delete_cache_data(cache_key)
+                current_app.logger.info('weko_search_ui/utils.py l1636')
 
         except SQLAlchemyError as ex:
             current_app.logger.error("sqlalchemy error: ", ex)
@@ -1662,6 +1724,7 @@ def import_items_to_system(item: dict, request_info=None, is_gakuninrdm=False):
                 )
                 handle_remove_es_metadata(item, bef_metadata, bef_last_ver_metadata)
             current_app.logger.error("item id: %s update error." % item["id"])
+            current_app.logger.error('weko_search_ui/utils.py l1679')
             traceback.print_exc(file=sys.stdout)
             error_id = None
             if (
@@ -2215,12 +2278,15 @@ def register_item_handle(item):
     """
     current_app.logger.debug("start register_item_handle(item)")
     item_id = str(item.get("id"))
+    current_app.logger.info('weko_search_ui/utils.py l2280')
     record = WekoRecord.get_record_by_pid(item_id)
+    current_app.logger.info('weko_search_ui/utils.py l2282')
     pid = record.pid_recid
     pid_hdl = record.pid_cnri
     cnri = item.get("cnri")
     status = item.get("status")
     uri = item.get("uri")
+    current_app.logger.info('weko_search_ui/utils.py l2288')
     current_app.logger.debug(
         "item_id:{0} pid:{1} pid_hdl:{2} cnri:{3} status:{4}".format(
             item_id, pid, pid_hdl, cnri, status
@@ -2228,25 +2294,36 @@ def register_item_handle(item):
     )
 
     if item.get("is_change_identifier"):
+        current_app.logger.info('weko_search_ui/utils.py l2296')
         if item.get("cnri_suffix_not_existed"):
+            current_app.logger.info('weko_search_ui/utils.py l2298')
             suffix = "{:010d}".format(int(item_id))
             cnri = cnri[:-1] if cnri[-1] == "/" else cnri
             cnri += "/" + suffix
         if uri is None:
+            current_app.logger.info('weko_search_ui/utils.py l2303')
             uri = get_url_root() + "records/" + str(item_id)
         if item.get("status") == "new":
+            current_app.logger.info('weko_search_ui/utils.py l2306')
             register_hdl_by_handle(cnri, pid.object_uuid, uri)
         else:
+            current_app.logger.info('weko_search_ui/utils.py l2309')
             if pid_hdl and not pid_hdl.pid_value.endswith(cnri):
+                current_app.logger.info('weko_search_ui/utils.py l2311')
                 pid_hdl.delete()
                 register_hdl_by_handle(cnri, pid.object_uuid, uri)
             elif not pid_hdl:
+                current_app.logger.info('weko_search_ui/utils.py l2315')
                 register_hdl_by_handle(cnri, pid.object_uuid, uri)
     else:
+        current_app.logger.info('weko_search_ui/utils.py l2318')
         if item.get("status") == "new":
+            current_app.logger.info('weko_search_ui/utils.py l2320')
             register_hdl_by_item_id(item_id, pid.object_uuid, get_url_root())
         else:
+            current_app.logger.info('weko_search_ui/utils.py l2323')
             if pid_hdl is None and cnri is None:
+                current_app.logger.info('weko_search_ui/utils.py l2325')
                 register_hdl_by_item_id(item_id, pid.object_uuid, get_url_root())
 
     current_app.logger.debug("end register_item_handle(item)")
@@ -2360,10 +2437,12 @@ def register_item_doi(item):
         if duplicated_doi.get("isExistDOI"):
             return "is_duplicated_doi"
 
+    current_app.logger.info('weko_search_ui/utils.py l2439')
     item_id = str(item.get("id"))
     is_change_identifier = item.get("is_change_identifier")
     doi_ra = item.get("doi_ra")
     doi = item.get("doi")
+    current_app.logger.info('weko_search_ui/utils.py l2444')
 
     current_app.logger.debug("item_id: {0}".format(item_id))
     current_app.logger.debug("is_change_identifier: {0}".format(is_change_identifier))
@@ -2371,18 +2450,29 @@ def register_item_doi(item):
     current_app.logger.debug("doi: {0}".format(doi))
 
     record_without_version = WekoRecord.get_record_by_pid(item_id)
+    current_app.logger.info('weko_search_ui/utils.py l2452')
     pid = record_without_version.pid_recid
     pid_doi = record_without_version.pid_doi
+    current_app.logger.info('weko_search_ui/utils.py l2455')
+    current_app.logger.info('pid: {0}'.format(pid))
+    current_app.logger.info('pid_doi: {0}'.format(pid_doi))
 
     lastest_version_id = item_id + "." + str(get_latest_version_id(item_id) - 1)
+    current_app.logger.info('lastest_version_id: {0}'.format(lastest_version_id))
     pid_lastest = WekoRecord.get_record_by_pid(lastest_version_id).pid_recid
+    current_app.logger.info('weko_search_ui/utils.py l2462')
+    current_app.logger.info('pid_lastest: {0}'.format(pid_lastest))
 
     data = None
     if is_change_identifier:
+        current_app.logger.info('weko_search_ui/utils.py l2467')
         if doi_ra and doi:
+            current_app.logger.info('weko_search_ui/utils.py l2469')
             if pid_doi and not pid_doi.pid_value.endswith(doi):
+                current_app.logger.info('weko_search_ui/utils.py l2471')
                 pid_doi.delete()
             if not pid_doi or not pid_doi.pid_value.endswith(doi):
+                current_app.logger.info('weko_search_ui/utils.py l2474')
                 data = {
                     "identifier_grant_jalc_doi_link": IDENTIFIER_GRANT_LIST[1][2]
                     + "/"
@@ -2398,7 +2488,9 @@ def register_item_doi(item):
                     + doi,
                 }
                 doi_duplicated = check_doi_duplicated(doi_ra, data)
+                current_app.logger.info('weko_search_ui/utils.py l2490')
                 if doi_duplicated:
+                    current_app.logger.info('weko_search_ui/utils.py l2492')
                     raise Exception({"error_id": doi_duplicated})
 
                 saving_doi_pidstore(
@@ -2407,19 +2499,25 @@ def register_item_doi(item):
                     data,
                     WEKO_IMPORT_DOI_TYPE.index(doi_ra) + 1
                 )
+        current_app.logger.info('weko_search_ui/utils.py l2501')
     else:
         if doi_ra and doi_ra != "NDL JaLC" and (not doi or item.get("doi_suffix_not_existed")):
+            current_app.logger.info('weko_search_ui/utils.py l2504')
             data = prepare_doi_link(item_id)
             doi_duplicated = check_doi_duplicated(doi_ra, data)
             if doi_duplicated:
+                current_app.logger.info('weko_search_ui/utils.py l2508')
                 raise Exception({"error_id": doi_duplicated})
+            current_app.logger.info('weko_search_ui/utils.py l2510')
             saving_doi_pidstore(
                 pid_lastest.object_uuid,
                 pid.object_uuid,
                 data,
                 WEKO_IMPORT_DOI_TYPE.index(doi_ra) + 1
             )
+            current_app.logger.info('weko_search_ui/utils.py l2517')
         elif doi_ra == "NDL JaLC" and doi:
+            current_app.logger.info('weko_search_ui/utils.py l2519')
             data = {
                 "identifier_grant_jalc_doi_link": IDENTIFIER_GRANT_LIST[1][2]
                 + "/"
@@ -2435,22 +2533,34 @@ def register_item_doi(item):
                 + doi,
             }
             doi_duplicated = check_doi_duplicated(doi_ra, data)
+            current_app.logger.info('weko_search_ui/utils.py l2535')
             if doi_duplicated:
+                current_app.logger.info('weko_search_ui/utils.py l2537')
                 raise Exception({"error_id": doi_duplicated})
+            current_app.logger.info('weko_search_ui/utils.py l2539')
             saving_doi_pidstore(
                 pid_lastest.object_uuid,
                 pid.object_uuid,
                 data,
                 WEKO_IMPORT_DOI_TYPE.index(doi_ra) + 1
             )
+        current_app.logger.info('weko_search_ui/utils.py l2546')
 
     if data:
+        current_app.logger.info('weko_search_ui/utils.py l2549')
         deposit = WekoDeposit.get_record(pid.object_uuid)
+        current_app.logger.info('weko_search_ui/utils.py l2551')
+        current_app.logger.info(deposit)
         deposit.commit()
+        current_app.logger.info('weko_search_ui/utils.py l2554')
         deposit.publish_without_commit()
+        current_app.logger.info('weko_search_ui/utils.py l2556')
         deposit = WekoDeposit.get_record(pid_lastest.object_uuid)
+        current_app.logger.info('weko_search_ui/utils.py l2558')
         deposit.commit()
+        current_app.logger.info('weko_search_ui/utils.py l2560')
         deposit.publish_without_commit()
+    current_app.logger.info('weko_search_ui/utils.py l2562')
 
 
 def register_item_update_publish_status(item, status):
