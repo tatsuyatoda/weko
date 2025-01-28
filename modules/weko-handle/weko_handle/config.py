@@ -15,5 +15,5 @@ WEKO_HANDLE_BASE_TEMPLATE = 'weko_handle/base.html'
 WEKO_HANDLE_CREDS_JSON_PATH = '/code/modules/resources/handle_creds.json'
 """Default dir contain Handle Cred Json."""
 
-WEKO_HANDLE_ALLOW_REGISTER_CNRI = False
+WEKO_HANDLE_ALLOW_REGISTER_CNRI = True
 """Allow registering CNRI."""

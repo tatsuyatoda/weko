@@ -443,8 +443,7 @@ class WekoIndexer(RecordIndexer):
         try:
             self.get_es_index()
             self.client.delete(id=str(uuid),
-                                index=self.es_index,
-                                doc_type=self.es_doc_type)
+                                index=self.es_index)
         except search.OpenSearchException as ex:
             weko_logger(key='WEKO_DEPOSIT_FAILED_DELETE_RECORD_BY_ID',
                         uuid=str(uuid), ex=ex)
@@ -1191,6 +1190,7 @@ class WekoDeposit(Deposit):
         )
 
         RecordsBuckets.create(record=deposit.model, bucket=bucket)
+        db.session.commit()
 
         recid = PersistentIdentifier.get('recid', record_id)
         depid = PersistentIdentifier.get('depid', record_id)
@@ -1661,6 +1661,9 @@ class WekoDeposit(Deposit):
             pid=parent_pid).insert_draft_child(
             child_pid=recid)
         PIDNodeDraft(pid=recid).insert_child(depid)
+        recid.register()
+        depid.register()
+
         if is_draft:
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='is_draft is True')
@@ -1681,6 +1684,7 @@ class WekoDeposit(Deposit):
         deposit['_buckets'] = {'deposit': str(snapshot.id)}
         RecordsBuckets.create(record=deposit.model,
                             bucket=snapshot)
+        db.session.commit()
 
         index = {'index': self.get('path', []),
                 'actions': self.get('publish_status')}
