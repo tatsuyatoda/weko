@@ -19,9 +19,8 @@ docker-compose exec postgresql psql -U invenio -d invenio -f /tmp/defaultworkflo
 docker cp scripts/demo/doi_identifier.sql $(docker-compose ps -q postgresql):/tmp/doi_identifier.sql
 docker-compose exec postgresql psql -U invenio -d invenio -f /tmp/doi_identifier.sql
 
-docker-compose run --rm web invenio workflow init gakuninrdm_data
-docker-compose run --rm web invenio shell scripts/demo/register_oai_schema.py overwrite_all
-docker-compose run --rm web invenio shell tools/update/addjpcoar_v1_mapping.py
+docker-compose -f run --rm web invenio assets build
+docker-compose -f run --rm web invenio collect -v
 
 # Start services
 docker compose up -d
