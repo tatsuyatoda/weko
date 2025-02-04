@@ -1681,6 +1681,7 @@ class WekoDeposit(Deposit):
         )
         snapshot.locked = False
         deposit['_buckets'] = {'deposit': str(snapshot.id)}
+
         RecordsBuckets.create(record=deposit.model,
                             bucket=snapshot)
         index = {'index': self.get('path', []),
