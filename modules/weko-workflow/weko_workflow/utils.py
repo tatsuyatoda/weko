@@ -40,6 +40,7 @@ from invenio_cache import current_cache
 from invenio_db import db
 from invenio_files_rest.models import Bucket, ObjectVersion
 from invenio_i18n.ext import current_i18n
+from invenio_indexer.api import RecordIndexer
 from invenio_mail.admin import MailSettingView
 from invenio_mail.models import MailConfig
 from invenio_pidrelations.contrib.versioning import PIDNodeVersioning
@@ -81,7 +82,7 @@ from .api import GetCommunity, UpdateItem, WorkActivity, WorkActivityHistory, \
 from .config import DOI_VALIDATION_INFO, DOI_VALIDATION_INFO_CROSSREF, DOI_VALIDATION_INFO_DATACITE, IDENTIFIER_GRANT_SELECT_DICT, \
     WEKO_SERVER_CNRI_HOST_LINK, WEKO_STR_TRUE
 from .models import Action as _Action, Activity
-from .models import ActionStatusPolicy, ActivityStatusPolicy, GuestActivity,FlowAction 
+from .models import ActionStatusPolicy, ActivityStatusPolicy, GuestActivity, FlowAction
 from .models import WorkFlow as _WorkFlow
 
 def get_current_language():
@@ -1957,8 +1958,19 @@ def handle_finish_workflow(deposit, current_pid, recid):
                     item_id = current_pid.object_uuid
                 db.session.commit()
 
-        from invenio_oaiserver.tasks import update_records_sets
-        update_records_sets.delay([str(pid_without_ver.object_uuid)])
+        # update record to OS
+        query = (x[0] for x in PersistentIdentifier.query.filter_by(
+            object_type='rec', status=PIDStatus.REGISTERED
+        ).filter(
+            PersistentIdentifier.pid_type.in_(['oai'])
+        ).filter(
+            PersistentIdentifier.object_uuid.in_([str(pid_without_ver.object_uuid)])
+        ).values(
+            PersistentIdentifier.object_uuid
+        ))
+        RecordIndexer().bulk_index(query)
+        RecordIndexer().process_bulk_queue(
+            search_bulk_kwargs={'raise_on_error': True})
     except Exception as ex:
         db.session.rollback()
         current_app.logger.exception(str(ex))
