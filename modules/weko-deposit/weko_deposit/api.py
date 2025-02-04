@@ -443,8 +443,7 @@ class WekoIndexer(RecordIndexer):
         try:
             self.get_es_index()
             self.client.delete(id=str(uuid),
-                                index=self.es_index,
-                                doc_type=self.es_doc_type)
+                                index=self.es_index)
         except search.OpenSearchException as ex:
             weko_logger(key='WEKO_DEPOSIT_FAILED_DELETE_RECORD_BY_ID',
                         uuid=str(uuid), ex=ex)
@@ -1660,7 +1659,11 @@ class WekoDeposit(Deposit):
         PIDNodeVersioning(
             pid=parent_pid).insert_draft_child(
             child_pid=recid)
+
         WekoPIDNodeDraft(pid=recid).insert_child(depid)
+        recid.register()
+        depid.register()
+
         if is_draft:
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='is_draft is True')
