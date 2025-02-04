@@ -217,9 +217,17 @@ class TempDirInfo(object):
 
         """
         result = {}
-        for idx, val in cls.redis.hgetall(cls.key).items():
-            path = idx.decode("UTF-8")
-            result[path] = ast.literal_eval(val.decode("UTF-8") or '{}')
+        try:
+            for idx, val in cls.redis.hgetall(cls.key).items():
+                path = idx.decode("UTF-8")
+                try:
+                    result[path] = json.loads(val.decode("UTF-8")) if val else {}
+                except json.JSONDecodeError as e:
+                    current_app.logger.error(f"Error decoding JSON for {path}: {e}")
+                    result[path] = {}
+        except UnicodeDecodeError as e:
+            current_app.logger.error(f"Error decoding keys/values in Redis: {e}")
+
         return result
 
 
