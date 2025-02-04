@@ -9,6 +9,9 @@ import { validateSession } from "../weko_workflow/quit_confirmation"
 const ITEM_SAVE_URL = $("#item_save_uri").val();
 const ITEM_SAVE_FREQUENCY = $("#item_save_frequency").val();
 
+global.jQuery = $;
+global.$ = $;
+
 $(function () {
     $('#weko_id_hidden').hide();
     $("#item-type-lists").change(function (ev) {
@@ -253,6 +256,8 @@ var CustomBSDatePicker = {
         });
     }
 }
+
+window.CustomBSDatePicker = CustomBSDatePicker;
 
 // script for Contributor
 var username_arr = [];
@@ -4935,7 +4940,12 @@ function toObject(arr) {
                         if (!angular.isUndefined(files) && files.length > 0) {
                             if ($scope.model.allowMultiple != 'True') {
                                 files = Array.prototype.slice.call(files, 0, 1);
-                                let overwriteFiles = $.extend(true, {}, $scope.model.thumbnailsInfor);
+                                let overwriteFiles = {};
+                                Object.keys($scope.model.thumbnailsInfor).forEach(key => {
+                                    if ($scope.model.thumbnailsInfor[key] instanceof File) {
+                                        overwriteFiles[key] = $scope.model.thumbnailsInfor[key];
+                                    }
+                                });
 
                                 if (Object.keys(overwriteFiles).length > 0) {
                                     $scope.uploadingThumbnails = files;

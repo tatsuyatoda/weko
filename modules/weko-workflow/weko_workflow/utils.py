@@ -31,7 +31,7 @@ import traceback
 
 import redis
 from redis import sentinel
-from celery.app.control import Inspect
+from celery import current_app as current_celery_app
 from flask import current_app, request, session
 from flask_babel import gettext as _
 from flask_security import current_user
@@ -2006,6 +2006,7 @@ def check_an_item_is_locked(item_id=None):
 
     :return
     """
+    inspect = current_celery_app.control.inspect()
     def check(workers):
         for worker in workers:
             for task in workers[worker]:
@@ -2014,10 +2015,10 @@ def check_an_item_is_locked(item_id=None):
                     return True
         return False
 
-    if not item_id or not Inspect().ping():
+    if not item_id or not inspect.ping():
         return False
 
-    return check(Inspect().active()) or check(Inspect().reserved())
+    return check(inspect.active()) or check(inspect.reserved())
 
 
 def get_account_info(user_id):
