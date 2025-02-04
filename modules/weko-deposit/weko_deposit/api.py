@@ -1683,7 +1683,6 @@ class WekoDeposit(Deposit):
         deposit['_buckets'] = {'deposit': str(snapshot.id)}
         RecordsBuckets.create(record=deposit.model,
                             bucket=snapshot)
-        db.session.commit()
         index = {'index': self.get('path', []),
                 'actions': self.get('publish_status')}
         if 'activity_info' in session:
