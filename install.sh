@@ -19,8 +19,9 @@ docker-compose exec postgresql psql -U invenio -d invenio -f /tmp/defaultworkflo
 docker cp scripts/demo/doi_identifier.sql $(docker-compose ps -q postgresql):/tmp/doi_identifier.sql
 docker-compose exec postgresql psql -U invenio -d invenio -f /tmp/doi_identifier.sql
 
-docker-compose -f run --rm web invenio assets build
+docker-compose -f run --rm web invenio webpack create
 docker-compose -f run --rm web invenio collect -v
+docker-compose -f run --rm web invenio webpack build
 
 # Start services
 docker compose up -d
