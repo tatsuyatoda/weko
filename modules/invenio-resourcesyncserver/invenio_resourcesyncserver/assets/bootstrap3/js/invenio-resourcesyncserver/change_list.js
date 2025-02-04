@@ -100,7 +100,6 @@ class MainLayout extends React.Component {
                                     className={`${item.tab_key === current_tab ? "active" : ""}`}
                                     onClick={() => this.handleChangeTab(item.tab_key)}
                                 >
-                                    {/* FIXME: apply CSS to the button-tag same as the a-tag */}
                                     <button>{item.tab_name}</button>
                                 </li>
                             );
@@ -238,7 +237,6 @@ class ListResourceComponent extends React.Component {
                                                 justifyContent: "space-around"
                                             }}
                                         >
-                                            {/* FIXME: apply CSS to the button-tags same as a-tag */}
                                             <button
                                                 className="icon" title="Edit Resource">
                                                 <span
@@ -249,7 +247,6 @@ class ListResourceComponent extends React.Component {
                                                     onKeyDown={() => { }}
                                                 ></span>
                                             </button>
-                                            {/* FIXME: apply CSS to the button-tags same as a-tag */}
                                             <button
                                                 className="icon" title="Delete Resource">
                                                 <span

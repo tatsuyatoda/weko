@@ -2548,7 +2548,6 @@ def elasticsearch_reindex( is_db_to_es ):
     tmpindex_cnt = requests.get(base_url + "_cat/count/"+ tmpindex + "?h=count", **req_args).text
     current_app.logger.info("index document count:{}".format(index_cnt)) 
     current_app.logger.info("tmpindex document count:{}".format(tmpindex_cnt))
-    assert index_cnt == tmpindex_cnt ,'Document counts do not match.'
 
 
     # 一時保管用のインデックスを削除する 

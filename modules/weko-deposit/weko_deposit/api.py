@@ -41,7 +41,7 @@ from invenio_files_rest.models import (
     Bucket, Location, MultipartObject, ObjectVersion, Part)
 from invenio_i18n.ext import current_i18n
 from invenio_indexer.api import RecordIndexer
-from invenio_pidrelations.contrib.draft import PIDNodeDraft
+from weko_deposit.draft import WekoPIDNodeDraft
 from invenio_pidrelations.contrib.versioning import PIDNodeVersioning
 from invenio_pidrelations.models import PIDRelation
 from invenio_pidrelations.serializers.utils import dump_relation
@@ -219,7 +219,7 @@ class WekoIndexer(RecordIndexer):
 
         Returns:
             None
-        """ 
+        """
         from invenio_search.utils import build_alias_name
         index = current_app.config['SEARCH_UI_SEARCH_INDEX']
         self.es_index = build_alias_name(index)
@@ -1195,7 +1195,7 @@ class WekoDeposit(Deposit):
         depid = PersistentIdentifier.get('depid', record_id)
 
         PIDNodeVersioning(pid=parent_pid).insert_draft_child(child_pid=recid)
-        PIDNodeDraft(pid=recid).insert_child(depid)
+        WekoPIDNodeDraft(pid=recid).insert_child(depid)
         parent_pid.register()
         recid.register()
         depid.register()
@@ -1659,10 +1659,11 @@ class WekoDeposit(Deposit):
         PIDNodeVersioning(
             pid=parent_pid).insert_draft_child(
             child_pid=recid)
-        PIDNodeDraft(pid=recid).insert_child(depid)
+
+        WekoPIDNodeDraft(pid=recid).insert_child(depid)
         recid.register()
         depid.register()
-        
+
         if is_draft:
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch='is_draft is True')
@@ -3761,22 +3762,17 @@ class WekoRecord(Record):
         Returns:
             pid_value of parent.
         """
-        parent_pid = PIDNodeVersioning(pid=self.pid_recid).parents.one_or_none()
-        pid_ver = PIDNodeVersioning(pid=parent_pid)
-        # if pid_ver:
-        weko_logger(key='WEKO_COMMON_IF_ENTER',
-                    branch='pid_ver is not empty')
-        # Get pid parent of draft record
+        
         if ".0" in str(self.pid_recid.pid_value):
+            # Get pid parent of draft record
             weko_logger(key='WEKO_COMMON_IF_ENTER',
                         branch=f"'.0' in {str(self.pid_recid.pid_value)}")
-            pid_ver.relation_type = 3
-            weko_logger(key='WEKO_COMMON_RETURN_VALUE', value=pid_ver.parents.one_or_none())
-            return pid_ver.parents.one_or_none()
-        weko_logger(key='WEKO_COMMON_RETURN_VALUE', value=pid_ver.parents.one_or_none())
-        return pid_ver.parents.one_or_none()
-        # weko_logger(key='WEKO_COMMON_RETURN_VALUE', value=None)
-        # return None
+            weko_logger(key='WEKO_COMMON_RETURN_VALUE', value=WekoPIDNodeDraft(pid=self.pid_recid).parents.one_or_none())
+            return WekoPIDNodeDraft(pid=self.pid_recid).parents.one_or_none()
+        else:
+            weko_logger(key='WEKO_COMMON_RETURN_VALUE', value=PIDNodeVersioning(pid=self.pid_recid).parents.one_or_none())
+            return PIDNodeVersioning(pid=self.pid_recid).parents.one_or_none()
+
 
     @classmethod
     def get_record_by_pid(cls, pid):
@@ -4572,11 +4568,11 @@ class _FormatSysCreator:
                             count=i, element=parent_key)
                 self._format_creator_to_show_detail(_language,
                                                     parent_key, creator_names)
+                if creator_names:
+                    weko_logger(key='WEKO_COMMON_IF_ENTER',
+                                branch='creator_names is not empty')
+                    return
             weko_logger(key='WEKO_COMMON_FOR_END')
-            if creator_names:
-                weko_logger(key='WEKO_COMMON_IF_ENTER',
-                            branch='creator_names is not empty')
-                return
 
         _get_creator(self.current_language)
         # if current language has no creator
